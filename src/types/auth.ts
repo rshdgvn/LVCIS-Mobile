@@ -4,6 +4,16 @@ export interface LoginPayload {
   device_name?: string; // Laravel Sanctum needs this
 }
 
+export interface RegisterPayload {
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  course: string;
+  year: string;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -21,4 +31,5 @@ export interface AuthContextType {
   isLoading: boolean;
   signIn: (token: string, user: User) => Promise<void>;
   signOut: () => Promise<void>;
+  signUp: (data: RegisterPayload) => Promise<void>;
 }

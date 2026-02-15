@@ -37,7 +37,7 @@ module.exports = {
           "card-fg": "#f8f9fa",
           popover: "#2d313d",
           "popover-fg": "#f8f9fa",
-          primary: "#1e50cc",
+          primary: "#3e74ff",
           "primary-fg": "#f4f6fb",
           secondary: "#3f3e46",
           "secondary-fg": "#ffffff",

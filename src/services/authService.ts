@@ -1,6 +1,11 @@
 import { Platform } from "react-native";
 import { api } from "../api/api";
-import { AuthResponse, LoginPayload, User } from "../types/auth";
+import {
+  AuthResponse,
+  LoginPayload,
+  RegisterPayload,
+  User,
+} from "../types/auth";
 
 export const authService = {
   login: async (data: LoginPayload) => {
@@ -9,6 +14,20 @@ export const authService = {
       device_name: Platform.OS === "ios" ? "ios" : "android",
     };
     const response = await api.post<AuthResponse>("/login", payload);
+    return response.data;
+  },
+
+  register: async (data: RegisterPayload) => {
+    const payload = {
+      first_name: data.firstname,
+      last_name: data.lastname,
+      email: data.email,
+      password: data.password,
+      course: data.course,
+      year_level: data.year,
+    };
+
+    const response = await api.post<{ message: string }>("/signup", payload);
     return response.data;
   },
 
