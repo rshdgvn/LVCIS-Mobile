@@ -64,9 +64,10 @@ export default function LoginScreen({ onNavigate }: any) {
           </Text>
         </TouchableOpacity>
       </View>
-      <View className="flex-row items-center my-8">
+
+      <View className="flex-row items-center my-6">
         <View className="flex-1 h-[1px] bg-border dark:bg-dark-border" />
-        <Text className="mx-4 text-muted-fg dark:text-dark-muted-fg text-xs">
+        <Text className="mx-4 text-muted-fg dark:text-dark-muted-fg text-sm">
           Or continue with
         </Text>
         <View className="flex-1 h-[1px] bg-border dark:bg-dark-border" />

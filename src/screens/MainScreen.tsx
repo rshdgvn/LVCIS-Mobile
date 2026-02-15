@@ -43,14 +43,14 @@ export default function MainScreen({ onNavigate }: Props) {
           </Text>
         </View>
 
-        <View className="gap-4 mb-20">
+        <View className="gap-5 mb-16">
           <Pressable
-            className="bg-primary h-16 rounded-2xl items-center justify-center shadow-md active:opacity-90"
+            className="bg-primary h-14 rounded-xl items-center justify-center shadow-md active:opacity-90"
             onPress={() => onNavigate("register")}
           >
             <Text className="text-white font-bold text-lg">Get Started</Text>
           </Pressable>
-          <Pressable
+          {/* <Pressable
             className="h-12 items-center justify-center active:opacity-60 flex-row"
             onPress={() => onNavigate("login")}
           >
@@ -58,6 +58,14 @@ export default function MainScreen({ onNavigate }: Props) {
               I already have an account?{" "}
             </Text>
             <Text className="text-primary font-bold text-base">Login</Text>
+          </Pressable> */}
+          <Pressable
+            onPress={() => onNavigate("login")}
+            className="border border-border dark:border-dark-border h-14 rounded-xl items-center justify-center flex-row active:bg-muted dark:active:bg-dark-muted mb-4"
+          >
+            <Text className="font-bold text-lg text-secondary-fg dark:text-dark-secondary-fg">
+              Login
+            </Text>
           </Pressable>
         </View>
       </View>
