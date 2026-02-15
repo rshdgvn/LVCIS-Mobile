@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { AnimatePresence, MotiView } from "moti";
 import React, { useState } from "react";
 import { View } from "react-native";
@@ -7,16 +7,17 @@ import { CustomSplashScreen } from "../screens/SplashScreen";
 import { AuthScreen } from "../types/navigation";
 
 export default function App() {
+  const router = useRouter();
   const [isSplashVisible, setSplashVisible] = useState(true);
 
-  const navigate = (screen: AuthScreen) => {
-    router.replace(`/(auth)/${screen}`);
+  const onNavigate = (screen: AuthScreen) => {
+    router.push(`/${screen}`);
   };
 
   return (
     <View className="flex-1 bg-background dark:bg-dark-bg">
       <AnimatePresence>
-        {isSplashVisible ? (
+        {isSplashVisible && (
           <MotiView
             key="splash"
             exit={{ opacity: 0 }}
@@ -25,18 +26,19 @@ export default function App() {
           >
             <CustomSplashScreen onComplete={() => setSplashVisible(false)} />
           </MotiView>
-        ) : (
-          <MotiView
-            key="main"
-            from={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ type: "timing", duration: 400 }}
-            className="flex-1"
-          >
-            <MainScreen onNavigate={navigate} />
-          </MotiView>
         )}
       </AnimatePresence>
+
+      {!isSplashVisible && (
+        <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ type: "timing", duration: 400 }}
+          className="flex-1"
+        >
+          <MainScreen onNavigate={onNavigate} />
+        </MotiView>
+      )}
     </View>
   );
 }

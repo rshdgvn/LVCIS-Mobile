@@ -1,19 +1,14 @@
-import { StatusBar } from "expo-status-bar";
 import { MotiView } from "moti";
-import { useColorScheme } from "nativewind";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Dimensions, Image, View } from "react-native";
+import { useTheme } from "../hooks/useTheme";
 
 const { height } = Dimensions.get("window");
 const CIRCLE_SIZE = 100;
 const FINAL_SCALE = (height / CIRCLE_SIZE) * 4;
 
 export function CustomSplashScreen({ onComplete }: { onComplete: () => void }) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const [showStatusBar, setShowStatusBar] = useState(false);
-
-  const targetBgColor = isDark ? "#1c1e26" : "#ffffff";
+  const { bgColor } = useTheme();
 
   useEffect(() => {
     const completionTimer = setTimeout(onComplete, 3200);
@@ -25,12 +20,6 @@ export function CustomSplashScreen({ onComplete }: { onComplete: () => void }) {
 
   return (
     <View className="flex-1 bg-foreground dark:bg-dark-fg justify-center items-center overflow-hidden">
-      <StatusBar
-        hidden={!showStatusBar}
-        style={isDark ? "light" : "dark"}
-        animated={true}
-      />
-
       <MotiView
         from={{ scale: 0 }}
         animate={{ scale: FINAL_SCALE }}
@@ -44,7 +33,7 @@ export function CustomSplashScreen({ onComplete }: { onComplete: () => void }) {
           width: CIRCLE_SIZE,
           height: CIRCLE_SIZE,
           borderRadius: CIRCLE_SIZE / 2,
-          backgroundColor: targetBgColor,
+          backgroundColor: bgColor,
         }}
       />
 

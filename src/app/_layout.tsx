@@ -1,16 +1,17 @@
 import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { useColorScheme } from "nativewind";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { View } from "react-native";
 import "../../global.css";
 
 export default function RootLayout() {
-  const { colorScheme } = useColorScheme();
-
   return (
-    <SafeAreaProvider>
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-      <Stack screenOptions={{ headerShown: false }} />
-    </SafeAreaProvider>
+    <View className="flex-1 bg-background dark:bg-dark-bg">
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: "transparent" },
+          animation: "fade",
+        }}
+      />
+    </View>
   );
 }
