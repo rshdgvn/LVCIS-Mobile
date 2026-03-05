@@ -20,7 +20,12 @@ const Login = () => {
     mutationFn: (data: LoginPayload) => authService.login(data),
     onSuccess: async (data) => {
       await signIn(data.token, data.user);
-      router.replace("/dashboard");
+      
+      if (data.user.role === "admin") {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/dashboard");
+      }
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || "Invalid credentials";
@@ -36,9 +41,13 @@ const Login = () => {
       try {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         const user = await authService.getUser();
-        
         await signIn(token, user);
-        router.replace("/dashboard");
+
+        if (user.role === "admin") {
+          router.replace("/admin/dashboard");
+        } else {
+          router.replace("/dashboard");
+        }
       } catch (error) {
         Alert.alert("Error", "Failed to fetch user profile from Google.");
       }
