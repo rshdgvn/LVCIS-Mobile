@@ -15,12 +15,14 @@ interface Props {
   onNavigate: () => void;
   onRegister: (data: RegisterPayload) => void;
   isLoading: boolean;
+  onGoogleRegister: () => void;
 }
 
 export default function RegisterScreen({
   onNavigate,
   onRegister,
   isLoading,
+  onGoogleRegister,
 }: Props) {
   const [firstname, setFirstname] = useState<string>("");
   const [lastname, setLastname] = useState<string>("");
@@ -160,7 +162,10 @@ export default function RegisterScreen({
         <View className="flex-1 h-[1px] bg-border dark:bg-dark-border" />
       </View>
 
-      <Pressable className="border border-border dark:border-dark-border h-14 rounded-xl items-center justify-center flex-row active:bg-muted dark:active:bg-dark-muted">
+      <Pressable
+        onPress={onGoogleRegister}
+        className="border border-border dark:border-dark-border h-14 rounded-xl items-center justify-center flex-row active:bg-muted dark:active:bg-dark-muted"
+      >
         <Image
           source={{
             uri: "https://cdn-icons-png.flaticon.com/512/2991/2991148.png",

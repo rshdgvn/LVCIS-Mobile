@@ -1,13 +1,16 @@
+import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
 import RegisterScreen from "@/src/screens/auth/RegisterScreen";
 import { authService } from "@/src/services/authService";
 import { RegisterPayload } from "@/src/types/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Alert } from "react-native";
 
 const Register = () => {
   const router = useRouter();
+  const { promptGoogleAuth } = useGoogleAuth();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (data: RegisterPayload) => authService.register(data),
@@ -39,13 +42,18 @@ const Register = () => {
     },
   });
 
+  const handleGoogleRegister = async () => {
+    setIsGoogleLoading(true);
+    await promptGoogleAuth("signup");
+    setIsGoogleLoading(false);
+  };
+
   return (
     <RegisterScreen
-      isLoading={mutation.isPending}
+      isLoading={mutation.isPending || isGoogleLoading}
       onRegister={(data) => mutation.mutate(data)}
-      onNavigate={() => {
-        router.push("/(auth)/login");
-      }}
+      onNavigate={() => router.push("/(auth)/login")}
+      onGoogleRegister={handleGoogleRegister}
     />
   );
 };
