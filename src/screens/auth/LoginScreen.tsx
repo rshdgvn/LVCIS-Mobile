@@ -16,9 +16,10 @@ interface Props {
   onNavigate: (screen: AuthScreen) => void;
   onLogin: (data: LoginPayload) => void;
   isLoading: boolean;
+  onGoogleLogin: () => void;
 }
 
-export default function LoginScreen({ onNavigate, onLogin, isLoading }: Props) {
+export default function LoginScreen({ onNavigate, onLogin, isLoading, onGoogleLogin }: Props) {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
@@ -107,7 +108,10 @@ export default function LoginScreen({ onNavigate, onLogin, isLoading }: Props) {
         <View className="flex-1 h-[1px] bg-border dark:bg-dark-border" />
       </View>
 
-      <Pressable className="border border-border dark:border-dark-border h-14 rounded-xl items-center justify-center flex-row active:bg-muted dark:active:bg-dark-muted mb-4">
+      <Pressable
+        onPress={onGoogleLogin}
+        className="border border-border dark:border-dark-border h-14 rounded-xl items-center justify-center flex-row active:bg-muted dark:active:bg-dark-muted mb-4"
+      >
         <Image
           source={{
             uri: "https://cdn-icons-png.flaticon.com/512/2991/2991148.png",

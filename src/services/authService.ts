@@ -2,6 +2,7 @@ import { Platform } from "react-native";
 import { api } from "../api/api";
 import { AuthResponse, LoginPayload, RegisterPayload } from "../types/auth";
 import { User } from "../types/user";
+import { MOBILE_APP_URL } from "../utils/config";
 
 export const authService = {
   login: async (data: LoginPayload) => {
@@ -22,9 +23,11 @@ export const authService = {
       password_confirmation: data.password_confirmation,
       course: data.course,
       year_level: data.year,
+      mobile_app_url: MOBILE_APP_URL,
     };
 
     const response = await api.post<{ message: string }>("/signup", payload);
+    console.log("Registration Response:", response.data, MOBILE_APP_URL);
     return response.data;
   },
 
