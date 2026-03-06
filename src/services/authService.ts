@@ -39,4 +39,24 @@ export const authService = {
     const response = await api.get<User>("/user");
     return response.data;
   },
+
+  sendResetCode: async (email: string) => {
+    const response = await api.post("/forgot-password", { email });
+    return response.data;
+  },
+
+  verifyResetCode: async (email: string, code: string) => {
+    const response = await api.post("/verify-reset-code", { email, code });
+    return response.data;
+  },
+
+  resetPassword: async (data: any) => {
+    const response = await api.post("/reset-password", {
+      email: data.email,
+      code: data.code,
+      password: data.password,
+      password_confirmation: data.password_confirmation,
+    });
+    return response.data;
+  },
 };

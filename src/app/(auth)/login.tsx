@@ -1,5 +1,6 @@
+import { api } from "@/src/api/api";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { useGoogleAuth } from "@/src/hooks/useGoogleAuth"; // <-- IMPORT HOOK
+import { useGoogleAuth } from "@/src/hooks/useGoogleAuth"; 
 import LoginScreen from "@/src/screens/auth/LoginScreen";
 import { authService } from "@/src/services/authService";
 import { LoginPayload } from "@/src/types/auth";
@@ -8,19 +9,18 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert } from "react-native";
-import { api } from "@/src/api/api"; 
 
 const Login = () => {
   const router = useRouter();
   const { signIn } = useAuth();
-  const { promptGoogleAuth } = useGoogleAuth(); 
+  const { promptGoogleAuth } = useGoogleAuth();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (data: LoginPayload) => authService.login(data),
     onSuccess: async (data) => {
       await signIn(data.token, data.user);
-      
+
       if (data.user.role === "admin") {
         router.replace("/admin/dashboard");
       } else {
@@ -35,11 +35,11 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
-    const token = await promptGoogleAuth('login');
-    
+    const token = await promptGoogleAuth("login");
+
     if (token) {
       try {
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         const user = await authService.getUser();
         await signIn(token, user);
 
@@ -60,7 +60,7 @@ const Login = () => {
       onLogin={(data) => mutation.mutate(data)}
       isLoading={mutation.isPending || isGoogleLoading}
       onNavigate={(screen: AuthScreen) => router.push(`/${screen}`)}
-      onGoogleLogin={handleGoogleLogin} // <-- PASS PROP
+      onGoogleLogin={handleGoogleLogin} 
     />
   );
 };

@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import PrimaryButton from "@/src/components/common/PrimaryButton";
 
 interface Props {
   onNavigate: () => void;
@@ -133,15 +134,13 @@ export default function RegisterScreen({
         </View>
       </View>
 
-      <Pressable
-        className={`h-14 rounded-xl items-center justify-center shadow-md ${isLoading ? "bg-muted" : "bg-primary dark:bg-dark-primary"}`}
-        onPress={handleSubmit}
-        disabled={isLoading}
-      >
-        <Text className="text-primary-fg dark:text-dark-primary-fg font-bold text-lg">
-          {isLoading ? "Creating Account..." : "Create an Account"}
-        </Text>
-      </Pressable>
+      <View className="mb-6 w-full">
+        <PrimaryButton
+          title="Sign in"
+          isLoading={isLoading}
+          onPress={handleSubmit}
+        />
+      </View>
 
       <View className="flex-row justify-center mt-6">
         <Text className="text-muted-fg dark:text-dark-muted-fg">

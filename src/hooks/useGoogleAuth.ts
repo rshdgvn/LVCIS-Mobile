@@ -10,14 +10,14 @@ export const useGoogleAuth = () => {
     try {
       const redirectUrl = Linking.createURL('auth/callback');
       
-      const authUrl = `${API_URL}/auth/google?mode=${mode}&platform=mobile`;
+      const authUrl = `${API_URL}auth/google?mode=${mode}&platform=mobile`;
 
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
 
       if (result.type === 'success' && result.url) {
         const urlParams = new URL(result.url).searchParams;
         const token = urlParams.get('token');
-        const error = urlParams.get('error');
+        const error = urlParams.get('error'); 
         const status = urlParams.get('status');
 
         if (error) {
