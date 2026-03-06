@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import PrimaryButton from "@/src/components/common/PrimaryButton";
 
 interface Props {
   onNavigate: (screen: AuthScreen) => void;
@@ -79,15 +80,13 @@ export default function LoginScreen({ onNavigate, onLogin, isLoading, onGoogleLo
         />
       </View>
 
-      <Pressable
-        className="bg-primary dark:bg-dark-primary h-14 rounded-xl items-center justify-center shadow-md active:opacity-90"
-        onPress={handleSubmit}
-        disabled={isLoading}
-      >
-        <Text className="text-primary-fg dark:text-dark-primary-fg font-bold text-lg">
-          {isLoading ? "Signing in..." : "Sign in"}
-        </Text>
-      </Pressable>
+      <View className="mb-6 w-full">
+        <PrimaryButton
+          title="Sign in"
+          isLoading={isLoading}
+          onPress={handleSubmit}
+        />
+      </View>
 
       <View className="flex-row justify-center mt-6">
         <Text className="text-muted-fg dark:text-dark-muted-fg">

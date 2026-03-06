@@ -58,4 +58,5 @@ export const authService = {
       password_confirmation: data.password_confirmation,
     });
     return response.data;
+  },
 };

@@ -2,6 +2,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import PrimaryButton from "@/src/components/common/PrimaryButton";
 
 interface Props {
   onSendCode: (email: string) => void;
@@ -54,17 +55,13 @@ export default function ForgotPasswordScreen({ onSendCode, isLoading }: Props) {
         </View>
       </View>
 
-      <Pressable
-        className={`w-full h-14 rounded-xl items-center justify-center shadow-md mb-8 ${
-          isLoading ? "bg-blue-400 dark:bg-blue-800" : "bg-primary dark:bg-dark-primary active:opacity-90"
-        }`}
-        onPress={handleSendLink}
-        disabled={isLoading}
-      >
-        <Text className="text-primary-fg dark:text-dark-primary-fg font-bold text-lg">
-          {isLoading ? "Sending..." : "Send reset link"}
-        </Text>
-      </Pressable>
+      <View className="w-full mb-8">
+        <PrimaryButton
+          title="Send reset link"
+          isLoading={isLoading}
+          onPress={handleSendLink}
+        />
+      </View>
 
       <View className="items-center">
         <Text className="text-muted-fg dark:text-dark-muted-fg text-sm">Don't remember your email?</Text>
