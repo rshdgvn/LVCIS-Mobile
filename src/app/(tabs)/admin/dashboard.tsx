@@ -1,16 +1,16 @@
-import { useAuth } from "@/src/contexts/AuthContext";
-import React from "react";
-import { Text, View } from "react-native";
+import { DashboardScreen } from "@/src/screens/private/DashboardScreen";
+import { useRouter } from "expo-router";
 
-const dashboard = () => {
-  const { user } = useAuth();
+const Dashboard = () => {
+  const router = useRouter();
 
   return (
-    <View>
-      <Text>dashboard</Text>
-      <Text>Welcome, {user?.name}!</Text>
-    </View>
+    <DashboardScreen
+      onProfile={() => {
+        router.push("/profile");
+      }}
+    />
   );
 };
 
-export default dashboard;
+export default Dashboard;
