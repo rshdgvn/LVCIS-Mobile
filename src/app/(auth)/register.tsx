@@ -46,6 +46,7 @@ const Register = () => {
     setIsGoogleLoading(true);
     await promptGoogleAuth("signup");
     setIsGoogleLoading(false);
+    router.push("/(auth)/login");
   };
 
   return (
