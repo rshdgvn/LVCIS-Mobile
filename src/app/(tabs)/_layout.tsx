@@ -8,7 +8,12 @@ export default function TabsLayout() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const hideNavRoutes = ["/profile"];
+  const hideNavRoutes = [
+    "/profile",
+    "/profile/edit-profile",
+    "/profile/change-password",
+    "/profile/notifications",
+  ];
 
   const shouldHideNav = hideNavRoutes.some((route) => pathname.includes(route));
 

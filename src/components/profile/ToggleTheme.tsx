@@ -8,7 +8,7 @@ export function ToggleTheme() {
   const isDark = colorScheme === "dark";
 
   return (
-    <View className="flex-row items-center justify-between p-4 rounded-2xl bg-card dark:bg-dark-card mb-3">
+    <View className="flex-row items-center justify-between px-4 py-3 rounded-2xl bg-card dark:bg-dark-card mb-3">
       <View className="flex-row items-center gap-4">
         <View className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20">
           <Moon size={22} color="#2563EB" />

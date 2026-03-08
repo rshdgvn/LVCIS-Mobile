@@ -1,51 +1,25 @@
-import { ToggleTheme } from "@/src/components/settings/ToggleTheme";
+import { ProfileOption } from "@/src/components/profile/ProfileOption";
+import { ToggleTheme } from "@/src/components/profile/ToggleTheme";
 import { useAuth } from "@/src/contexts/AuthContext";
-import {
-  Bell,
-  ChevronRight,
-  LogOut,
-  ShieldCheck,
-  User,
-} from "lucide-react-native";
+import { Bell, LogOut, ShieldCheck, User } from "lucide-react-native";
 import React from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
   onSignOut: () => void;
+  onEditProfile: () => void;
+  onChangePassword: () => void;
+  onNotifications: () => void;
 }
 
-export const ProfileScreen = ({ onSignOut }: Props) => {
+const ProfileScreen = ({
+  onSignOut,
+  onEditProfile,
+  onChangePassword,
+  onNotifications,
+}: Props) => {
   const { user } = useAuth();
-
-  const ProfileOption = ({
-    icon: Icon,
-    title,
-    subtitle,
-    showArrow = true,
-  }: any) => (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      className="flex-row items-center justify-between p-4 rounded-2xl bg-card dark:bg-dark-card mb-3"
-    >
-      <View className="flex-row items-center gap-4">
-        <View className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20">
-          <Icon size={22} color="#2563EB" />
-        </View>
-        <View>
-          <Text className="text-foreground dark:text-dark-fg font-semibold text-base">
-            {title}
-          </Text>
-          {subtitle && (
-            <Text className="text-muted-fg dark:text-dark-muted-fg text-xs">
-              {subtitle}
-            </Text>
-          )}
-        </View>
-      </View>
-      {showArrow && <ChevronRight size={20} color="#9CA3AF" />}
-    </TouchableOpacity>
-  );
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
@@ -78,18 +52,20 @@ export const ProfileScreen = ({ onSignOut }: Props) => {
           icon={User}
           title="Edit Profile"
           subtitle="Name, Email, and course"
+          onPress={onEditProfile}
         />
         <ProfileOption
           icon={ShieldCheck}
           title="Security"
           subtitle="Password"
+          onPress={onChangePassword}
         />
 
         <Text className="text-muted-fg dark:text-dark-muted-fg font-bold text-xs uppercase tracking-widest mt-4 mb-4 ml-1">
           Preferences
         </Text>
         <ToggleTheme />
-        <ProfileOption icon={Bell} title="Notifications" />
+        <ProfileOption icon={Bell} title="Notifications" onPress={onNotifications} />
 
         <TouchableOpacity
           onPress={onSignOut}
@@ -105,3 +81,5 @@ export const ProfileScreen = ({ onSignOut }: Props) => {
     </SafeAreaView>
   );
 };
+
+export default ProfileScreen;

@@ -1,5 +1,5 @@
 import { useAuth } from "@/src/contexts/AuthContext";
-import { ProfileScreen } from "@/src/screens/private/profile/ProfileScreen";
+import ProfileScreen from "@/src/screens/private/profile/ProfileScreen";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Alert } from "react-native";
@@ -22,7 +22,26 @@ const Profile = () => {
     ]);
   };
 
-  return <ProfileScreen onSignOut={handleSignOut} />;
+  const handleEditProfile = () => {
+    router.push("/profile/edit-profile");
+  };
+
+  const handleChangePassword = () => {
+    router.push("/profile/change-password");
+  };
+
+  const handleNotifications = () => {
+    router.push("/profile/notifications");
+  }
+
+  return (
+    <ProfileScreen
+      onSignOut={handleSignOut}
+      onEditProfile={handleEditProfile}
+      onChangePassword={handleChangePassword}
+      onNotifications={handleNotifications}
+    />
+  );
 };
 
 export default Profile;
