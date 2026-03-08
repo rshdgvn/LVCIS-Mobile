@@ -1,9 +1,9 @@
+import "@/global.css";
+import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
 import React, { useEffect } from "react";
 import { View } from "react-native";
-import "../../global.css";
-import { AuthProvider, useAuth } from "../contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
@@ -16,7 +16,7 @@ function InitialLayout() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
-    const isAdminRoute = segments[0] === "(tabs)" && segments[1] === "admin"; 
+    const isAdminRoute = segments[0] === "(tabs)" && segments[1] === "admin";
 
     if (!isAuthenticated && !inAuthGroup) {
       router.replace("/(auth)/login");
@@ -27,8 +27,7 @@ function InitialLayout() {
         } else {
           router.replace("/dashboard");
         }
-      } 
-      else if (user.role !== "admin" && isAdminRoute) {
+      } else if (user.role !== "admin" && isAdminRoute) {
         router.replace("/dashboard");
       }
     }
@@ -50,7 +49,7 @@ export default function RootLayout() {
     <View className="flex-1 bg-background dark:bg-dark-bg">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <InitialLayout /> 
+          <InitialLayout />
         </AuthProvider>
       </QueryClientProvider>
     </View>

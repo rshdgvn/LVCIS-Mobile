@@ -1,8 +1,8 @@
+import { api } from "@/src/api/api";
+import { AuthResponse, LoginPayload, RegisterPayload } from "@/src/types/auth";
+import { User } from "@/src/types/user";
+import { MOBILE_APP_URL } from "@/src/utils/config";
 import { Platform } from "react-native";
-import { api } from "../api/api";
-import { AuthResponse, LoginPayload, RegisterPayload } from "../types/auth";
-import { User } from "../types/user";
-import { MOBILE_APP_URL } from "../utils/config";
 
 export const authService = {
   login: async (data: LoginPayload) => {

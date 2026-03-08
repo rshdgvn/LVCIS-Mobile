@@ -1,7 +1,7 @@
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { Alert } from 'react-native';
-import { API_URL, MOBILE_APP_URL } from '../utils/config';
+import { API_URL, MOBILE_APP_URL } from '@/src/utils/config';
 
 WebBrowser.maybeCompleteAuthSession();
 

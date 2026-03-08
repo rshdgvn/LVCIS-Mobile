@@ -1,10 +1,10 @@
+import MainScreen from "@/src/screens/public/MainScreen";
+import { CustomSplashScreen } from "@/src/screens/public/SplashScreen";
+import { AuthScreen } from "@/src/types/navigation";
 import { useRouter } from "expo-router";
 import { AnimatePresence, MotiView } from "moti";
 import React, { useState } from "react";
 import { View } from "react-native";
-import MainScreen from "../screens/public/MainScreen";
-import { CustomSplashScreen } from "../screens/public/SplashScreen";
-import { AuthScreen } from "../types/navigation";
 
 export default function App() {
   const router = useRouter();

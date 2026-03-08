@@ -2,11 +2,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect } from "react";
-import { setUnauthorizedCallback } from "../api/api";
-import { authService } from "../services/authService";
-import { AuthContextType, RegisterPayload } from "../types/auth";
-import { User } from "../types/user";
-import { TOKEN_KEY } from "../utils/config";
+import { TOKEN_KEY } from "@/src/utils/config";
+import { User } from "@/src/types/user";
+import { RegisterPayload } from "@/src/types/auth";
+import { AuthContextType } from "@/src/types/auth";
+import { setUnauthorizedCallback } from "@/src/api/api";
+import { authService } from "@/src/services/authService";
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
