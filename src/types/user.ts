@@ -1,4 +1,3 @@
-
 export interface User {
   id: number;
   avatar: string | undefined;
@@ -6,10 +5,9 @@ export interface User {
   last_name: string;
   email: string;
   role: "admin" | "user"
-  member?: Member; // Add 'member' as an optional property to User
+  member?: Member; 
 }
 
-// Add Member structure
 export interface Member {
   course: string | null;
   year_level: string | null;

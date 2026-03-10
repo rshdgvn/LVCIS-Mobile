@@ -28,14 +28,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = await SecureStore.getItemAsync(TOKEN_KEY);
       if (!token) return null;
       try {
-        // Assume authService.getUser() returns the raw API object: { user: {...}, member: {...} }
         const response = await authService.getUser();
-        
-        // MERGE LOGIC: Flatten the response into your User interface
-        // This ensures user.member exists for your EditProfileScreen
+      
         return {
-          ...response.user, // id, first_name, last_name, email, etc.
-          member: response.member // The course and year_level
+          ...response.user,
+          member: response.member 
         } as User;
       } catch (error) {
         await SecureStore.deleteItemAsync(TOKEN_KEY);

@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, ViewStyle } from "react-native";
+import { useTheme } from "@/src/hooks/useTheme";
 
 interface Props {
   onPress: () => void;
@@ -8,6 +9,8 @@ interface Props {
 }
 
 export const BackButton = ({ onPress, style }: Props) => {
+  const { fgColor } = useTheme();
+
   return (
     <Pressable
       onPress={onPress}
@@ -17,8 +20,7 @@ export const BackButton = ({ onPress, style }: Props) => {
       <Ionicons
         name="chevron-back"
         size={24}
-        className="text-foreground dark:text-dark-fg"
-        color="#34323c"
+        color={fgColor}
       />
     </Pressable>
   );

@@ -3,6 +3,8 @@ import { Search } from "lucide-react-native";
 import React from "react";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BackButton } from "@/src/components/common/BackButton";
+import { router } from "expo-router";
 
 const FILTERS: FilterType[] = ["All", "Read", "Unread"];
 
@@ -24,9 +26,13 @@ const NotificationsScreen = ({
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <View className="px-6 flex-1">
-        <Text className="text-lg font-bold self-center text-foreground/50 dark:text-dark-fg/50 my-4">
-          Notification
-        </Text>
+       <View className="flex-row items-center justify-between mt-2 mb-4 ">
+           <BackButton onPress={() => router.back()} />
+           <Text className="text-lg font-bold self-center text-foreground/50 dark:text-dark-fg/50 my-4">
+             Notifications
+           </Text>
+           <View style={{ width: 48 }} />
+       </View> 
 
         <View className="flex-row items-center bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 *: mt-4">
           <Search size={20} color="#9CA3AF" />
