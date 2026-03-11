@@ -26,12 +26,12 @@ const ProfileScreen = ({
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <View className="flex-row items-center justify-between mt-2 px-6">
-          <BackButton onPress={() => router.back()} />
-          <Text className="text-lg font-bold self-center text-foreground/50 dark:text-dark-fg/50 my-4">
-            Profile
-          </Text>
-          <View style={{ width: 48 }} />
-      </View>  
+        <BackButton onPress={() => router.back()} />
+        <Text className="text-lg font-bold self-center text-foreground/50 dark:text-dark-fg/50 my-4">
+          Profile
+        </Text>
+        <View style={{ width: 48 }} />
+      </View>
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
       >

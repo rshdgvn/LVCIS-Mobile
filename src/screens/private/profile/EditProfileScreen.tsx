@@ -1,27 +1,25 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-  ImageComponent,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Camera, ChevronLeft, Lock } from "lucide-react-native";
-import * as ImagePicker from "expo-image-picker";
-import { useAuth } from "@/src/contexts/AuthContext";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { userService } from "@/src/services/userService";
-import { router } from "expo-router";
+import { BackButton } from "@/src/components/common/BackButton";
 import { CustomDropdown } from "@/src/components/common/CustomDropdown";
 import { InputField } from "@/src/components/common/InputField";
-import { BackButton } from "@/src/components/common/BackButton";
-import PrimaryButton  from "@/src/components/common/PrimaryButton";
-
+import PrimaryButton from "@/src/components/common/PrimaryButton";
+import { COURSE_OPTIONS, YEAR_OPTIONS } from "@/src/constants/education";
+import { useAuth } from "@/src/contexts/AuthContext";
+import { userService } from "@/src/services/userService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as ImagePicker from "expo-image-picker";
+import { router } from "expo-router";
+import { Camera } from "lucide-react-native";
+import React, { useState } from "react";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { CourseType } from "@/src/types/course";
 
 const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
   const { user } = useAuth();
@@ -30,8 +28,8 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
   const [form, setForm] = useState({
     first_name: user?.first_name || "",
     last_name: user?.last_name || "",
-    course: user?.member?.course || "",       
-    year_level: user?.member?.year_level || "", 
+    course: user?.member?.course || "",
+    year_level: user?.member?.year_level || "",
   });
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -56,7 +54,10 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
       router.back();
     },
     onError: (error: any) => {
-      Alert.alert("Error", error.response?.data?.message || "Failed to update profile");
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to update profile",
+      );
     },
   });
 
@@ -79,25 +80,41 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
     mutation.mutate(formData);
   };
 
-  const courses = ["BSIS", "ACT", "BSSW", "BSA", "BSAIS", "BAB"];
-  const years = ["1", "2", "3", "4"];
+  const handleCourseSelect = (selectedCourse: string) => {
+    const validYears = YEAR_OPTIONS[selectedCourse as CourseType];
 
+    setForm((prev) => ({
+      ...prev,
+      course: selectedCourse,
+      year_level:
+        prev.year_level && !validYears.includes(prev.year_level)
+          ? ""
+          : prev.year_level,
+    }));
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <View className="flex-row items-center justify-between mt-2 px-6">
-          <BackButton onPress={() => router.back()} />
-          <Text className="text-lg font-bold self-center text-foreground/50 dark:text-dark-fg/50 my-4">
-            Edit Profile
-          </Text>
-          <View style={{ width: 48 }} />
-      </View>  
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 25, marginTop: 25 }}>
+        <BackButton onPress={() => router.back()} />
+        <Text className="text-lg font-bold self-center text-foreground/50 dark:text-dark-fg/50 my-4">
+          Edit Profile
+        </Text>
+        <View style={{ width: 48 }} />
+      </View>
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 25, marginTop: 25 }}
+      >
         <View className="items-center mb-6">
           <TouchableOpacity onPress={pickImage} className="relative">
             <Image
-              source={{ uri: selectedImage || user?.avatar || "https://via.placeholder.com/150" }}
-              className="w-28 h-28 rounded-full"
+              source={{
+                uri:
+                  selectedImage ||
+                  user?.avatar ||
+                  "https://via.placeholder.com/150",
+              }}
+              className="w-32 h-32 rounded-full"
             />
             <View className="absolute bottom-0 right-0 bg-black p-2 rounded-full border-2 border-white">
               <Camera size={16} color="white" />
@@ -116,43 +133,40 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
             containerStyles="mb-4"
           />
           <View className="flex-row gap-3 mb-4">
-              <InputField
-                label="First Name"
-                value={form.first_name}
-                onChangeText={(t) => setForm({ ...form, first_name: t })}
-                containerStyles="flex-1"
-              />
-              <InputField
-                  label="Last Name"
-                  value={form.last_name}
-                  onChangeText={(t) => setForm({ ...form, last_name: t })}
-                  containerStyles="flex-1"
-                />
+            <InputField
+              label="First Name"
+              value={form.first_name}
+              onChangeText={(t) => setForm({ ...form, first_name: t })}
+              containerStyles="flex-1"
+            />
+            <InputField
+              label="Last Name"
+              value={form.last_name}
+              onChangeText={(t) => setForm({ ...form, last_name: t })}
+              containerStyles="flex-1"
+            />
           </View>
-          <CustomDropdown 
-            label="Course" 
-            options={courses} 
-            value={form.course} 
-            onSelect={(val: string) => setForm({ ...form, course: val })} 
+
+          <CustomDropdown
+            label="Course"
+            options={COURSE_OPTIONS}
+            value={form.course}
+            onSelect={handleCourseSelect}
           />
-          <CustomDropdown 
-            label="Year Level" 
-            options={years} 
-            value={form.year_level} 
-            onSelect={(val: string) => setForm({ ...form, year_level: val })} 
+          <CustomDropdown
+            label="Year Level"
+            options={form.course ? YEAR_OPTIONS[form.course as CourseType] : []}
+            value={form.year_level}
+            onSelect={(val: string) => setForm({ ...form, year_level: val })}
           />
-        </View>        
-        <TouchableOpacity
-          onPress={handleSave}
-          disabled={mutation.isPending}
-          className={`py-4 rounded-xl items-center mt-24 ${mutation.isPending ? "bg-blue-400" : "bg-blue-600"}`}
-        >
-          {mutation.isPending ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-white font-bold text-base">Save Changes</Text>
-          )}
-        </TouchableOpacity>
+        </View>
+        <View className="mt-24 w-full">
+          <PrimaryButton
+            title="Save Changes"
+            isLoading={mutation.isPending}
+            onPress={handleSave}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

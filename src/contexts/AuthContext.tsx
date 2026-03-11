@@ -1,13 +1,13 @@
+import { setUnauthorizedCallback } from "@/src/api/api";
+import { authService } from "@/src/services/authService";
+import { userService } from "@/src/services/userService";
+import { AuthContextType, RegisterPayload } from "@/src/types/auth";
+import { User } from "@/src/types/user";
+import { TOKEN_KEY } from "@/src/utils/config";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect } from "react";
-import { TOKEN_KEY } from "@/src/utils/config";
-import { User } from "@/src/types/user";
-import { RegisterPayload } from "@/src/types/auth";
-import { AuthContextType } from "@/src/types/auth";
-import { setUnauthorizedCallback } from "@/src/api/api";
-import { authService } from "@/src/services/authService";
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
@@ -28,11 +28,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = await SecureStore.getItemAsync(TOKEN_KEY);
       if (!token) return null;
       try {
-        const response = await authService.getUser();
-      
+        const response = await userService.getUserProfile();
+
         return {
           ...response.user,
-          member: response.member 
+          member: response.member,
         } as User;
       } catch (error) {
         await SecureStore.deleteItemAsync(TOKEN_KEY);

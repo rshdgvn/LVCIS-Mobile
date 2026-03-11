@@ -1,5 +1,9 @@
+import { CustomDropdown } from "@/src/components/common/CustomDropdown";
 import { InputField } from "@/src/components/common/InputField";
+import PrimaryButton from "@/src/components/common/PrimaryButton";
+import { COURSE_OPTIONS, YEAR_OPTIONS } from "@/src/constants/education";
 import { RegisterPayload } from "@/src/types/auth";
+import { CourseType } from "@/src/types/course";
 import React, { useState } from "react";
 import {
   Alert,
@@ -10,7 +14,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import PrimaryButton from "@/src/components/common/PrimaryButton";
 
 interface Props {
   onNavigate: () => void;
@@ -32,6 +35,15 @@ export default function RegisterScreen({
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [course, setCourse] = useState<string>("");
   const [year, setYear] = useState<string>("");
+
+  const handleCourseSelect = (selectedCourse: string) => {
+    setCourse(selectedCourse);
+
+    const validYears = YEAR_OPTIONS[selectedCourse as CourseType];
+    if (year && !validYears.includes(year)) {
+      setYear("");
+    }
+  };
 
   const handleSubmit = () => {
     if (!firstname || !lastname || !email || !password || !course || !year) {
@@ -115,21 +127,20 @@ export default function RegisterScreen({
 
       <View className="flex-row gap-3 mb-8">
         <View className="flex-1">
-          <InputField
+          <CustomDropdown
             label="Course"
-            placeholder="Course"
             value={course}
-            onChangeText={setCourse}
+            options={COURSE_OPTIONS}
+            onSelect={handleCourseSelect}
           />
         </View>
 
         <View className="flex-1">
-          <InputField
+          <CustomDropdown
             label="Year Level"
-            placeholder="Year level"
-            keyboardType="numeric"
             value={year}
-            onChangeText={setYear}
+            options={course ? YEAR_OPTIONS[course as CourseType] : []}
+            onSelect={setYear}
           />
         </View>
       </View>
