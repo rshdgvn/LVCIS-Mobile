@@ -12,4 +12,9 @@ export const userService = {
     });
     return data;
   },
+
+  changePassword: async (data: any) => {
+    const response = await api.post("/user/change-password", data);
+    return response.data;
+  },
 };
