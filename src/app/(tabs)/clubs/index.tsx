@@ -1,12 +1,33 @@
-import React from "react";
-import { Text, View } from "react-native";
+import React, { useState } from "react";
+import { Href, useRouter } from "expo-router";
+import { View } from "react-native";
+import { useFilteredClubs, ClubViewFilter } from "@/src/hooks/useClubs";
+import { ClubCategory } from "@/src/types/club";
+import ClubsScreen from "@/src/screens/private/clubs/ClubsScreen";
 
-const Clubs = () => {
+export default function ClubsRoute() {
+  const router = useRouter();
+  
+  const [selectedCategory, setSelectedCategory] = useState<ClubCategory | undefined>(undefined);
+  const [viewFilter, setViewFilter] = useState<ClubViewFilter>("all");
+
+  const { data: clubs, isLoading } = useFilteredClubs(viewFilter, selectedCategory);
+
+  const handleAccessClub = (clubId: number) => {
+    router.push(`/clubs/${clubId}` as Href);
+  };
+
   return (
-    <View>
-      <Text>Clubs</Text>
+    <View className="flex-1">
+      <ClubsScreen
+        clubs={clubs}
+        isLoading={isLoading}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        viewFilter={viewFilter}
+        onSelectViewFilter={setViewFilter}
+        onAccessClub={handleAccessClub}
+      />
     </View>
   );
-};
-
-export default Clubs;
+}
