@@ -1,12 +1,12 @@
 import React from "react";
 import { Text, View } from "react-native";
 
-const Events = () => {
+const AttendanceRoute = () => {
   return (
     <View>
-      <Text>Events</Text>
+      <Text>Attendances</Text>
     </View>
   );
 };
 
-export default Events;
+export default AttendanceRoute;

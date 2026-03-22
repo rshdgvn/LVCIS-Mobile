@@ -1,6 +1,6 @@
 import { api } from "@/src/api/api";
 import { AuthResponse, LoginPayload, RegisterPayload } from "@/src/types/auth";
-import * as Linking from "expo-linking"; 
+import * as Linking from "expo-linking";
 import { Platform } from "react-native";
 import { User } from "../types/user";
 
@@ -15,7 +15,7 @@ export const authService = {
   },
 
   register: async (data: RegisterPayload) => {
-    const appUrl = Linking.createURL(""); 
+    const appUrl = Linking.createURL("");
 
     const payload = {
       first_name: data.firstname,
@@ -63,11 +63,11 @@ export const authService = {
   },
 
   resendUnauthenticatedVerification: async (email: string) => {
-    const appUrl = Linking.createURL(""); 
+    const appUrl = Linking.createURL("");
 
     const response = await api.post("email/resend", {
       email: email,
-      mobile_app_url: appUrl, 
+      mobile_app_url: appUrl,
     });
     return response.data;
   },

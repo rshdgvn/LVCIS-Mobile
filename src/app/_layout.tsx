@@ -1,7 +1,12 @@
 import "@/global.css";
 import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack, useRouter, useSegments } from "expo-router";
+import {
+  Stack,
+  useRootNavigationState,
+  useRouter,
+  useSegments,
+} from "expo-router";
 import React, { useEffect } from "react";
 import { View } from "react-native";
 
@@ -12,8 +17,10 @@ function InitialLayout() {
   const segments = useSegments();
   const router = useRouter();
 
+  const rootNavigationState = useRootNavigationState();
+
   useEffect(() => {
-    if (isLoading) return;
+    if (!rootNavigationState?.key || isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
     const isAdminRoute = segments[0] === "(tabs)" && segments[1] === "admin";
@@ -23,15 +30,15 @@ function InitialLayout() {
     } else if (isAuthenticated && user) {
       if (inAuthGroup) {
         if (user.role === "admin") {
-          router.replace("/admin/dashboard");
+          router.replace("/(tabs)/admin/dashboard");
         } else {
-          router.replace("/dashboard");
+          router.replace("/(tabs)/dashboard");
         }
       } else if (user.role !== "admin" && isAdminRoute) {
-        router.replace("/dashboard");
+        router.replace("/(tabs)/dashboard");
       }
     }
-  }, [isAuthenticated, user, isLoading, segments, router]);
+  }, [isAuthenticated, user, isLoading, segments, router, rootNavigationState]);
 
   return (
     <Stack

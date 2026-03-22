@@ -20,7 +20,12 @@ interface Props {
   onGoogleLogin: () => void;
 }
 
-export default function LoginScreen({ onNavigate, onLogin, isLoading, onGoogleLogin }: Props) {
+export default function LoginScreen({
+  onNavigate,
+  onLogin,
+  isLoading,
+  onGoogleLogin,
+}: Props) {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 

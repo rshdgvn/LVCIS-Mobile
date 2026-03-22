@@ -2,7 +2,7 @@ import { useTheme } from "@/src/hooks/useTheme";
 import { BottomNav } from "@/src/layouts/BottomNav";
 import { Tab } from "@/src/types/tab";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Stack, usePathname, useRouter } from "expo-router";
+import { Tabs, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,15 +19,6 @@ export default function TabsLayout() {
     const timer = setTimeout(() => setIsReady(true), 150);
     return () => clearTimeout(timer);
   }, []);
-
-  const hideNavRoutes = [
-    "/profile",
-    "/profile/edit-profile",
-    "/profile/change-password",
-    "/profile/notifications",
-  ];
-
-  const shouldHideNav = hideNavRoutes.some((route) => pathname.includes(route));
 
   const getActiveTab = (): Tab => {
     if (pathname.includes("attendance")) return "Attendance";
@@ -56,16 +47,22 @@ export default function TabsLayout() {
   return (
     <View className="flex-1 bg-background dark:bg-dark-bg relative">
       <View className="flex-1">
-        <Stack
+        <Tabs
+          initialRouteName="dashboard"
+          backBehavior="initialRoute"
           screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: "transparent" },
-            animation: "fade",
+            tabBarStyle: { display: "none" },
           }}
-        />
+        >
+          <Tabs.Screen name="dashboard" />
+          <Tabs.Screen name="attendance" />
+          <Tabs.Screen name="clubs" />
+          <Tabs.Screen name="events" />
+        </Tabs>
       </View>
 
-      {!shouldHideNav && isReady && (
+      {isReady && (
         <View
           className="absolute z-50"
           style={{
@@ -88,7 +85,7 @@ export default function TabsLayout() {
         </View>
       )}
 
-      {!shouldHideNav && isReady && (
+      {isReady && (
         <View
           style={{
             paddingBottom: insets.bottom,

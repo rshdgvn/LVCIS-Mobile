@@ -1,7 +1,7 @@
 import { DashboardScreen } from "@/src/screens/private/DashboardScreen";
 import { useRouter } from "expo-router";
 
-const Dashboard = () => {
+const AdminDashboardRoute = () => {
   const router = useRouter();
 
   return (
@@ -13,4 +13,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default AdminDashboardRoute;
