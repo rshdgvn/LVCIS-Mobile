@@ -25,9 +25,9 @@ const Login = () => {
       await signIn(data.token, data.user);
 
       if (data.user.role === "admin") {
-        router.replace("/admin/dashboard");
+        router.replace("/(tabs)/(admin)/dashboard");
       } else {
-        router.replace("/dashboard");
+        router.replace("/(tabs)/(user)/dashboard");
       }
     },
     onError: (error: any, variables: LoginPayload) => {
@@ -54,9 +54,9 @@ const Login = () => {
         await signIn(token, user);
 
         if (user.role === "admin") {
-          router.replace("/admin/dashboard");
+          router.replace("/(tabs)/(admin)/dashboard");
         } else {
-          router.replace("/dashboard");
+          router.replace("/(tabs)/(user)/dashboard");
         }
       } catch (error) {
         Alert.alert("Error", "Failed to fetch user profile from Google.");

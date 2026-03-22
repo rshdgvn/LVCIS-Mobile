@@ -23,19 +23,19 @@ function InitialLayout() {
     if (!rootNavigationState?.key || isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
-    const isAdminRoute = segments[0] === "(tabs)" && segments[1] === "admin";
+    const isAdminRoute = segments[0] === "(tabs)" && segments[1] === "(admin)";
 
     if (!isAuthenticated && !inAuthGroup) {
       router.replace("/(auth)/login");
     } else if (isAuthenticated && user) {
       if (inAuthGroup) {
         if (user.role === "admin") {
-          router.replace("/(tabs)/admin/dashboard");
+          router.replace("/(tabs)/(admin)/dashboard");
         } else {
-          router.replace("/(tabs)/dashboard");
+          router.replace("/(tabs)/(user)/dashboard");
         }
       } else if (user.role !== "admin" && isAdminRoute) {
-        router.replace("/(tabs)/dashboard");
+        router.replace("/(tabs)/(user)/dashboard");
       }
     }
   }, [isAuthenticated, user, isLoading, segments, router, rootNavigationState]);
