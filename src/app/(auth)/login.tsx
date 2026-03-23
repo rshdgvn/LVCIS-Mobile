@@ -2,17 +2,17 @@ import { api } from "@/src/api/api";
 import VerifyEmailModal from "@/src/components/auth/VerifyEmailModal";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import LoginScreen from "@/src/screens/auth/LoginScreen";
 import { authService } from "@/src/services/authService";
 import { LoginPayload } from "@/src/types/auth";
 import { AuthScreen } from "@/src/types/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, View } from "react-native";
 
 const Login = () => {
-  const router = useRouter();
+  const router = useThrottledRouter();
   const { signIn } = useAuth();
   const { promptGoogleAuth } = useGoogleAuth();
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);

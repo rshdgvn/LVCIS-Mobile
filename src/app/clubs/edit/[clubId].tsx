@@ -1,12 +1,13 @@
 import { useClubDetails, useClubMutations } from "@/src/hooks/useClubs";
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import ClubEditScreen from "@/src/screens/private/clubs/ClubEditScreen";
 import { ClubPayload } from "@/src/types/club";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { ActivityIndicator, Alert, Text, View } from "react-native";
 
 export default function EditClubRoute() {
-  const router = useRouter();
+  const router = useThrottledRouter();
   const { clubId } = useLocalSearchParams<{ clubId: string }>();
 
   const { data: club, isLoading, isError } = useClubDetails(Number(clubId));

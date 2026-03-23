@@ -2,7 +2,7 @@ import { ClubApplicationsTab } from "@/src/components/clubs/ClubApplicationsTab"
 import { ClubDetailsTab } from "@/src/components/clubs/ClubDetailsTab";
 import { ClubMembersTab } from "@/src/components/clubs/ClubMembersTab";
 import { BackButton } from "@/src/components/common/BackButton";
-import { useTheme } from "@/src/hooks/useTheme"; // Adjust path if needed
+import { useTheme } from "@/src/hooks/useTheme"; 
 import { Club } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";

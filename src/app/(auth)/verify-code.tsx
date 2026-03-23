@@ -1,13 +1,14 @@
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import VerifyCodeScreen from "@/src/screens/auth/VerifyCodeScreen";
 import { authService } from "@/src/services/authService";
 import { useMutation } from "@tanstack/react-query";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { Alert } from "react-native";
 
 export default function VerifyCode() {
   const { email } = useLocalSearchParams<{ email: string }>();
-  const router = useRouter();
+  const router = useThrottledRouter();
 
   const verifyMutation = useMutation({
     mutationFn: (code: string) => authService.verifyResetCode(email, code),
@@ -29,7 +30,8 @@ export default function VerifyCode() {
       Alert.alert("Sent!", "A new code has been sent to your email.");
     },
     onError: (error: any) => {
-      const msg = error.response?.data?.message || "Please wait before resending.";
+      const msg =
+        error.response?.data?.message || "Please wait before resending.";
       Alert.alert("Error", msg);
     },
   });

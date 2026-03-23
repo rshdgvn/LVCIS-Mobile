@@ -2,13 +2,13 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import MainScreen from "@/src/screens/public/MainScreen";
 import { CustomSplashScreen } from "@/src/screens/public/SplashScreen";
 import { AuthScreen } from "@/src/types/navigation";
-import { useRouter } from "expo-router";
 import { AnimatePresence, MotiView } from "moti";
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
+import { useThrottledRouter } from "../hooks/useThrottledRouter";
 
 export default function App() {
-  const router = useRouter();
+  const router = useThrottledRouter();
   const [isSplashVisible, setSplashVisible] = useState(true);
 
   const { isAuthenticated, isLoading } = useAuth();

@@ -5,7 +5,7 @@ import {
   showViewFilterAlert,
 } from "@/src/helpers/clubFilters";
 import { ClubViewFilter } from "@/src/hooks/useClubs";
-import { useTheme } from "@/src/hooks/useTheme"; // Adjust path if needed
+import { useTheme } from "@/src/hooks/useTheme"; 
 import { Club, ClubCategory } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";

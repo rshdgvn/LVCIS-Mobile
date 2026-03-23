@@ -1,14 +1,14 @@
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import RegisterScreen from "@/src/screens/auth/RegisterScreen";
 import { authService } from "@/src/services/authService";
 import { RegisterPayload } from "@/src/types/auth";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert } from "react-native";
 
 const Register = () => {
-  const router = useRouter();
+  const router = useThrottledRouter();
   const { promptGoogleAuth } = useGoogleAuth();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 

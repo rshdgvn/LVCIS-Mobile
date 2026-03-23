@@ -1,5 +1,5 @@
 import { BackButton } from "@/src/components/common/BackButton";
-import { useTheme } from "@/src/hooks/useTheme"; // Adjust path if needed
+import { useTheme } from "@/src/hooks/useTheme"; 
 import { Club, ClubPayload } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";

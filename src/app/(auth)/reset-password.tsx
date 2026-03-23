@@ -1,7 +1,8 @@
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import ResetPasswordScreen from "@/src/screens/auth/ResetPasswordScreen";
 import { authService } from "@/src/services/authService";
 import { useMutation } from "@tanstack/react-query";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { Alert } from "react-native";
 
@@ -10,7 +11,7 @@ export default function ResetPassword() {
     email: string;
     code: string;
   }>();
-  const router = useRouter();
+  const router = useThrottledRouter();
 
   const mutation = useMutation({
     mutationFn: (data: { password: string; password_confirmation: string }) =>

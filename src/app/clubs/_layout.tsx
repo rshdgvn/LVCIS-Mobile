@@ -7,7 +7,7 @@ export default function ClubsRootLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "transparent" },
-        animation: "fade",
+        animation: "none",
       }}
     />
   );
