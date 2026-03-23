@@ -21,11 +21,20 @@ export const clubService = {
     return response.data.club;
   },
 
-  updateClub: async (id: number, data: ClubPayload) => {
+  updateClub: async (id: number, data: ClubPayload | FormData) => {
     const response = await api.put<{ message: string; club: Club }>(
       `/clubs/${id}`,
       data,
+      {
+        headers: {
+          "Content-Type":
+            data instanceof FormData
+              ? "multipart/form-data"
+              : "application/json",
+        },
+      },
     );
+    console.log("test", response.data.club);
     return response.data.club;
   },
 

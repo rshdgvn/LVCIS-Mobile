@@ -1,3 +1,7 @@
+import { ClubApplicationsTab } from "@/src/components/clubs/ClubApplicationsTab";
+import { ClubDetailsTab } from "@/src/components/clubs/ClubDetailsTab";
+import { ClubMembersTab } from "@/src/components/clubs/ClubMembersTab";
+import { BackButton } from "@/src/components/common/BackButton";
 import { Club } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -10,21 +14,22 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BackButton } from "@/src/components/common/BackButton";
-import { ClubDetailsTab } from "@/src/components/clubs/ClubDetailsTab";
-import { ClubMembersTab } from "@/src/components/clubs/ClubMembersTab";
-import { ClubApplicationsTab } from "@/src/components/clubs/ClubApplicationsTab";
 
 interface Props {
   club: Club | undefined;
   isLoading: boolean;
   onBack: () => void;
-  onEdit: () => void;
+  onEdit: (clubId: number) => void;
 }
 
 type TabType = "details" | "members" | "applications";
 
-export default function ClubDetailsScreen({ club, isLoading, onBack, onEdit }: Props) {
+export default function ClubDetailsScreen({
+  club,
+  isLoading,
+  onBack,
+  onEdit,
+}: Props) {
   const [activeTab, setActiveTab] = useState<TabType>("details");
 
   if (isLoading) {
@@ -67,16 +72,23 @@ export default function ClubDetailsScreen({ club, isLoading, onBack, onEdit }: P
               </Text>
             </View>
             <Text className="text-gray-400 text-xs">
-              •  {club.approved_users_count || 0} active members
+              • {club.approved_users_count || 0} active members
             </Text>
           </View>
 
           <TouchableOpacity
-            className="bg-blue-500 w-full py-3.5 rounded-xl items-center flex-row justify-center mt-6 shadow-sm"
-            onPress={onEdit}
+            className="bg-primary w-full py-3.5 rounded-xl items-center flex-row justify-center mt-6 shadow-sm"
+            onPress={() => onEdit(club.id)}
           >
-            <Ionicons name="create-outline" size={18} color="white" className="mr-2" />
-            <Text className="text-white font-semibold ml-2">Edit Club Profile</Text>
+            <Ionicons
+              name="create-outline"
+              size={18}
+              color="white"
+              className="mr-2"
+            />
+            <Text className="text-white font-semibold ml-2">
+              Edit Club Profile
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -85,7 +97,9 @@ export default function ClubDetailsScreen({ club, isLoading, onBack, onEdit }: P
             className={`pb-3 mr-6 ${activeTab === "details" ? "border-b-2 border-blue-500" : ""}`}
             onPress={() => setActiveTab("details")}
           >
-            <Text className={`font-semibold ${activeTab === "details" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
+            <Text
+              className={`font-semibold ${activeTab === "details" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}
+            >
               Details
             </Text>
           </TouchableOpacity>
@@ -94,7 +108,9 @@ export default function ClubDetailsScreen({ club, isLoading, onBack, onEdit }: P
             className={`pb-3 mr-6 ${activeTab === "members" ? "border-b-2 border-blue-500" : ""}`}
             onPress={() => setActiveTab("members")}
           >
-            <Text className={`font-semibold ${activeTab === "members" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
+            <Text
+              className={`font-semibold ${activeTab === "members" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}
+            >
               Members
             </Text>
           </TouchableOpacity>
@@ -103,10 +119,12 @@ export default function ClubDetailsScreen({ club, isLoading, onBack, onEdit }: P
             className={`pb-3 flex-row items-center ${activeTab === "applications" ? "border-b-2 border-blue-500" : ""}`}
             onPress={() => setActiveTab("applications")}
           >
-            <Text className={`font-semibold ${activeTab === "applications" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
+            <Text
+              className={`font-semibold ${activeTab === "applications" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}
+            >
               Applications
             </Text>
-            
+
             {(club.pending_applications_count || 0) > 0 && (
               <View className="w-2 h-2 rounded-full bg-red-500 ml-1 mb-3" />
             )}
@@ -114,7 +132,9 @@ export default function ClubDetailsScreen({ club, isLoading, onBack, onEdit }: P
         </View>
 
         <View className="px-5 mt-4 mb-10">
-          {activeTab === "details" && <ClubDetailsTab description={club.description} />}
+          {activeTab === "details" && (
+            <ClubDetailsTab description={club.description} />
+          )}
           {activeTab === "members" && <ClubMembersTab />}
           {activeTab === "applications" && <ClubApplicationsTab />}
         </View>

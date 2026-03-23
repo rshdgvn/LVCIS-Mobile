@@ -1,3 +1,9 @@
+import { ClubCard } from "@/src/components/clubs/ClubCard";
+import {
+  getFilterLabel,
+  showCategoryFilterAlert,
+  showViewFilterAlert,
+} from "@/src/helpers/clubFilters";
 import { ClubViewFilter } from "@/src/hooks/useClubs";
 import { Club, ClubCategory } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,12 +16,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ClubCard } from "@/src/components/clubs/ClubCard";
-import {
-  getFilterLabel,
-  showCategoryFilterAlert,
-  showViewFilterAlert,
-} from "@/src/helpers/clubFilters";
 
 interface Props {
   clubs: Club[] | undefined;
@@ -38,7 +38,6 @@ export default function ClubsScreen({
 }: Props) {
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-dark-bg px-5 pt-4">
-      {/* Header */}
       <View className="flex-row justify-between items-center mb-6">
         <View>
           <Text className="text-gray-500 text-lg">Welcome to,</Text>
@@ -53,7 +52,9 @@ export default function ClubsScreen({
           className="border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 flex-row items-center max-w-[200px]"
           onPress={() => showCategoryFilterAlert(onSelectCategory)}
         >
-          <Text className="text-gray-500 dark:text-gray-400 mr-1">Category:</Text>
+          <Text className="text-gray-500 dark:text-gray-400 mr-1">
+            Category:
+          </Text>
           <Text
             className="text-blue-500 font-semibold capitalize flex-shrink"
             numberOfLines={1}
@@ -61,7 +62,12 @@ export default function ClubsScreen({
           >
             {selectedCategory ? selectedCategory.replace(/_/g, " ") : "All"}
           </Text>
-          <Ionicons name="chevron-down" size={16} color="#3b82f6" style={{ marginLeft: 5 }} />
+          <Ionicons
+            name="chevron-down"
+            size={16}
+            color="#3b82f6"
+            style={{ marginLeft: 5 }}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -88,7 +94,7 @@ export default function ClubsScreen({
             </Text>
           }
           renderItem={({ item }) => (
-            <ClubCard club={item} onAccessClub={onAccessClub} /> 
+            <ClubCard club={item} onAccessClub={onAccessClub} />
           )}
         />
       )}
