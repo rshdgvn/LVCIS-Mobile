@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Href, useLocalSearchParams, useRouter } from "expo-router";
 import { useClubDetails } from "@/src/hooks/useClubs";
 import ClubDetailsScreen from "@/src/screens/private/clubs/ClubDetailsScreen";
 import { View, Text } from "react-native";
@@ -18,12 +18,16 @@ export default function ClubDetailsRoute() {
     );
   }
 
+  const handleEditClub = (clubId: number) => {
+    router.push(`/clubs/edit/${clubId}` as Href)
+  }
+
   return (
     <ClubDetailsScreen 
       club={club} 
       isLoading={isLoading} 
       onBack={() => router.back()} 
-      onEdit={() => console.log("Edit")} 
+      onEdit={handleEditClub}
     />
   );
 }
