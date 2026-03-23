@@ -20,7 +20,7 @@ export interface Club {
 export interface ClubPayload {
   name: string;
   category: ClubCategory | string;
-  description?: string;
+  description?: string | undefined;
   adviser?: string;
   logo?: string;
 }

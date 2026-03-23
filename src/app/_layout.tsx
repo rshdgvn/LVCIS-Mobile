@@ -49,7 +49,7 @@ function InitialLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "transparent" },
-        animation: "fade",
+        animation: "none",
       }}
     />
   );

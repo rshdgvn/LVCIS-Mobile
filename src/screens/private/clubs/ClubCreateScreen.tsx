@@ -1,4 +1,5 @@
 import { BackButton } from "@/src/components/common/BackButton";
+import { useTheme } from "@/src/hooks/useTheme"; // Adjust path if needed
 import { ClubPayload } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -25,6 +26,7 @@ export default function ClubCreateScreen({
   onBack,
   onSubmit,
 }: Props) {
+  const { mutedFgColor } = useTheme();
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
@@ -50,14 +52,14 @@ export default function ClubCreateScreen({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-dark-bg">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         <View className="flex-row items-center px-5 py-4">
           <BackButton onPress={onBack} />
-          <Text className="flex-1 text-center text-lg font-semibold text-gray-500 mr-10">
+          <Text className="flex-1 text-center text-lg font-semibold text-muted-fg dark:text-dark-muted-fg mr-10">
             Create Club
           </Text>
         </View>
@@ -68,64 +70,64 @@ export default function ClubCreateScreen({
         >
           <View className="px-5 space-y-5">
             <View>
-              <Text className="text-gray-700 dark:text-gray-300 text-sm mb-2">
+              <Text className="text-foreground dark:text-dark-fg text-sm mb-2">
                 Club Name
               </Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
                 placeholder="Enter club name"
-                placeholderTextColor="#9ca3af"
-                className="border border-blue-500 dark:border-blue-400 rounded-xl px-4 py-3 text-gray-900 dark:text-white bg-white dark:bg-gray-900 text-base"
+                placeholderTextColor={mutedFgColor}
+                className="border border-primary dark:border-dark-primary rounded-xl px-4 py-3 text-foreground dark:text-dark-fg bg-background dark:bg-dark-input text-base"
               />
             </View>
 
             <View>
-              <Text className="text-gray-700 dark:text-gray-300 text-sm mb-2">
+              <Text className="text-foreground dark:text-dark-fg text-sm mb-2">
                 Category
               </Text>
               <TouchableOpacity
                 onPress={handleCategoryPress}
-                className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 bg-white dark:bg-gray-900 flex-row justify-between items-center"
+                className="border border-input dark:border-dark-input rounded-xl px-4 py-3 bg-background dark:bg-dark-input flex-row justify-between items-center"
               >
                 <Text
                   className={
                     category
-                      ? "text-gray-900 dark:text-white text-base"
-                      : "text-gray-400 text-base"
+                      ? "text-foreground dark:text-dark-fg text-base"
+                      : "text-muted-fg dark:text-dark-muted-fg text-base"
                   }
                 >
                   {category || "Select a category"}
                 </Text>
-                <Ionicons name="chevron-down" size={20} color="#6b7280" />
+                <Ionicons name="chevron-down" size={20} color={mutedFgColor} />
               </TouchableOpacity>
             </View>
 
             <View>
-              <Text className="text-gray-700 dark:text-gray-300 text-sm mb-2">
+              <Text className="text-foreground dark:text-dark-fg text-sm mb-2">
                 Club Description
               </Text>
               <TextInput
                 value={description}
                 onChangeText={setDescription}
                 placeholder="Write a short description..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={mutedFgColor}
                 multiline={true}
                 numberOfLines={5}
                 textAlignVertical="top"
-                className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white bg-white dark:bg-gray-900 text-base h-32"
+                className="border border-input dark:border-dark-input rounded-xl px-4 py-3 text-foreground dark:text-dark-fg bg-background dark:bg-dark-input text-base h-32"
               />
             </View>
           </View>
         </ScrollView>
 
-        <View className="px-5 py-4 border-t border-gray-100 dark:border-gray-800">
+        <View className="px-5 py-4 border-t border-border dark:border-dark-border">
           <TouchableOpacity
             onPress={handleSave}
             disabled={isCreating}
-            className={`${isCreating ? "bg-blue-400" : "bg-blue-600"} py-4 rounded-xl items-center`}
+            className={`py-4 rounded-xl items-center bg-primary dark:bg-dark-primary ${isCreating ? "opacity-50" : "opacity-100"}`}
           >
-            <Text className="text-white font-bold text-lg">
+            <Text className="text-primary-fg dark:text-dark-primary-fg font-bold text-lg">
               {isCreating ? "Creating..." : "Create Club"}
             </Text>
           </TouchableOpacity>

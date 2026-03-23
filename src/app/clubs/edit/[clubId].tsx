@@ -1,9 +1,9 @@
 import { useClubDetails, useClubMutations } from "@/src/hooks/useClubs";
+import ClubEditScreen from "@/src/screens/private/clubs/ClubEditScreen";
 import { ClubPayload } from "@/src/types/club";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, Alert, Text, View } from "react-native";
-import ClubEditScreen from "@/src/screens/private/clubs/ClubEditScreen";
 
 export default function EditClubRoute() {
   const router = useRouter();
@@ -12,9 +12,27 @@ export default function EditClubRoute() {
   const { data: club, isLoading, isError } = useClubDetails(Number(clubId));
   const { updateClub, isUpdating } = useClubMutations();
 
-  const handleUpdate = async (formData: ClubPayload) => {
+  const handleUpdate = async (formData: ClubPayload & { logoUri?: string }) => {
+    let payload: ClubPayload | FormData;
+
+    if (formData.logoUri) {
+      const form = new FormData();
+      form.append("name", formData.name);
+      form.append("category", formData.category);
+      form.append("description", formData.description ?? "");
+      form.append("logo", {
+        uri: formData.logoUri,
+        type: "image/jpeg",
+        name: "logo.jpg",
+      } as any);
+      payload = form;
+    } else {
+      const { logoUri, ...rest } = formData;
+      payload = rest;
+    }
+
     try {
-      await updateClub({ id: Number(clubId), data: formData });
+      await updateClub({ id: Number(clubId), data: payload });
       Alert.alert("Success", "Club updated successfully!");
       router.back();
     } catch (error) {
