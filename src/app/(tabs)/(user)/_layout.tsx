@@ -30,16 +30,16 @@ export default function TabsLayout() {
   const handleTabPress = (tab: Tab) => {
     switch (tab) {
       case "Home":
-        router.push("/(tabs)/dashboard");
+        router.push("/dashboard");
         break;
       case "Attendance":
-        router.push("/(tabs)/attendance");
+        router.push("/attendance");
         break;
       case "Clubs":
-        router.push("/(tabs)/clubs");
+        router.push("/clubs");
         break;
       case "Events":
-        router.push("/(tabs)/events");
+        router.push("/events");
         break;
     }
   };
