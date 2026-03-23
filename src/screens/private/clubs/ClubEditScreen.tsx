@@ -1,7 +1,8 @@
 import { BackButton } from "@/src/components/common/BackButton";
+import { useTheme } from "@/src/hooks/useTheme"; 
 import { Club, ClubPayload } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker"; 
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
   Alert,
@@ -29,10 +30,10 @@ export default function ClubEditScreen({
   onBack,
   onSubmit,
 }: Props) {
+  const { mutedFgColor, bgColor } = useTheme();
   const [name, setName] = useState(club.name);
   const [category, setCategory] = useState(club.category);
   const [description, setDescription] = useState(club.description);
-
   const [logoUri, setLogoUri] = useState<string | null>(club.logo_url || null);
 
   const handleCategoryPress = () => {
@@ -64,8 +65,8 @@ export default function ClubEditScreen({
     });
 
     if (!result.canceled) {
-      setLogoUri(result.assets[0].uri);
-      console.log("aaa", logoUri);
+      const uri = result.assets[0].uri;
+      setLogoUri(uri);
     }
   };
 
@@ -83,14 +84,14 @@ export default function ClubEditScreen({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-dark-bg">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         <View className="flex-row items-center px-5 py-4">
           <BackButton onPress={onBack} />
-          <Text className="flex-1 text-center text-lg font-semibold text-gray-500 mr-10">
+          <Text className="flex-1 text-center text-lg font-semibold text-muted-fg dark:text-dark-muted-fg mr-10">
             Edit Club
           </Text>
         </View>
@@ -103,52 +104,52 @@ export default function ClubEditScreen({
             <View className="relative">
               <Image
                 source={{ uri: logoUri || "https://via.placeholder.com/150" }}
-                className="w-24 h-24 rounded-full border-2 border-gray-200"
+                className="w-24 h-24 rounded-full border-2 border-border dark:border-dark-border"
               />
               <TouchableOpacity
                 onPress={handlePickImage}
-                className="absolute bottom-0 right-0 bg-gray-800 w-8 h-8 rounded-full items-center justify-center border-2 border-white z-10"
+                className="absolute bottom-0 right-0 bg-foreground dark:bg-dark-fg w-8 h-8 rounded-full items-center justify-center border-2 border-background dark:border-dark-bg z-10"
               >
-                <Ionicons name="camera" size={14} color="white" />
+                <Ionicons name="camera" size={18} color={bgColor} />
               </TouchableOpacity>
             </View>
-            <Text className="text-xl font-bold text-gray-900 dark:text-white mt-4">
+            <Text className="text-xl font-bold text-foreground dark:text-dark-fg mt-4">
               {name}
             </Text>
-            <Text className="text-gray-400 text-xs mt-1">
+            <Text className="text-muted-fg dark:text-dark-muted-fg text-xs mt-1">
               • {club.approved_users_count || 0} active members
             </Text>
           </View>
 
           <View className="px-5 space-y-5">
             <View>
-              <Text className="text-gray-700 dark:text-gray-300 text-sm mb-2">
+              <Text className="text-foreground dark:text-dark-fg text-sm mb-2">
                 Club Name
               </Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
-                className="border border-blue-500 dark:border-blue-400 rounded-xl px-4 py-3 text-gray-900 dark:text-white bg-white dark:bg-gray-900 text-base"
+                className="border border-primary dark:border-dark-primary rounded-xl px-4 py-3 text-foreground dark:text-dark-fg bg-background dark:bg-dark-input text-base"
               />
             </View>
 
             <View>
-              <Text className="text-gray-700 dark:text-gray-300 text-sm mb-2">
+              <Text className="text-foreground dark:text-dark-fg text-sm mb-2">
                 Category
               </Text>
               <TouchableOpacity
                 onPress={handleCategoryPress}
-                className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 bg-white dark:bg-gray-900 flex-row justify-between items-center"
+                className="border border-input dark:border-dark-input rounded-xl px-4 py-3 bg-background dark:bg-dark-input flex-row justify-between items-center"
               >
-                <Text className="text-gray-900 dark:text-white text-base">
+                <Text className="text-foreground dark:text-dark-fg text-base">
                   {category}
                 </Text>
-                <Ionicons name="chevron-down" size={20} color="#6b7280" />
+                <Ionicons name="chevron-down" size={20} color={mutedFgColor} />
               </TouchableOpacity>
             </View>
 
             <View>
-              <Text className="text-gray-700 dark:text-gray-300 text-sm mb-2">
+              <Text className="text-foreground dark:text-dark-fg text-sm mb-2">
                 Club Description
               </Text>
               <TextInput
@@ -157,19 +158,19 @@ export default function ClubEditScreen({
                 multiline={true}
                 numberOfLines={5}
                 textAlignVertical="top"
-                className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white bg-white dark:bg-gray-900 text-base h-32"
+                className="border border-input dark:border-dark-input rounded-xl px-4 py-3 text-foreground dark:text-dark-fg bg-background dark:bg-dark-input text-base h-32"
               />
             </View>
           </View>
         </ScrollView>
 
-        <View className="px-5 py-4 border-t border-gray-100 dark:border-gray-800">
+        <View className="px-5 py-4 border-t border-border dark:border-dark-border">
           <TouchableOpacity
             onPress={handleSave}
             disabled={isUpdating}
-            className={`${isUpdating ? "bg-blue-400" : "bg-blue-600"} py-4 rounded-xl items-center`}
+            className={`py-4 rounded-xl items-center bg-primary dark:bg-dark-primary ${isUpdating ? "opacity-50" : "opacity-100"}`}
           >
-            <Text className="text-white font-bold text-lg">
+            <Text className="text-primary-fg dark:text-dark-primary-fg font-bold text-lg">
               {isUpdating ? "Saving..." : "Save Changes"}
             </Text>
           </TouchableOpacity>

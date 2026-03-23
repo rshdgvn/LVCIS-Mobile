@@ -1,21 +1,17 @@
 import "@/global.css";
 import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  Stack,
-  useRootNavigationState,
-  useRouter,
-  useSegments,
-} from "expo-router";
+import { Stack, useRootNavigationState, useSegments } from "expo-router";
 import React, { useEffect } from "react";
 import { View } from "react-native";
+import { useThrottledRouter } from "../hooks/useThrottledRouter";
 
 const queryClient = new QueryClient();
 
 function InitialLayout() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const segments = useSegments();
-  const router = useRouter();
+  const router = useThrottledRouter();
 
   const rootNavigationState = useRootNavigationState();
 
@@ -49,7 +45,7 @@ function InitialLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "transparent" },
-        animation: "fade",
+        animation: "none",
       }}
     />
   );

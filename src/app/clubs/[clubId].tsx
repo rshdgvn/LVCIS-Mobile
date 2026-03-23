@@ -1,12 +1,13 @@
-import React from "react";
-import { Href, useLocalSearchParams, useRouter } from "expo-router";
 import { useClubDetails } from "@/src/hooks/useClubs";
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import ClubDetailsScreen from "@/src/screens/private/clubs/ClubDetailsScreen";
-import { View, Text } from "react-native";
+import { Href, useLocalSearchParams } from "expo-router";
+import React from "react";
+import { Text, View } from "react-native";
 
 export default function ClubDetailsRoute() {
   const { clubId } = useLocalSearchParams<{ clubId: string }>();
-  const router = useRouter();
+  const router = useThrottledRouter();
 
   const { data: club, isLoading, isError } = useClubDetails(Number(clubId));
 
@@ -19,14 +20,14 @@ export default function ClubDetailsRoute() {
   }
 
   const handleEditClub = (clubId: number) => {
-    router.push(`/clubs/edit/${clubId}` as Href)
-  }
+    router.push(`/clubs/edit/${clubId}` as Href);
+  };
 
   return (
-    <ClubDetailsScreen 
-      club={club} 
-      isLoading={isLoading} 
-      onBack={() => router.back()} 
+    <ClubDetailsScreen
+      club={club}
+      isLoading={isLoading}
+      onBack={() => router.back()}
       onEdit={handleEditClub}
     />
   );

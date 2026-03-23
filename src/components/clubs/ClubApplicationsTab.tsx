@@ -1,7 +1,10 @@
-import { View, Text } from "react-native";
+import React from "react";
+import { Text, View } from "react-native";
 
 export const ClubApplicationsTab = () => (
   <View className="py-10 items-center">
-    <Text className="text-gray-400">Pending applications will go here!</Text>
+    <Text className="text-muted-fg dark:text-dark-muted-fg">
+      Pending applications will go here!
+    </Text>
   </View>
 );

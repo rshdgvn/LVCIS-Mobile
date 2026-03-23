@@ -22,7 +22,11 @@ export const clubService = {
   },
 
   updateClub: async (id: number, data: ClubPayload | FormData) => {
-    const response = await api.put<{ message: string; club: Club }>(
+    if (data instanceof FormData) {
+      data.append("_method", "PUT");
+    }
+
+    const response = await api.post<{ message: string; club: Club }>(
       `/clubs/${id}`,
       data,
       {
@@ -34,7 +38,6 @@ export const clubService = {
         },
       },
     );
-    console.log("test", response.data.club);
     return response.data.club;
   },
 

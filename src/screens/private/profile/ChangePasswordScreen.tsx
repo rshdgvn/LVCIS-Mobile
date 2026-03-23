@@ -1,16 +1,16 @@
 import { BackButton } from "@/src/components/common/BackButton";
 import { InputField } from "@/src/components/common/InputField";
 import PrimaryButton from "@/src/components/common/PrimaryButton";
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import { userService } from "@/src/services/userService";
 import { evaluatePasswordStrength } from "@/src/utils/passwordUtils";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ChangePasswordScreen = () => {
-  const router = useRouter();
+  const router = useThrottledRouter();
   const [form, setForm] = useState({
     current_password: "",
     new_password: "",

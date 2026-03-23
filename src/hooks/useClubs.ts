@@ -57,7 +57,7 @@ export const useClubMutations = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ClubPayload }) =>
+    mutationFn: ({ id, data }: { id: number; data: ClubPayload | FormData }) =>
       clubService.updateClub(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["clubs"] });
@@ -75,7 +75,10 @@ export const useClubMutations = () => {
   return {
     createClub: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
-    updateClub: updateMutation.mutateAsync,
+    updateClub: updateMutation.mutateAsync as (args: {
+      id: number;
+      data: ClubPayload | FormData;
+    }) => Promise<Club>,
     isUpdating: updateMutation.isPending,
     deleteClub: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,

@@ -4,11 +4,13 @@ import { InputField } from "@/src/components/common/InputField";
 import PrimaryButton from "@/src/components/common/PrimaryButton";
 import { COURSE_OPTIONS, YEAR_OPTIONS } from "@/src/constants/education";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { useTheme } from "@/src/hooks/useTheme";
 import { userService } from "@/src/services/userService";
+import { CourseType } from "@/src/types/course";
+import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { Camera } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Alert,
@@ -16,14 +18,14 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CourseType } from "@/src/types/course";
 
 const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { bgColor } = useTheme();
 
   const [form, setForm] = useState({
     first_name: user?.first_name || "",
@@ -106,7 +108,7 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
         contentContainerStyle={{ paddingHorizontal: 25, marginTop: 25 }}
       >
         <View className="items-center mb-6">
-          <TouchableOpacity onPress={pickImage} className="relative">
+          <View className="relative">
             <Image
               source={{
                 uri:
@@ -116,10 +118,13 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
               }}
               className="w-32 h-32 rounded-full"
             />
-            <View className="absolute bottom-0 right-0 bg-black p-2 rounded-full border-2 border-white">
-              <Camera size={16} color="white" />
-            </View>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={pickImage}
+              className="absolute bottom-0 right-0 bg-foreground dark:bg-dark-fg w-8 h-8 rounded-full items-center justify-center border-2 border-background dark:border-dark-bg z-10"
+            >
+              <Ionicons name="camera" size={18} color={bgColor} />
+            </TouchableOpacity>
+          </View>
           <Text className="text-xl font-bold mt-4 text-foreground dark:text-dark-fg">
             {form.first_name} {form.last_name}
           </Text>

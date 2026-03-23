@@ -2,6 +2,7 @@ import { ClubApplicationsTab } from "@/src/components/clubs/ClubApplicationsTab"
 import { ClubDetailsTab } from "@/src/components/clubs/ClubDetailsTab";
 import { ClubMembersTab } from "@/src/components/clubs/ClubMembersTab";
 import { BackButton } from "@/src/components/common/BackButton";
+import { useTheme } from "@/src/hooks/useTheme"; 
 import { Club } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -30,12 +31,13 @@ export default function ClubDetailsScreen({
   onBack,
   onEdit,
 }: Props) {
+  const { primaryColor, mutedFgColor } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>("details");
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-white dark:bg-dark-bg">
-        <ActivityIndicator size="large" color="#3b82f6" />
+      <SafeAreaView className="flex-1 justify-center items-center bg-background dark:bg-dark-bg">
+        <ActivityIndicator size="large" color={primaryColor} />
       </SafeAreaView>
     );
   }
@@ -43,14 +45,14 @@ export default function ClubDetailsScreen({
   if (!club) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-dark-bg">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <View className="flex-row justify-between items-center px-5 pt-2 pb-4">
         <BackButton onPress={onBack} />
-        <Text className="text-lg font-semibold text-gray-500 dark:text-gray-400">
+        <Text className="text-lg font-semibold text-muted-fg dark:text-dark-muted-fg">
           Club Profile
         </Text>
         <TouchableOpacity className="w-12 h-12 items-center justify-center">
-          <Ionicons name="ellipsis-horizontal" size={24} color="#6b7280" />
+          <Ionicons name="ellipsis-horizontal" size={24} color={mutedFgColor} />
         </TouchableOpacity>
       </View>
 
@@ -58,75 +60,75 @@ export default function ClubDetailsScreen({
         <View className="items-center mt-4 px-5">
           <Image
             source={{ uri: club.logo_url || "https://via.placeholder.com/150" }}
-            className="w-24 h-24 rounded-full border border-gray-200 bg-gray-50"
+            className="w-24 h-24 rounded-full border border-border dark:border-dark-border bg-muted dark:bg-dark-muted"
             resizeMode="contain"
           />
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mt-4 text-center">
+          <Text className="text-xl font-bold text-foreground dark:text-dark-fg mt-4 text-center">
             {club.name}
           </Text>
 
           <View className="flex-row items-center mt-2">
-            <View className="bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full mr-2">
-              <Text className="text-blue-500 dark:text-blue-400 text-[10px] font-bold uppercase">
+            <View className="bg-primary/10 dark:bg-dark-primary/20 px-3 py-1 rounded-full mr-2">
+              <Text className="text-primary dark:text-dark-primary text-[10px] font-bold uppercase">
                 {club.category.replace(/_/g, " ")}
               </Text>
             </View>
-            <Text className="text-gray-400 text-xs">
+            <Text className="text-muted-fg dark:text-dark-muted-fg text-xs">
               • {club.approved_users_count || 0} active members
             </Text>
           </View>
 
           <TouchableOpacity
-            className="bg-primary w-full py-3.5 rounded-xl items-center flex-row justify-center mt-6 shadow-sm"
+            className="bg-primary dark:bg-dark-primary w-full py-3.5 rounded-xl items-center flex-row justify-center mt-6 shadow-sm"
             onPress={() => onEdit(club.id)}
           >
             <Ionicons
               name="create-outline"
               size={18}
-              color="white"
+              color="#ffffff"
               className="mr-2"
             />
-            <Text className="text-white font-semibold ml-2">
+            <Text className="text-primary-fg dark:text-dark-primary-fg font-semibold ml-2">
               Edit Club Profile
             </Text>
           </TouchableOpacity>
         </View>
 
-        <View className="flex-row mt-8 px-5 border-b border-gray-200 dark:border-gray-800">
+        <View className="flex-row mt-8 px-5 border-b border-border dark:border-dark-border">
           <TouchableOpacity
-            className={`pb-3 mr-6 ${activeTab === "details" ? "border-b-2 border-blue-500" : ""}`}
+            className={`pb-3 mr-6 ${activeTab === "details" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
             onPress={() => setActiveTab("details")}
           >
             <Text
-              className={`font-semibold ${activeTab === "details" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}
+              className={`font-semibold ${activeTab === "details" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
             >
               Details
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            className={`pb-3 mr-6 ${activeTab === "members" ? "border-b-2 border-blue-500" : ""}`}
+            className={`pb-3 mr-6 ${activeTab === "members" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
             onPress={() => setActiveTab("members")}
           >
             <Text
-              className={`font-semibold ${activeTab === "members" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}
+              className={`font-semibold ${activeTab === "members" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
             >
               Members
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            className={`pb-3 flex-row items-center ${activeTab === "applications" ? "border-b-2 border-blue-500" : ""}`}
+            className={`pb-3 flex-row items-center ${activeTab === "applications" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
             onPress={() => setActiveTab("applications")}
           >
             <Text
-              className={`font-semibold ${activeTab === "applications" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}
+              className={`font-semibold ${activeTab === "applications" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
             >
               Applications
             </Text>
 
             {(club.pending_applications_count || 0) > 0 && (
-              <View className="w-2 h-2 rounded-full bg-red-500 ml-1 mb-3" />
+              <View className="w-2 h-2 rounded-full bg-destructive dark:bg-dark-destructive ml-1 mb-3" />
             )}
           </TouchableOpacity>
         </View>

@@ -5,15 +5,15 @@ import { AuthContextType, RegisterPayload } from "@/src/types/auth";
 import { User } from "@/src/types/user";
 import { TOKEN_KEY } from "@/src/utils/config";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect } from "react";
+import { useThrottledRouter } from "../hooks/useThrottledRouter";
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const router = useThrottledRouter();
 
   useEffect(() => {
     setUnauthorizedCallback(() => {

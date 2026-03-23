@@ -5,6 +5,7 @@ import {
   showViewFilterAlert,
 } from "@/src/helpers/clubFilters";
 import { ClubViewFilter } from "@/src/hooks/useClubs";
+import { useTheme } from "@/src/hooks/useTheme"; 
 import { Club, ClubCategory } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
@@ -36,12 +37,16 @@ export default function ClubsScreen({
   onSelectViewFilter,
   onAccessClub,
 }: Props) {
+  const { primaryColor } = useTheme();
+
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-dark-bg px-5 pt-4">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-5 pt-4">
       <View className="flex-row justify-between items-center mb-6">
         <View>
-          <Text className="text-gray-500 text-lg">Welcome to,</Text>
-          <Text className="text-2xl font-bold text-black dark:text-white">
+          <Text className="text-muted-fg dark:text-dark-muted-fg text-lg">
+            Welcome to,
+          </Text>
+          <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">
             Clubs
           </Text>
         </View>
@@ -49,14 +54,14 @@ export default function ClubsScreen({
 
       <View className="flex-row justify-between items-center mb-6">
         <TouchableOpacity
-          className="border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 flex-row items-center max-w-[200px]"
+          className="border border-border dark:border-dark-border rounded-xl px-3 py-2 flex-row items-center max-w-[200px]"
           onPress={() => showCategoryFilterAlert(onSelectCategory)}
         >
-          <Text className="text-gray-500 dark:text-gray-400 mr-1">
+          <Text className="text-muted-fg dark:text-dark-muted-fg mr-1">
             Category:
           </Text>
           <Text
-            className="text-blue-500 font-semibold capitalize flex-shrink"
+            className="text-primary dark:text-dark-primary font-semibold capitalize flex-shrink"
             numberOfLines={1}
             ellipsizeMode="tail"
           >
@@ -65,31 +70,35 @@ export default function ClubsScreen({
           <Ionicons
             name="chevron-down"
             size={16}
-            color="#3b82f6"
+            color={primaryColor}
             style={{ marginLeft: 5 }}
           />
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-blue-600 px-5 py-2.5 rounded-xl flex-row items-center"
+          className="bg-primary dark:bg-dark-primary px-5 py-2.5 rounded-xl flex-row items-center"
           onPress={() => showViewFilterAlert(onSelectViewFilter)}
         >
-          <Text className="text-white font-semibold mr-1">
+          <Text className="text-primary-fg dark:text-dark-primary-fg font-semibold mr-1">
             {getFilterLabel(viewFilter)}
           </Text>
-          <Ionicons name="chevron-down" size={14} color="white" />
+          <Ionicons name="chevron-down" size={14} color="#ffffff" />
         </TouchableOpacity>
       </View>
 
       {isLoading ? (
-        <ActivityIndicator size="large" color="#3b82f6" className="mt-10" />
+        <ActivityIndicator
+          size="large"
+          color={primaryColor}
+          className="mt-10"
+        />
       ) : (
         <FlatList
           data={clubs}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <Text className="text-center text-gray-500 mt-10">
+            <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
               No clubs found for this filter.
             </Text>
           }
