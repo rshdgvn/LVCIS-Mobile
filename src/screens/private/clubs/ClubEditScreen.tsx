@@ -30,7 +30,7 @@ export default function ClubEditScreen({
   onBack,
   onSubmit,
 }: Props) {
-  const { mutedFgColor } = useTheme();
+  const { mutedFgColor, bgColor } = useTheme();
   const [name, setName] = useState(club.name);
   const [category, setCategory] = useState(club.category);
   const [description, setDescription] = useState(club.description);
@@ -110,7 +110,7 @@ export default function ClubEditScreen({
                 onPress={handlePickImage}
                 className="absolute bottom-0 right-0 bg-foreground dark:bg-dark-fg w-8 h-8 rounded-full items-center justify-center border-2 border-background dark:border-dark-bg z-10"
               >
-                <Ionicons name="camera" size={14} color="#ffffff" />
+                <Ionicons name="camera" size={18} color={bgColor} />
               </TouchableOpacity>
             </View>
             <Text className="text-xl font-bold text-foreground dark:text-dark-fg mt-4">
