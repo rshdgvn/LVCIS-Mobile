@@ -138,7 +138,7 @@ export default function ClubDetailsScreen({
             <ClubDetailsTab description={club.description} />
           )}
           {activeTab === "members" && (
-            <ClubMembersTab clubId={club.id} members={club.users || []} />
+            <ClubMembersTab clubId={club.id} />
           )}
           {activeTab === "applications" && (
             <ClubApplicationsTab clubId={club.id} />
