@@ -1,4 +1,4 @@
-import { useTheme } from "@/src/hooks/useTheme"; // Adjust path if needed
+import { useTheme } from "@/src/hooks/useTheme";
 import { Club } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
@@ -6,12 +6,58 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 
 interface ClubCardProps {
   club: Club;
+  membershipStatus?: "approved" | "pending" | "rejected" | null;
   onAccessClub: (clubId: number) => void;
+  onApplyClub: (clubId: number) => void;
+  isApplying?: boolean;
 }
 
-export function ClubCard({ club, onAccessClub }: ClubCardProps) {
+export function ClubCard({
+  club,
+  membershipStatus,
+  onAccessClub,
+  onApplyClub,
+  isApplying = false,
+}: ClubCardProps) {
   const { mutedFgColor, primaryColor } = useTheme();
   const memberCount = club.approved_users_count || 0;
+
+  const renderActionButton = () => {
+    if (membershipStatus === "approved") {
+      return (
+        <TouchableOpacity
+          className="bg-primary/10 dark:bg-dark-primary/20 px-4 py-2 rounded-lg"
+          onPress={() => onAccessClub(club.id)}
+        >
+          <Text className="text-primary dark:text-dark-primary font-semibold text-sm">
+            Access Club
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (membershipStatus === "pending" || isApplying) {
+      return (
+        <View className="bg-orange-500/10 dark:bg-orange-500/20 px-4 py-2 rounded-lg opacity-80">
+          <Text className="text-orange-600 dark:text-orange-400 font-semibold text-sm">
+            {isApplying ? "Applying..." : "Pending"}
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        className="bg-primary dark:bg-dark-primary px-4 py-2 rounded-lg"
+        onPress={() => onApplyClub(club.id)}
+        disabled={isApplying}
+      >
+        <Text className="text-primary-fg dark:text-dark-primary-fg font-semibold text-sm">
+          Apply
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View className="border border-border dark:border-dark-border rounded-2xl p-4 mb-4 bg-card dark:bg-dark-card shadow-sm">
@@ -63,13 +109,11 @@ export function ClubCard({ club, onAccessClub }: ClubCardProps) {
                   <Ionicons name="person" size={14} color={primaryColor} />
                 </View>
               )}
-
               {memberCount >= 2 && (
                 <View className="w-8 h-8 rounded-full bg-primary/30 dark:bg-dark-primary/40 border-2 border-card dark:border-dark-card -ml-3 items-center justify-center">
                   <Ionicons name="person" size={14} color={primaryColor} />
                 </View>
               )}
-
               {memberCount > 2 && (
                 <View className="w-8 h-8 rounded-full bg-muted dark:bg-dark-muted border-2 border-card dark:border-dark-card -ml-3 items-center justify-center">
                   <Text className="text-[10px] text-muted-fg dark:text-dark-muted-fg font-bold">
@@ -81,14 +125,7 @@ export function ClubCard({ club, onAccessClub }: ClubCardProps) {
           )}
         </View>
 
-        <TouchableOpacity
-          className="bg-primary/10 dark:bg-dark-primary/20 px-4 py-2 rounded-lg"
-          onPress={() => onAccessClub(club.id)}
-        >
-          <Text className="text-primary dark:text-dark-primary font-semibold text-sm">
-            Access Club
-          </Text>
-        </TouchableOpacity>
+        {renderActionButton()}
       </View>
     </View>
   );

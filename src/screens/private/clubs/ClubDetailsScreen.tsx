@@ -2,7 +2,7 @@ import { ClubApplicationsTab } from "@/src/components/clubs/ClubApplicationsTab"
 import { ClubDetailsTab } from "@/src/components/clubs/ClubDetailsTab";
 import { ClubMembersTab } from "@/src/components/clubs/ClubMembersTab";
 import { BackButton } from "@/src/components/common/BackButton";
-import { useTheme } from "@/src/hooks/useTheme"; 
+import { useTheme } from "@/src/hooks/useTheme";
 import { Club } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -137,8 +137,12 @@ export default function ClubDetailsScreen({
           {activeTab === "details" && (
             <ClubDetailsTab description={club.description} />
           )}
-          {activeTab === "members" && <ClubMembersTab />}
-          {activeTab === "applications" && <ClubApplicationsTab />}
+          {activeTab === "members" && (
+            <ClubMembersTab clubId={club.id} members={club.users || []} />
+          )}
+          {activeTab === "applications" && (
+            <ClubApplicationsTab clubId={club.id} />
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

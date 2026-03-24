@@ -5,18 +5,22 @@ import {
   showViewFilterAlert,
 } from "@/src/helpers/clubFilters";
 import { ClubViewFilter } from "@/src/hooks/useClubs";
-import { useTheme } from "@/src/hooks/useTheme"; 
+import { useTheme } from "@/src/hooks/useTheme";
+import { clubService } from "@/src/services/clubService";
 import { Club, ClubCategory } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { membershipService } from "@/src/services/membershipService";
 
 interface Props {
   clubs: Club[] | undefined;
@@ -38,6 +42,60 @@ export default function ClubsScreen({
   onAccessClub,
 }: Props) {
   const { primaryColor } = useTheme();
+  const queryClient = useQueryClient();
+
+  const { data: membershipStatuses = {} } = useQuery({
+    queryKey: ["userMemberships"],
+    queryFn: async () => {
+      const [approvedClubs, pendingClubs] = await Promise.all([
+        clubService.getMyClubs(),
+        clubService.getMyPendingClubs(),
+      ]);
+
+      const statusMap: Record<number, "approved" | "pending" | "rejected"> = {};
+
+      approvedClubs.forEach((club) => {
+        statusMap[club.id] = "approved";
+      });
+
+      pendingClubs.forEach((club) => {
+        statusMap[club.id] = "pending";
+      });
+
+      return statusMap;
+    },
+  });
+
+  const applyMutation = useMutation({
+    mutationFn: async (clubId: number) => {
+      return await membershipService.joinClub(clubId, "member");
+    },
+    onMutate: async (clubId) => {
+      await queryClient.cancelQueries({ queryKey: ["userMemberships"] });
+      const previousStatuses = queryClient.getQueryData(["userMemberships"]);
+
+      queryClient.setQueryData(["userMemberships"], (old: any) => ({
+        ...old,
+        [clubId]: "pending",
+      }));
+
+      return { previousStatuses };
+    },
+    onError: (err, clubId, context) => {
+      queryClient.setQueryData(["userMemberships"], context?.previousStatuses);
+      Alert.alert(
+        "Error",
+        "Failed to apply to club. Check if your profile is complete.",
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["userMemberships"] });
+    },
+  });
+
+  const handleApplyClub = (clubId: number) => {
+    applyMutation.mutate(clubId);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-5 pt-4">
@@ -103,7 +161,15 @@ export default function ClubsScreen({
             </Text>
           }
           renderItem={({ item }) => (
-            <ClubCard club={item} onAccessClub={onAccessClub} />
+            <ClubCard
+              club={item}
+              membershipStatus={membershipStatuses[item.id] || null}
+              isApplying={
+                applyMutation.variables === item.id && applyMutation.isPending
+              }
+              onAccessClub={onAccessClub}
+              onApplyClub={handleApplyClub}
+            />
           )}
         />
       )}
