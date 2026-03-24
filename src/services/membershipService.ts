@@ -54,24 +54,37 @@ export const membershipService = {
     return response.data;
   },
 
+  addMember: async (
+    clubId: number,
+    data: { email: string; role: "member" | "officer"; officerTitle?: string },
+  ) => {
+    const response = await api.post(`/clubs/${clubId}/members/add`, {
+      add_by: "email",
+      email: data.email,
+      role: data.role,
+      officerTitle: data.officerTitle,
+    });
+    return response.data;
+  },
+
   removeMember: async (clubId: number, userId: number) => {
     const response = await api.delete(
       `/clubs/${clubId}/members/${userId}/remove`,
     );
     return response.data;
   },
-  
+
   updateMemberRole: async (
     clubId: number,
     userId: number,
-    data: { role: "member" | "officer"; officerTitle?: string }
+    data: { role: "member" | "officer"; officerTitle?: string },
   ) => {
     const response = await api.patch(
       `/clubs/${clubId}/members/${userId}/edit`,
       {
         role: data.role,
         officer_title: data.role === "officer" ? data.officerTitle : null,
-      }
+      },
     );
     return response.data;
   },
