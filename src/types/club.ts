@@ -18,6 +18,8 @@ export interface ClubMember {
   joined_at: string;
 }
 
+export type ClubViewFilter = "all" | "my" | "pending" | "other";
+
 export interface Club {
   id: number;
   name: string;

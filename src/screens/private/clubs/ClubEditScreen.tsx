@@ -1,6 +1,13 @@
 import { BackButton } from "@/src/components/common/BackButton";
-import { useTheme } from "@/src/hooks/useTheme"; 
-import { Club, ClubPayload } from "@/src/types/club";
+import { CustomDropdown } from "@/src/components/common/CustomDropdown";
+import { InputField } from "@/src/components/common/InputField";
+import {
+  CATEGORY_LABEL_MAP,
+  CATEGORY_OPTIONS,
+  CATEGORY_VALUE_MAP,
+} from "@/src/constants/clubOptions";
+import { useTheme } from "@/src/hooks/useTheme";
+import { Club, ClubCategory, ClubPayload } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
@@ -11,7 +18,6 @@ import {
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -30,23 +36,14 @@ export default function ClubEditScreen({
   onBack,
   onSubmit,
 }: Props) {
-  const { mutedFgColor, bgColor } = useTheme();
-  const [name, setName] = useState(club.name);
-  const [category, setCategory] = useState(club.category);
-  const [description, setDescription] = useState(club.description);
-  const [logoUri, setLogoUri] = useState<string | null>(club.logo_url || null);
+  const { bgColor } = useTheme();
 
-  const handleCategoryPress = () => {
-    Alert.alert("Select Category", "Choose a category:", [
-      { text: "Academics", onPress: () => setCategory("Academics") },
-      {
-        text: "Culture & Performing Arts",
-        onPress: () => setCategory("Culture & Performing Arts"),
-      },
-      { text: "Socio-Politics", onPress: () => setCategory("Socio-Politics") },
-      { text: "Cancel", style: "cancel" },
-    ]);
-  };
+  const [name, setName] = useState(club.name);
+  const [category, setCategory] = useState<ClubCategory>(
+    club.category as ClubCategory,
+  );
+  const [description, setDescription] = useState(club.description || "");
+  const [logoUri, setLogoUri] = useState<string | null>(club.logo_url || null);
 
   const handlePickImage = async () => {
     const permissionResult =
@@ -65,13 +62,12 @@ export default function ClubEditScreen({
     });
 
     if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      setLogoUri(uri);
+      setLogoUri(result.assets[0].uri);
     }
   };
 
   const handleSave = async () => {
-    if (!name || !category || !description) {
+    if (!name.trim() || !category || !description.trim()) {
       Alert.alert("Missing Info", "Please fill out all fields.");
       return;
     }
@@ -113,54 +109,42 @@ export default function ClubEditScreen({
                 <Ionicons name="camera" size={18} color={bgColor} />
               </TouchableOpacity>
             </View>
-            <Text className="text-xl font-bold text-foreground dark:text-dark-fg mt-4">
-              {name}
+
+            <Text className="text-xl font-bold text-foreground dark:text-dark-fg mt-4 text-center px-6">
+              {club.name}
             </Text>
+
             <Text className="text-muted-fg dark:text-dark-muted-fg text-xs mt-1">
               • {club.approved_users_count || 0} active members
             </Text>
           </View>
 
-          <View className="px-5 space-y-5">
-            <View>
-              <Text className="text-foreground dark:text-dark-fg text-sm mb-2">
-                Club Name
-              </Text>
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                className="border border-primary dark:border-dark-primary rounded-xl px-4 py-3 text-foreground dark:text-dark-fg bg-background dark:bg-dark-input text-base"
-              />
-            </View>
+          <View className="px-5 gap-y-4">
+            <InputField
+              label="Club Name"
+              placeholder="Enter club name"
+              value={name}
+              onChangeText={setName}
+            />
 
-            <View>
-              <Text className="text-foreground dark:text-dark-fg text-sm mb-2">
-                Category
-              </Text>
-              <TouchableOpacity
-                onPress={handleCategoryPress}
-                className="border border-input dark:border-dark-input rounded-xl px-4 py-3 bg-background dark:bg-dark-input flex-row justify-between items-center"
-              >
-                <Text className="text-foreground dark:text-dark-fg text-base">
-                  {category}
-                </Text>
-                <Ionicons name="chevron-down" size={20} color={mutedFgColor} />
-              </TouchableOpacity>
-            </View>
+            <CustomDropdown
+              label="Category"
+              options={CATEGORY_OPTIONS}
+              value={CATEGORY_LABEL_MAP[category] ?? category}
+              onSelect={(val) => setCategory(CATEGORY_VALUE_MAP[val])}
+              placeholder="Select club category"
+            />
 
-            <View>
-              <Text className="text-foreground dark:text-dark-fg text-sm mb-2">
-                Club Description
-              </Text>
-              <TextInput
-                value={description}
-                onChangeText={setDescription}
-                multiline={true}
-                numberOfLines={5}
-                textAlignVertical="top"
-                className="border border-input dark:border-dark-input rounded-xl px-4 py-3 text-foreground dark:text-dark-fg bg-background dark:bg-dark-input text-base h-32"
-              />
-            </View>
+            <InputField
+              label="Club Description"
+              placeholder="Tell us about the club..."
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={5}
+              containerStyles="h-32"
+              textAlignVertical="top"
+            />
           </View>
         </ScrollView>
 
@@ -168,7 +152,9 @@ export default function ClubEditScreen({
           <TouchableOpacity
             onPress={handleSave}
             disabled={isUpdating}
-            className={`py-4 rounded-xl items-center bg-primary dark:bg-dark-primary ${isUpdating ? "opacity-50" : "opacity-100"}`}
+            className={`py-4 rounded-xl items-center bg-primary dark:bg-dark-primary ${
+              isUpdating ? "opacity-50" : "opacity-100"
+            }`}
           >
             <Text className="text-primary-fg dark:text-dark-primary-fg font-bold text-lg">
               {isUpdating ? "Saving..." : "Save Changes"}

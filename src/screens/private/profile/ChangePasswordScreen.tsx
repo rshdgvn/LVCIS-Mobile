@@ -9,6 +9,13 @@ import React, { useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type PasswordErrors = {
+  current_password?: string;
+  new_password?: string;
+  new_password_confirmation?: string;
+  general?: string;
+};
+
 const ChangePasswordScreen = () => {
   const router = useThrottledRouter();
   const [form, setForm] = useState({
@@ -16,26 +23,48 @@ const ChangePasswordScreen = () => {
     new_password: "",
     new_password_confirmation: "",
   });
+  const [errors, setErrors] = useState<PasswordErrors>({});
   const [loading, setLoading] = useState(false);
 
   const { hasMinLength, hasNumber, hasSpecial, strength } =
     evaluatePasswordStrength(form.new_password);
 
   const handleUpdatePassword = async () => {
+    setErrors({});
+    let newErrors: PasswordErrors = {};
+
+    if (!form.current_password) {
+      newErrors.current_password = "Current password is required";
+    }
+
+    if (!form.new_password) {
+      newErrors.new_password = "New password is required";
+    } else if (strength < 3) {
+      newErrors.new_password = "Please meet all password requirements";
+    }
+
     if (form.new_password !== form.new_password_confirmation) {
-      Alert.alert("Error", "New passwords do not match.");
+      newErrors.new_password_confirmation = "Passwords do not match";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
+
     setLoading(true);
     try {
       await userService.changePassword(form);
       Alert.alert("Success", "Password updated successfully!");
       router.back();
     } catch (error: any) {
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to update password",
-      );
+      if (error.response?.status === 422) {
+        setErrors(error.response.data.errors);
+      } else {
+        setErrors({
+          general: error.response?.data?.message || "Failed to update password",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -45,25 +74,49 @@ const ChangePasswordScreen = () => {
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <View className="flex-row items-center justify-between mt-2 px-6">
         <BackButton onPress={() => router.back()} />
-        <Text className="text-lg font-bold self-center text-foreground/50 dark:text-dark-fg/50 my-4">
-          Edit Profile
+        <Text className="text-lg font-bold text-foreground/50 dark:text-dark-fg/50 my-4">
+          Change Password
         </Text>
         <View style={{ width: 48 }} />
       </View>
-      <ScrollView contentContainerStyle={{ padding: 25 }}>
+
+      <ScrollView
+        contentContainerStyle={{ padding: 25 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {errors.general && (
+          <View className="bg-red-500/10 p-3 rounded-lg mb-6 border border-red-500/50">
+            <Text className="text-red-500 font-medium text-center">
+              {errors.general}
+            </Text>
+          </View>
+        )}
+
         <InputField
           label="Current Password"
+          placeholder="Enter current password"
           isPassword
           value={form.current_password}
-          onChangeText={(t) => setForm({ ...form, current_password: t })}
+          onChangeText={(t) => {
+            setForm({ ...form, current_password: t });
+            if (errors.current_password)
+              setErrors({ ...errors, current_password: undefined });
+          }}
+          error={errors.current_password}
           containerStyles="mb-6"
         />
 
         <InputField
           label="New Password"
+          placeholder="Enter new password"
           isPassword
           value={form.new_password}
-          onChangeText={(t) => setForm({ ...form, new_password: t })}
+          onChangeText={(t) => {
+            setForm({ ...form, new_password: t });
+            if (errors.new_password)
+              setErrors({ ...errors, new_password: undefined });
+          }}
+          error={errors.new_password}
           containerStyles="mb-2"
         />
 
@@ -79,8 +132,8 @@ const ChangePasswordScreen = () => {
         </View>
 
         <View className="mb-6 gap-1">
-          <Text className="text-gray-500 mb-2 font-medium">
-            Your Password must contain:
+          <Text className="text-muted-fg dark:text-dark-muted-fg mb-2 font-medium">
+            Your password must contain:
           </Text>
           {[
             { label: "At least 8 characters", met: hasMinLength },
@@ -94,7 +147,7 @@ const ChangePasswordScreen = () => {
                 color={req.met ? "#2563EB" : "#9CA3AF"}
               />
               <Text
-                className={`ml-2 text-sm ${req.met ? "text-blue-600" : "text-gray-500"}`}
+                className={`ml-2 text-sm ${req.met ? "text-blue-600 font-medium" : "text-muted-fg"}`}
               >
                 {req.label}
               </Text>
@@ -103,18 +156,23 @@ const ChangePasswordScreen = () => {
         </View>
 
         <InputField
-          label="Confirm Password"
+          label="Confirm New Password"
+          placeholder="Repeat new password"
           isPassword
           value={form.new_password_confirmation}
-          onChangeText={(t) =>
-            setForm({ ...form, new_password_confirmation: t })
-          }
+          onChangeText={(t) => {
+            setForm({ ...form, new_password_confirmation: t });
+            if (errors.new_password_confirmation)
+              setErrors({ ...errors, new_password_confirmation: undefined });
+          }}
+          error={errors.new_password_confirmation}
           containerStyles="mb-2"
         />
       </ScrollView>
-      <View className="px-6 mb-6">
+
+      <View className="px-6 pb-8">
         <PrimaryButton
-          title="Change Password"
+          title="Update Password"
           isLoading={loading}
           onPress={handleUpdatePassword}
         />

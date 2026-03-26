@@ -10,7 +10,6 @@ export const clubService = {
 
   getClubById: async (id: number) => {
     const response = await api.get<Club>(`/clubs/${id}`);
-    console.log(response.data.users);
     return response.data;
   },
 

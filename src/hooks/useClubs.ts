@@ -1,8 +1,11 @@
 import { clubService } from "@/src/services/clubService";
-import { Club, ClubCategory, ClubPayload } from "@/src/types/club";
+import {
+  Club,
+  ClubCategory,
+  ClubPayload,
+  ClubViewFilter,
+} from "@/src/types/club";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-export type ClubViewFilter = "all" | "my" | "pending" | "other";
 
 export const useFilteredClubs = (
   viewFilter: ClubViewFilter,

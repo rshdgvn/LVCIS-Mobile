@@ -4,20 +4,28 @@ import { LoginPayload } from "@/src/types/auth";
 import { AuthScreen } from "@/src/types/navigation";
 import React, { useState } from "react";
 import {
-  Alert,
   Image,
   Pressable,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+export interface LoginErrors {
+  general?: string;
+  email?: string;
+  password?: string;
+  [key: string]: string | undefined;
+}
 
 interface Props {
   onNavigate: (screen: AuthScreen) => void;
   onLogin: (data: LoginPayload) => void;
   isLoading: boolean;
   onGoogleLogin: () => void;
+  errors?: LoginErrors;
+  setErrors?: React.Dispatch<React.SetStateAction<LoginErrors>>;
 }
 
 export default function LoginScreen({
@@ -25,15 +33,19 @@ export default function LoginScreen({
   onLogin,
   isLoading,
   onGoogleLogin,
+  errors = {},
+  setErrors,
 }: Props) {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  const handleSubmit = () => {
-    if (!email || !password) {
-      Alert.alert("Required", "Please fill in both email and password.");
-      return;
+  const clearErrors = () => {
+    if (Object.keys(errors).length > 0 && setErrors) {
+      setErrors({});
     }
+  };
+
+  const handleSubmit = () => {
     onLogin({ email, password });
   };
 
@@ -66,7 +78,11 @@ export default function LoginScreen({
         autoCapitalize="none"
         containerStyles="mb-4"
         value={email}
-        onChangeText={setEmail}
+        error={errors.email || errors.general}
+        onChangeText={(text) => {
+          setEmail(text);
+          clearErrors();
+        }}
       />
 
       <View className="mb-6">
@@ -85,7 +101,11 @@ export default function LoginScreen({
           placeholder="Enter your password"
           isPassword={true}
           value={password}
-          onChangeText={setPassword}
+          error={errors.password}
+          onChangeText={(text) => {
+            setPassword(text);
+            clearErrors();
+          }}
         />
       </View>
 

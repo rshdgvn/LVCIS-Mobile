@@ -1,6 +1,8 @@
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
 import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
-import RegisterScreen from "@/src/screens/auth/RegisterScreen";
+import RegisterScreen, {
+  RegisterErrors,
+} from "@/src/screens/auth/RegisterScreen";
 import { authService } from "@/src/services/authService";
 import { RegisterPayload } from "@/src/types/auth";
 import { useMutation } from "@tanstack/react-query";
@@ -11,10 +13,12 @@ const Register = () => {
   const router = useThrottledRouter();
   const { promptGoogleAuth } = useGoogleAuth();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [errors, setErrors] = useState<RegisterErrors>({});
 
   const mutation = useMutation({
     mutationFn: (data: RegisterPayload) => authService.register(data),
     onSuccess: (data) => {
+      setErrors({});
       Alert.alert(
         "Account Created",
         "Please check your email to verify your account before logging in.",
@@ -29,16 +33,33 @@ const Register = () => {
     onError: (error: any) => {
       console.error("Registration Error:", error);
 
-      const errors = error.response?.data?.errors;
-      let message = "Something went wrong.";
-
-      if (errors) {
-        message = Object.values(errors).flat().join("\n");
-      } else if (error.response?.data?.message) {
-        message = error.response.data.message;
+      if (!error.response) {
+        setErrors({ general: "Network error. Please try again." });
+        return;
       }
 
-      Alert.alert("Registration Failed", message);
+      const status = error.response.status;
+      const data = error.response.data;
+
+      if (status === 422 && data?.errors) {
+        const parsedErrors: RegisterErrors = {};
+        for (const key in data.errors) {
+          const fieldError = data.errors[key];
+          const errorMessage = Array.isArray(fieldError)
+            ? fieldError[0]
+            : fieldError;
+
+          if (key === "first_name") parsedErrors.firstname = errorMessage;
+          else if (key === "last_name") parsedErrors.lastname = errorMessage;
+          else parsedErrors[key as keyof RegisterErrors] = errorMessage;
+        }
+        setErrors(parsedErrors);
+        return;
+      }
+
+      setErrors({
+        general: data?.message || "Registration failed. Please try again.",
+      });
     },
   });
 
@@ -52,9 +73,14 @@ const Register = () => {
   return (
     <RegisterScreen
       isLoading={mutation.isPending || isGoogleLoading}
-      onRegister={(data) => mutation.mutate(data)}
+      onRegister={(data) => {
+        setErrors({});
+        mutation.mutate(data);
+      }}
       onNavigate={() => router.push("/(auth)/login")}
       onGoogleRegister={handleGoogleRegister}
+      errors={errors}
+      setErrors={setErrors}
     />
   );
 };

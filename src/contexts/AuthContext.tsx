@@ -48,7 +48,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (token: string, newUser: User) => {
     await SecureStore.setItemAsync(TOKEN_KEY, token);
-    queryClient.setQueryData(["user"], newUser);
+    try {
+      const response = await userService.getUserProfile();
+      queryClient.setQueryData(["user"], {
+        ...response,
+        member: response.member,
+      } as User);
+    } catch {
+      queryClient.setQueryData(["user"], newUser);
+    }
   };
 
   const signOut = async () => {

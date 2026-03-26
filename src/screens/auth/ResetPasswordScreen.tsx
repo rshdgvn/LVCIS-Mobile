@@ -1,30 +1,42 @@
+import { ResetErrors } from "@/src/app/(auth)/reset-password";
 import { InputField } from "@/src/components/common/InputField";
 import React, { useState } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
   onReset: (data: { password: string; password_confirmation: string }) => void;
   isLoading: boolean;
+  errors: ResetErrors;
+  setErrors: React.Dispatch<React.SetStateAction<ResetErrors>>;
 }
 
-export default function ResetPasswordScreen({ onReset, isLoading }: Props) {
+export default function ResetPasswordScreen({
+  onReset,
+  isLoading,
+  errors,
+  setErrors,
+}: Props) {
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
 
   const handleReset = () => {
-    if (!password || !passwordConfirmation) {
-      Alert.alert("Required", "Please fill in all fields.");
+    setErrors({});
+    let newErrors: ResetErrors = {};
+
+    if (!password) {
+      newErrors.password = "New password is required.";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters.";
+    } else if (password !== passwordConfirmation) {
+      newErrors.password = "Passwords do not match.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-    if (password !== passwordConfirmation) {
-      Alert.alert("Error", "Passwords do not match.");
-      return;
-    }
-    if (password.length < 8) {
-      Alert.alert("Error", "Password must be at least 8 characters.");
-      return;
-    }
+
     onReset({ password, password_confirmation: passwordConfirmation });
   };
 
@@ -39,12 +51,24 @@ export default function ResetPasswordScreen({ onReset, isLoading }: Props) {
         </Text>
       </View>
 
+      {errors.general && (
+        <View className="bg-red-500/10 p-3 rounded-lg mb-4 border border-red-500/50">
+          <Text className="text-red-500 font-medium text-center">
+            {errors.general}
+          </Text>
+        </View>
+      )}
+
       <View className="mb-4">
         <InputField
           placeholder="New password"
           isPassword={true}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(text) => {
+            setPassword(text);
+            if (errors.password) setErrors({ ...errors, password: undefined });
+          }}
+          error={errors.password}
         />
       </View>
 
@@ -53,7 +77,10 @@ export default function ResetPasswordScreen({ onReset, isLoading }: Props) {
           placeholder="Confirm new password"
           isPassword={true}
           value={passwordConfirmation}
-          onChangeText={setPasswordConfirmation}
+          onChangeText={(text) => {
+            setPasswordConfirmation(text);
+            if (errors.password) setErrors({ ...errors, password: undefined });
+          }}
         />
       </View>
 

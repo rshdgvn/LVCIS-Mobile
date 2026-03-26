@@ -43,7 +43,6 @@ export const useGoogleAuth = () => {
         }
       }
     } catch (error) {
-      console.error("Google OAuth Error:", error);
       Alert.alert("Error", "Something went wrong opening Google Sign-In.");
     }
     return null;

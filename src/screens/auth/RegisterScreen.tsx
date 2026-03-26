@@ -5,21 +5,26 @@ import { COURSE_OPTIONS, YEAR_OPTIONS } from "@/src/constants/education";
 import { RegisterPayload } from "@/src/types/auth";
 import { CourseType } from "@/src/types/course";
 import React, { useState } from "react";
-import {
-  Alert,
-  Image,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+export type RegisterErrors = {
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  password?: string;
+  course?: string;
+  year?: string;
+  general?: string;
+};
 
 interface Props {
   onNavigate: () => void;
   onRegister: (data: RegisterPayload) => void;
   isLoading: boolean;
   onGoogleRegister: () => void;
+  errors: RegisterErrors;
+  setErrors: React.Dispatch<React.SetStateAction<RegisterErrors>>;
 }
 
 export default function RegisterScreen({
@@ -27,6 +32,8 @@ export default function RegisterScreen({
   onRegister,
   isLoading,
   onGoogleRegister,
+  errors,
+  setErrors,
 }: Props) {
   const [firstname, setFirstname] = useState<string>("");
   const [lastname, setLastname] = useState<string>("");
@@ -38,6 +45,7 @@ export default function RegisterScreen({
 
   const handleCourseSelect = (selectedCourse: string) => {
     setCourse(selectedCourse);
+    if (errors.course) setErrors({ ...errors, course: undefined });
 
     const validYears = YEAR_OPTIONS[selectedCourse as CourseType];
     if (year && !validYears.includes(year)) {
@@ -46,13 +54,22 @@ export default function RegisterScreen({
   };
 
   const handleSubmit = () => {
-    if (!firstname || !lastname || !email || !password || !course || !year) {
-      Alert.alert("Missing Fields", "Please fill in all required fields.");
-      return;
+    setErrors({});
+    let newErrors: RegisterErrors = {};
+
+    if (!firstname) newErrors.firstname = "First name is required.";
+    if (!lastname) newErrors.lastname = "Last name is required.";
+    if (!email) newErrors.email = "Email is required.";
+    if (!password) newErrors.password = "Password is required.";
+    if (!course) newErrors.course = "Course is required.";
+    if (!year) newErrors.year = "Year level is required.";
+
+    if (password && confirmPassword && password !== confirmPassword) {
+      newErrors.password = "Passwords do not match.";
     }
 
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -78,13 +95,26 @@ export default function RegisterScreen({
         </Text>
       </View>
 
+      {errors.general && (
+        <View className="bg-red-500/10 p-3 rounded-lg mb-4 border border-red-500/50">
+          <Text className="text-red-500 font-medium text-center">
+            {errors.general}
+          </Text>
+        </View>
+      )}
+
       <View className="flex-row gap-3 mb-4">
         <View className="flex-1">
           <InputField
             label="First name"
             placeholder="First name"
             value={firstname}
-            onChangeText={setFirstname}
+            onChangeText={(text) => {
+              setFirstname(text);
+              if (errors.firstname)
+                setErrors({ ...errors, firstname: undefined });
+            }}
+            error={errors.firstname}
           />
         </View>
         <View className="flex-1">
@@ -92,7 +122,12 @@ export default function RegisterScreen({
             label="Last name"
             placeholder="Last name"
             value={lastname}
-            onChangeText={setLastname}
+            onChangeText={(text) => {
+              setLastname(text);
+              if (errors.lastname)
+                setErrors({ ...errors, lastname: undefined });
+            }}
+            error={errors.lastname}
           />
         </View>
       </View>
@@ -103,8 +138,12 @@ export default function RegisterScreen({
         keyboardType="email-address"
         containerStyles="mb-4"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => {
+          setEmail(text);
+          if (errors.email) setErrors({ ...errors, email: undefined });
+        }}
         autoCapitalize="none"
+        error={errors.email}
       />
 
       <InputField
@@ -113,7 +152,11 @@ export default function RegisterScreen({
         isPassword={true}
         containerStyles="mb-4"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          if (errors.password) setErrors({ ...errors, password: undefined });
+        }}
+        error={errors.password}
       />
 
       <InputField
@@ -132,6 +175,8 @@ export default function RegisterScreen({
             value={course}
             options={COURSE_OPTIONS}
             onSelect={handleCourseSelect}
+            error={errors.course}
+            placeholder="Select Course"
           />
         </View>
 
@@ -140,7 +185,17 @@ export default function RegisterScreen({
             label="Year Level"
             value={year}
             options={course ? YEAR_OPTIONS[course as CourseType] : []}
-            onSelect={setYear}
+            onSelect={(selected) => {
+              setYear(selected);
+              if (errors.year) setErrors({ ...errors, year: undefined });
+            }}
+            error={errors.year}
+            placeholder={course ? "Select Year" : "Choose course"}
+            emptyMessage={
+              course
+                ? "No year levels available"
+                : "Please select a course first."
+            }
           />
         </View>
       </View>
