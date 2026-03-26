@@ -1,4 +1,5 @@
 import { InputField } from "@/src/components/common/InputField";
+import PrimaryButton from "@/src/components/common/PrimaryButton";
 import { LoginPayload } from "@/src/types/auth";
 import { AuthScreen } from "@/src/types/navigation";
 import React, { useState } from "react";
@@ -11,7 +12,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import PrimaryButton from "@/src/components/common/PrimaryButton";
 
 interface Props {
   onNavigate: (screen: AuthScreen) => void;
@@ -47,7 +47,11 @@ export default function LoginScreen({
             resizeMode="contain"
           />
         </View>
-        <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">
+        <Text
+          className="text-2xl font-bold text-foreground dark:text-dark-fg "
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
           Welcome Back
         </Text>
         <Text className="text-muted-fg dark:text-dark-muted-fg text-center mt-1">
