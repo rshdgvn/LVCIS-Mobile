@@ -11,7 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -21,6 +21,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+type ProfileErrors = {
+  first_name?: string;
+  last_name?: string;
+  course?: string;
+  year_level?: string;
+};
 
 const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
   const { user } = useAuth();
@@ -34,6 +41,18 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
     year_level: user?.member?.year_level || "",
   });
 
+  useEffect(() => {
+    if (user) {
+      setForm({
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        course: user.member?.course || "",
+        year_level: user.member?.year_level || "",
+      });
+    }
+  }, [user]);
+
+  const [errors, setErrors] = useState<ProfileErrors>({});
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const pickImage = async () => {
@@ -56,14 +75,32 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
       router.back();
     },
     onError: (error: any) => {
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to update profile",
-      );
+      if (error.response?.status === 422) {
+        setErrors(error.response.data.errors);
+      } else {
+        Alert.alert(
+          "Error",
+          error.response?.data?.message || "Failed to update profile",
+        );
+      }
     },
   });
 
   const handleSave = () => {
+    setErrors({});
+    let newErrors: ProfileErrors = {};
+
+    if (!form.first_name.trim())
+      newErrors.first_name = "First name is required";
+    if (!form.last_name.trim()) newErrors.last_name = "Last name is required";
+    if (!form.course) newErrors.course = "Course is required";
+    if (!form.year_level) newErrors.year_level = "Year level is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("first_name", form.first_name);
     formData.append("last_name", form.last_name);
@@ -84,6 +121,7 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
 
   const handleCourseSelect = (selectedCourse: string) => {
     const validYears = YEAR_OPTIONS[selectedCourse as CourseType];
+    setErrors((prev) => ({ ...prev, course: undefined }));
 
     setForm((prev) => ({
       ...prev,
@@ -99,13 +137,19 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <View className="flex-row items-center justify-between mt-2 px-6">
         <BackButton onPress={() => router.back()} />
-        <Text className="text-lg font-bold self-center text-foreground/50 dark:text-dark-fg/50 my-4">
+        <Text className="text-lg font-bold text-foreground/50 dark:text-dark-fg/50 my-4">
           Edit Profile
         </Text>
         <View style={{ width: 48 }} />
       </View>
+
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 25, marginTop: 25 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 25,
+          marginTop: 25,
+          paddingBottom: 40,
+        }}
       >
         <View className="items-center mb-6">
           <View className="relative">
@@ -125,29 +169,43 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
               <Ionicons name="camera" size={18} color={bgColor} />
             </TouchableOpacity>
           </View>
-          <Text className="text-xl font-bold mt-4 text-foreground dark:text-dark-fg">
-            {form.first_name} {form.last_name}
+
+          {/* FIXED: This now uses user data from context, not the form state */}
+          <Text className="text-xl font-bold mt-4 text-foreground dark:text-dark-fg text-center">
+            {user?.first_name} {user?.last_name}
           </Text>
           <Text className="text-sm text-muted-fg">{user?.email}</Text>
         </View>
+
         <View className="gap-2">
           <InputField
             label="Email Address"
             value={user?.email}
             editable={false}
-            containerStyles="mb-4"
+            containerStyles="mb-2"
           />
-          <View className="flex-row gap-3 mb-4">
+
+          <View className="flex-row gap-3 mb-2">
             <InputField
               label="First Name"
               value={form.first_name}
-              onChangeText={(t) => setForm({ ...form, first_name: t })}
+              onChangeText={(t) => {
+                setForm({ ...form, first_name: t });
+                if (errors.first_name)
+                  setErrors({ ...errors, first_name: undefined });
+              }}
+              error={errors.first_name}
               containerStyles="flex-1"
             />
             <InputField
               label="Last Name"
               value={form.last_name}
-              onChangeText={(t) => setForm({ ...form, last_name: t })}
+              onChangeText={(t) => {
+                setForm({ ...form, last_name: t });
+                if (errors.last_name)
+                  setErrors({ ...errors, last_name: undefined });
+              }}
+              error={errors.last_name}
               containerStyles="flex-1"
             />
           </View>
@@ -157,15 +215,32 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
             options={COURSE_OPTIONS}
             value={form.course}
             onSelect={handleCourseSelect}
+            error={errors.course}
+            placeholder="Select your course"
           />
+
           <CustomDropdown
             label="Year Level"
             options={form.course ? YEAR_OPTIONS[form.course as CourseType] : []}
             value={form.year_level}
-            onSelect={(val: string) => setForm({ ...form, year_level: val })}
+            onSelect={(val: string) => {
+              setForm({ ...form, year_level: val });
+              if (errors.year_level)
+                setErrors({ ...errors, year_level: undefined });
+            }}
+            error={errors.year_level}
+            placeholder={
+              form.course ? "Select year level" : "Choose course first"
+            }
+            emptyMessage={
+              form.course
+                ? "No options available"
+                : "Please select a course to see year levels."
+            }
           />
         </View>
-        <View className="mt-24 w-full">
+
+        <View className="mt-10 w-full">
           <PrimaryButton
             title="Save Changes"
             isLoading={mutation.isPending}

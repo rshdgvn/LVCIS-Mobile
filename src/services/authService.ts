@@ -29,7 +29,6 @@ export const authService = {
     };
 
     const response = await api.post<{ message: string }>("/signup", payload);
-    console.log("Registration Response:", response.data, appUrl);
     return response.data;
   },
 

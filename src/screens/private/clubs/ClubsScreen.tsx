@@ -1,26 +1,21 @@
 import { ClubCard } from "@/src/components/clubs/ClubCard";
+import { CustomDropdown } from "@/src/components/common/CustomDropdown";
 import {
-  getFilterLabel,
-  showCategoryFilterAlert,
-  showViewFilterAlert,
-} from "@/src/helpers/clubFilters";
-import { ClubViewFilter } from "@/src/hooks/useClubs";
+  CATEGORY_LABEL_MAP,
+  CATEGORY_OPTIONS,
+  CATEGORY_VALUE_MAP,
+  VIEW_FILTER_LABEL_MAP,
+  VIEW_FILTER_OPTIONS,
+  VIEW_FILTER_VALUE_MAP,
+} from "@/src/constants/clubOptions";
 import { useTheme } from "@/src/hooks/useTheme";
 import { clubService } from "@/src/services/clubService";
-import { Club, ClubCategory } from "@/src/types/club";
-import { Ionicons } from "@expo/vector-icons";
+import { membershipService } from "@/src/services/membershipService";
+import { Club, ClubCategory, ClubViewFilter } from "@/src/types/club";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { membershipService } from "@/src/services/membershipService";
 
 interface Props {
   clubs: Club[] | undefined;
@@ -81,7 +76,7 @@ export default function ClubsScreen({
 
       return { previousStatuses };
     },
-    onError: (err, clubId, context) => {
+    onError: (_err, _clubId, context) => {
       queryClient.setQueryData(["userMemberships"], context?.previousStatuses);
       Alert.alert(
         "Error",
@@ -97,52 +92,75 @@ export default function ClubsScreen({
     applyMutation.mutate(clubId);
   };
 
+  const handleSelectCategory = (val: string) => {
+    onSelectCategory(CATEGORY_VALUE_MAP[val]);
+  };
+
+  const handleSelectViewFilter = (val: string) => {
+    const filter = VIEW_FILTER_VALUE_MAP[val];
+    if (filter) onSelectViewFilter(filter);
+  };
+
+  const categoryDropdownValue = selectedCategory
+    ? CATEGORY_LABEL_MAP[selectedCategory]
+    : "";
+
+  const viewFilterDropdownValue =
+    viewFilter === "all" ? "" : VIEW_FILTER_LABEL_MAP[viewFilter];
+
+  const hasActiveFilters =
+    selectedCategory !== undefined || viewFilter !== "all";
+
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-5 pt-4">
-      <View className="flex-row justify-between items-center mb-6">
-        <View>
-          <Text className="text-muted-fg dark:text-dark-muted-fg text-lg">
-            Welcome to,
-          </Text>
-          <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">
-            Clubs
-          </Text>
+      <View className="mb-6">
+        <Text className="text-muted-fg dark:text-dark-muted-fg text-lg">
+          Welcome to,
+        </Text>
+        <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">
+          Clubs
+        </Text>
+      </View>
+
+      <View className="flex-row gap-3">
+        <View className="flex-1">
+          <CustomDropdown
+            label="Category"
+            value={categoryDropdownValue}
+            options={CATEGORY_OPTIONS}
+            placeholder="All"
+            onSelect={handleSelectCategory}
+          />
+        </View>
+        <View className="flex-1">
+          <CustomDropdown
+            label="View"
+            value={viewFilterDropdownValue}
+            options={VIEW_FILTER_OPTIONS}
+            placeholder="All clubs"
+            onSelect={handleSelectViewFilter}
+          />
         </View>
       </View>
 
-      <View className="flex-row justify-between items-center mb-6">
-        <TouchableOpacity
-          className="border border-border dark:border-dark-border rounded-xl px-3 py-2 flex-row items-center max-w-[200px]"
-          onPress={() => showCategoryFilterAlert(onSelectCategory)}
-        >
-          <Text className="text-muted-fg dark:text-dark-muted-fg mr-1">
-            Category:
-          </Text>
-          <Text
-            className="text-primary dark:text-dark-primary font-semibold capitalize flex-shrink"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {selectedCategory ? selectedCategory.replace(/_/g, " ") : "All"}
-          </Text>
-          <Ionicons
-            name="chevron-down"
-            size={16}
-            color={primaryColor}
-            style={{ marginLeft: 5 }}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className="bg-primary dark:bg-dark-primary px-5 py-2.5 rounded-xl flex-row items-center"
-          onPress={() => showViewFilterAlert(onSelectViewFilter)}
-        >
-          <Text className="text-primary-fg dark:text-dark-primary-fg font-semibold mr-1">
-            {getFilterLabel(viewFilter)}
-          </Text>
-          <Ionicons name="chevron-down" size={14} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
+      {hasActiveFilters && (
+        <View className="flex-row gap-2 mb-4 flex-wrap -mt-2">
+          {selectedCategory && (
+            <View className="bg-primary/10 dark:bg-dark-primary/10 px-3 py-1 rounded-full">
+              <Text className="text-xs text-primary dark:text-dark-primary">
+                {CATEGORY_LABEL_MAP[selectedCategory]}
+              </Text>
+            </View>
+          )}
+          {viewFilter !== "all" && (
+            <View className="bg-primary/10 dark:bg-dark-primary/10 px-3 py-1 rounded-full">
+              <Text className="text-xs text-primary dark:text-dark-primary">
+                {VIEW_FILTER_LABEL_MAP[viewFilter]}
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
 
       {isLoading ? (
         <ActivityIndicator
@@ -155,6 +173,7 @@ export default function ClubsScreen({
           data={clubs}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 24 }}
           ListEmptyComponent={
             <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
               No clubs found for this filter.

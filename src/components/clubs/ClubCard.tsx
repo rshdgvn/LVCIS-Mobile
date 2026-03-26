@@ -21,9 +21,12 @@ export function ClubCard({
 }: ClubCardProps) {
   const { mutedFgColor, primaryColor } = useTheme();
   const memberCount = club.approved_users_count || 0;
+  const previewMembers = (club.users || []).slice(0, 3);
+  const remainingCount = Math.max(0, memberCount - previewMembers.length);
+  const isApproved = membershipStatus === "approved";
 
   const renderActionButton = () => {
-    if (membershipStatus === "approved") {
+    if (isApproved) {
       return (
         <TouchableOpacity
           className="bg-primary/10 dark:bg-dark-primary/20 px-4 py-2 rounded-lg"
@@ -48,11 +51,11 @@ export function ClubCard({
 
     return (
       <TouchableOpacity
-        className="bg-primary dark:bg-dark-primary px-4 py-2 rounded-lg"
+        className="bg-primary/10 dark:bg-dark-primary/20 px-4 py-2 rounded-lg"
         onPress={() => onApplyClub(club.id)}
         disabled={isApplying}
       >
-        <Text className="text-primary-fg dark:text-dark-primary-fg font-semibold text-sm">
+        <Text className="text-primary dark:text-dark-primary font-semibold text-sm">
           Apply
         </Text>
       </TouchableOpacity>
@@ -60,70 +63,86 @@ export function ClubCard({
   };
 
   return (
-    <View className="border border-border dark:border-dark-border rounded-2xl p-4 mb-4 bg-card dark:bg-dark-card shadow-sm">
-      <View className="flex-row justify-between">
-        <View className="flex-row flex-1">
-          <Image
-            source={{ uri: club.logo_url || "https://via.placeholder.com/150" }}
-            className="w-16 h-16 rounded-full border border-border dark:border-dark-border bg-muted dark:bg-dark-muted"
-          />
+    <View className="border border-border dark:border-dark-border rounded-2xl p-4 mb-4 bg-card dark:bg-dark-card">
+      <View className="flex-row items-center">
+        <Image
+          source={{ uri: club.logo_url || "https://via.placeholder.com/150" }}
+          className="w-16 h-16 rounded-full border border-border dark:border-dark-border bg-muted dark:bg-dark-muted"
+        />
 
-          <View className="ml-4 flex-1">
-            <View className="bg-primary/10 dark:bg-dark-primary/20 self-start px-3 py-1 rounded-full mb-1">
-              <Text className="text-primary dark:text-dark-primary text-xs font-medium capitalize">
-                {club.category.replace(/_/g, " ")}
-              </Text>
-            </View>
-
-            <Text
-              className="text-lg font-bold text-card-fg dark:text-dark-card-fg"
-              numberOfLines={1}
-            >
-              {club.name}
+        <View className="ml-4 flex-1">
+          <View className="bg-primary/10 dark:bg-dark-primary/20 self-start px-3 py-1 rounded-full mb-1">
+            <Text className="text-primary dark:text-dark-primary text-xs font-medium capitalize">
+              {club.category.replace(/_/g, " ")}
             </Text>
+          </View>
 
+          <Text
+            className="text-base font-bold text-card-fg dark:text-dark-card-fg"
+            numberOfLines={1}
+          >
+            {club.name}
+          </Text>
+
+          {isApproved && (
             <View className="flex-row items-center mt-1">
               <Ionicons name="people" size={14} color={mutedFgColor} />
               <Text className="text-muted-fg dark:text-dark-muted-fg text-xs ml-1">
                 {memberCount} active members
               </Text>
             </View>
-          </View>
-        </View>
+          )}
 
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-vertical" size={20} color={mutedFgColor} />
-        </TouchableOpacity>
+          {!isApproved && (
+            <View className="mt-1">
+              <Ionicons name="people" size={16} color={mutedFgColor} />
+            </View>
+          )}
+        </View>
       </View>
 
       <View className="flex-row justify-between items-center mt-4">
-        <View className="flex-row items-center">
-          {memberCount === 0 ? (
-            <Text className="text-xs text-muted-fg dark:text-dark-muted-fg italic ml-2">
-              No members yet
-            </Text>
-          ) : (
-            <>
-              {memberCount >= 1 && (
-                <View className="w-8 h-8 rounded-full bg-primary/20 dark:bg-dark-primary/30 border-2 border-card dark:border-dark-card items-center justify-center">
-                  <Ionicons name="person" size={14} color={primaryColor} />
-                </View>
-              )}
-              {memberCount >= 2 && (
-                <View className="w-8 h-8 rounded-full bg-primary/30 dark:bg-dark-primary/40 border-2 border-card dark:border-dark-card -ml-3 items-center justify-center">
-                  <Ionicons name="person" size={14} color={primaryColor} />
-                </View>
-              )}
-              {memberCount > 2 && (
-                <View className="w-8 h-8 rounded-full bg-muted dark:bg-dark-muted border-2 border-card dark:border-dark-card -ml-3 items-center justify-center">
-                  <Text className="text-[10px] text-muted-fg dark:text-dark-muted-fg font-bold">
-                    +{memberCount - 2}
-                  </Text>
-                </View>
-              )}
-            </>
-          )}
-        </View>
+        {isApproved ? (
+          <View className="flex-row items-center">
+            {previewMembers.map((member, index) => (
+              <View
+                key={member.user_id}
+                className="w-8 h-8 rounded-full border-2 border-card dark:border-dark-card overflow-hidden bg-muted dark:bg-dark-muted"
+                style={{
+                  marginLeft: index === 0 ? 0 : -10,
+                  zIndex: previewMembers.length - index,
+                }}
+              >
+                {member.avatar ? (
+                  <Image
+                    source={{ uri: member.avatar }}
+                    className="w-full h-full"
+                  />
+                ) : (
+                  <View className="w-full h-full bg-primary/20 dark:bg-dark-primary/30 items-center justify-center">
+                    <Text className="text-[10px] font-bold text-primary dark:text-dark-primary">
+                      {member.first_name?.[0]}
+                      {member.last_name?.[0]}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ))}
+
+            {remainingCount > 0 && (
+              <View
+                className="w-8 h-8 rounded-full bg-muted dark:bg-dark-muted border-2 border-card dark:border-dark-card items-center justify-center"
+                style={{ marginLeft: -10, zIndex: 0 }}
+              >
+                <Text className="text-[10px] text-muted-fg dark:text-dark-muted-fg font-bold">
+                  +{remainingCount}
+                </Text>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View />
+        )}
 
         {renderActionButton()}
       </View>

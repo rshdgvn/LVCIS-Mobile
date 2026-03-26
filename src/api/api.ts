@@ -1,9 +1,9 @@
+import { API_URL, TOKEN_KEY } from "@/src/utils/config";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import { TOKEN_KEY, API_URL } from "@/src/utils/config";
 
 export const api = axios.create({
-  baseURL: API_URL, 
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -29,12 +29,27 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    if (error.response?.status === 401) {
+    const authEndpoints = [
+      "/login",
+      "/signup",
+      "/register",
+      "/forgot-password",
+      "/reset-password",
+      "/verify",
+      "/email",
+    ];
+
+    const isAuthRoute = authEndpoints.some((endpoint) =>
+      error.config?.url?.includes(endpoint),
+    );
+
+    if (error.response?.status === 401 && !isAuthRoute) {
       console.warn("API 401: Token invalid or expired. Auto-logging out.");
       await SecureStore.deleteItemAsync(TOKEN_KEY);
-      
+
       onUnauthorizedCallback();
     }
+
     return Promise.reject(error);
-  }
+  },
 );
