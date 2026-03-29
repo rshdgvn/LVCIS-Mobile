@@ -19,25 +19,25 @@ function InitialLayout() {
     if (!rootNavigationState?.key || isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
-    const isAdminRoute = segments[0] === "(tabs)" && segments[1] === "(admin)";
+    const isIndexRoute = (segments as string[]).length === 0;
 
-    const timer = setTimeout(() => {
-      if (!isAuthenticated && !inAuthGroup) {
-        router.replace("/(auth)/login");
-      } else if (isAuthenticated && user) {
-        if (inAuthGroup) {
-          if (user.role === "admin") {
-            router.replace("/(tabs)/(admin)/dashboard");
-          } else {
-            router.replace("/(tabs)/(user)/dashboard");
-          }
-        } else if (user.role !== "admin" && isAdminRoute) {
+    if (!isAuthenticated && !inAuthGroup && !isIndexRoute) {
+      router.replace("/(auth)/login");
+    } else if (isAuthenticated && user) {
+      if (inAuthGroup) {
+        if (user.role === "admin") {
+          router.replace("/(tabs)/(admin)/dashboard");
+        } else {
           router.replace("/(tabs)/(user)/dashboard");
         }
+      } else if (
+        user.role !== "admin" &&
+        segments[0] === "(tabs)" &&
+        segments[1] === "(admin)"
+      ) {
+        router.replace("/(tabs)/(user)/dashboard");
       }
-    }, 10);
-
-    return () => clearTimeout(timer);
+    }
   }, [isAuthenticated, user, isLoading, segments, router, rootNavigationState]);
 
   return (

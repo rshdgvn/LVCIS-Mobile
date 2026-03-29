@@ -1,6 +1,5 @@
+import { ClubCategory, ClubViewFilter } from "@/src/types/club";
 import { Alert } from "react-native";
-import { ClubCategory } from "@/src/types/club";
-import { ClubViewFilter } from "@/src/hooks/useClubs";
 
 export const getFilterLabel = (viewFilter: ClubViewFilter): string => {
   switch (viewFilter) {
@@ -16,7 +15,7 @@ export const getFilterLabel = (viewFilter: ClubViewFilter): string => {
 };
 
 export const showViewFilterAlert = (
-  onSelectViewFilter: (filter: ClubViewFilter) => void
+  onSelectViewFilter: (filter: ClubViewFilter) => void,
 ) => {
   Alert.alert("Filter Clubs", "Choose which clubs to display:", [
     { text: "All Clubs", onPress: () => onSelectViewFilter("all") },
@@ -28,13 +27,19 @@ export const showViewFilterAlert = (
 };
 
 export const showCategoryFilterAlert = (
-  onSelectCategory: (category: ClubCategory | undefined) => void
+  onSelectCategory: (category: ClubCategory | undefined) => void,
 ) => {
   Alert.alert("Select Category", "Filter by club category:", [
     { text: "All Categories", onPress: () => onSelectCategory(undefined) },
     { text: "Academics", onPress: () => onSelectCategory("academics") },
-    { text: "Culture & Performing Arts", onPress: () => onSelectCategory("culture_and_performing_arts") },
-    { text: "Socio-Politics", onPress: () => onSelectCategory("socio_politics") },
+    {
+      text: "Culture & Performing Arts",
+      onPress: () => onSelectCategory("culture_and_performing_arts"),
+    },
+    {
+      text: "Socio-Politics",
+      onPress: () => onSelectCategory("socio_politics"),
+    },
     { text: "Cancel", style: "cancel" },
   ]);
 };

@@ -24,12 +24,6 @@ const Login = () => {
     onSuccess: async (data) => {
       setErrors({});
       await signIn(data.token, data.user);
-
-      if (data.user.role === "admin") {
-        router.replace("/(tabs)/(admin)/dashboard");
-      } else {
-        router.replace("/(tabs)/(user)/dashboard");
-      }
     },
     onError: (error: any, variables: LoginPayload) => {
       if (!error.response) {
@@ -75,12 +69,6 @@ const Login = () => {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         const user = await authService.getUser();
         await signIn(token, user);
-
-        if (user.role === "admin") {
-          router.replace("/(tabs)/(admin)/dashboard");
-        } else {
-          router.replace("/(tabs)/(user)/dashboard");
-        }
       } catch (error) {
         Alert.alert("Error", "Failed to fetch user profile from Google.");
       }
