@@ -1,12 +1,13 @@
+import { BackButton } from "@/src/components/common/BackButton";
+import { CustomAlertDialog } from "@/src/components/common/CustomAlertDialog";
 import { ProfileOption } from "@/src/components/profile/ProfileOption";
 import { ToggleTheme } from "@/src/components/profile/ToggleTheme";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { router } from "expo-router";
 import { Bell, LogOut, ShieldCheck, User } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BackButton } from "@/src/components/common/BackButton";
-import { router } from "expo-router";
 
 interface Props {
   onSignOut: () => void;
@@ -22,6 +23,7 @@ const ProfileScreen = ({
   onNotifications,
 }: Props) => {
   const { user } = useAuth();
+  const [isSignOutVisible, setSignOutVisible] = useState(false);
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
@@ -77,7 +79,7 @@ const ProfileScreen = ({
         />
 
         <TouchableOpacity
-          onPress={onSignOut}
+          onPress={() => setSignOutVisible(true)}
           activeOpacity={0.8}
           className="flex-row items-center justify-center bg-red-200 dark:bg-red-900/30 p-4 rounded-2xl mt-8"
         >
@@ -87,6 +89,20 @@ const ProfileScreen = ({
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <CustomAlertDialog
+        visible={isSignOutVisible}
+        title="Sign Out"
+        message="Are you sure you want to sign out of your account? You will need to log back in to access your clubs."
+        cancelText="Cancel"
+        confirmText="Sign Out"
+        isDestructive={true}
+        onCancel={() => setSignOutVisible(false)}
+        onConfirm={() => {
+          setSignOutVisible(false);
+          onSignOut();
+        }}
+      />
     </SafeAreaView>
   );
 };

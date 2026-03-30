@@ -1,5 +1,5 @@
-import { api } from "../api/api";
-import { MemberProfile, PendingApplicant } from "../types/club";
+import { api } from "@/src/api/api";
+import { MemberProfile, PendingApplicant } from "@/src/types/club";
 
 export const membershipService = {
   getCurrentUserMemberInfo: async () => {

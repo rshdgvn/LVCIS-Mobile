@@ -202,7 +202,7 @@ export default function RegisterScreen({
 
       <View className="mb-6 w-full">
         <PrimaryButton
-          title="Sign in"
+          title="Sign up"
           isLoading={isLoading}
           onPress={handleSubmit}
         />
