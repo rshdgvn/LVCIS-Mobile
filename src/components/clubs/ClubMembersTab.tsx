@@ -13,6 +13,7 @@ import {
 import { AddMemberModal } from "../modals/AddMemberModal";
 import { EditRoleModal } from "../modals/EditRoleModal";
 import { MemberListItem } from "./MemberListItem";
+import { CustomAlertDialog } from "@/src/components/common/CustomAlertDialog";
 
 interface Props {
   clubId: number;
@@ -25,6 +26,9 @@ export const ClubMembersTab = ({ clubId }: Props) => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+
+  const [isRemoveDialogVisible, setIsRemoveDialogVisible] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<any>(null);
 
   const { data: rawData, isLoading } = useQuery({
     queryKey: ["clubMembers", clubId],
@@ -79,9 +83,13 @@ export const ClubMembersTab = ({ clubId }: Props) => {
       membershipService.removeMember(clubId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clubMembers", clubId] });
+      setIsRemoveDialogVisible(false);
+      setMemberToRemove(null);
       Alert.alert("Success", "Member removed.");
     },
     onError: (error: any) => {
+      setIsRemoveDialogVisible(false);
+      setMemberToRemove(null);
       Alert.alert(
         "Error",
         error?.response?.data?.message || "Failed to remove member.",
@@ -94,21 +102,16 @@ export const ClubMembersTab = ({ clubId }: Props) => {
     setIsEditModalVisible(true);
   };
 
-  const handleRemoveMember = (member: any) => {
+  const handleTriggerRemove = (member: any) => {
     if (!member) return;
-    const targetId = member?.user_id || member?.id;
-    Alert.alert(
-      "Remove Member",
-      `Are you sure you want to remove ${member?.first_name} from the club?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () => removeMemberMutation.mutate(targetId),
-        },
-      ],
-    );
+    setMemberToRemove(member);
+    setIsRemoveDialogVisible(true);
+  };
+
+  const confirmRemoveMember = () => {
+    if (!memberToRemove) return;
+    const targetId = memberToRemove?.user_id || memberToRemove?.id;
+    removeMemberMutation.mutate(targetId);
   };
 
   if (isLoading) {
@@ -144,7 +147,6 @@ export const ClubMembersTab = ({ clubId }: Props) => {
           </Text>
         </TouchableOpacity>
       </View>
-
       {membersList.length === 0 ? (
         <View className="py-10 items-center border border-dashed border-border dark:border-dark-border rounded-xl">
           <Text className="text-muted-fg dark:text-dark-muted-fg py-8">
@@ -162,19 +164,22 @@ export const ClubMembersTab = ({ clubId }: Props) => {
             member={member}
             primaryColor={primaryColor}
             onEdit={handleOpenEdit}
-            onRemove={handleRemoveMember}
-            isRemoving={removeMemberMutation.isPending}
+            onRemove={handleTriggerRemove}
+            isRemoving={
+              removeMemberMutation.isPending &&
+              (memberToRemove?.user_id === member?.user_id ||
+                memberToRemove?.id === member?.id)
+            }
           />
         ))
       )}
-
       <AddMemberModal
         isVisible={isAddModalVisible}
         onClose={() => setIsAddModalVisible(false)}
         onAdd={(data: any) => addMemberMutation.mutate(data)}
         isPending={addMemberMutation.isPending}
+        currentMembers={membersList} 
       />
-
       <EditRoleModal
         isVisible={isEditModalVisible}
         member={selectedMember}
@@ -184,6 +189,22 @@ export const ClubMembersTab = ({ clubId }: Props) => {
         }}
         onSave={(data: any) => updateRoleMutation.mutate(data)}
         isPending={updateRoleMutation.isPending}
+      />
+      <CustomAlertDialog
+        visible={isRemoveDialogVisible}
+        title="Remove Member"
+        message={`Are you sure you want to remove ${
+          memberToRemove?.first_name || "this user"
+        } from the club? They will lose access to all club activities.`}
+        cancelText="No"
+        confirmText="Yes"
+        isDestructive={true}
+        isLoading={removeMemberMutation.isPending}
+        onCancel={() => {
+          setIsRemoveDialogVisible(false);
+          setMemberToRemove(null);
+        }}
+        onConfirm={confirmRemoveMember}
       />
     </View>
   );

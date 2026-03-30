@@ -1,9 +1,8 @@
-import { useAuth } from "@/src/contexts/AuthContext";
 import MainScreen from "@/src/screens/public/MainScreen";
 import { CustomSplashScreen } from "@/src/screens/public/SplashScreen";
 import { AuthScreen } from "@/src/types/navigation";
 import { AnimatePresence, MotiView } from "moti";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { View } from "react-native";
 import { useThrottledRouter } from "../hooks/useThrottledRouter";
 
@@ -11,13 +10,17 @@ export default function App() {
   const router = useThrottledRouter();
   const [isSplashVisible, setSplashVisible] = useState(true);
 
-  const { isAuthenticated, isLoading } = useAuth();
+  // const { isAuthenticated, isLoading, user } = useAuth();
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      router.replace("/dashboard");
-    }
-  }, [isAuthenticated, isLoading]);
+  // useEffect(() => {
+  //   if (!isLoading && isAuthenticated && user) {
+  //     if (user.role === "admin") {
+  //       router.replace("/(tabs)/(admin)/dashboard");
+  //     } else {
+  //       router.replace("/(tabs)/(user)/dashboard");
+  //     }
+  //   }
+  // }, [isAuthenticated, isLoading, user, router]);
 
   const onNavigate = (screen: AuthScreen) => {
     router.push(`/${screen}`);

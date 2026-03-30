@@ -2,23 +2,13 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import ProfileScreen from "@/src/screens/private/profile/ProfileScreen";
 import React from "react";
-import { Alert } from "react-native";
 
 const Profile = () => {
   const { signOut } = useAuth();
   const router = useThrottledRouter();
 
-  const handleSignOut = () => {
-    Alert.alert("Sign Out", "Are you sure you want to log out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          await signOut();
-        },
-      },
-    ]);
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   const handleEditProfile = () => {
