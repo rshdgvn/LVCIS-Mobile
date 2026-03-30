@@ -1,3 +1,4 @@
+// useGoogleAuth.ts
 import { API_URL } from "@/src/utils/config";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
@@ -8,7 +9,7 @@ WebBrowser.maybeCompleteAuthSession();
 export const useGoogleAuth = () => {
   const promptGoogleAuth = async (mode: "login" | "signup") => {
     try {
-      const redirectUrl = Linking.createURL("/");
+      const redirectUrl = Linking.createURL("/(auth)/login");
 
       const authUrl = `${API_URL}auth/google?mode=${mode}&platform=mobile&mobile_app_url=${encodeURIComponent(redirectUrl)}`;
 
