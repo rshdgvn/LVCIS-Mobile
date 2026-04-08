@@ -1,8 +1,7 @@
-// useGoogleAuth.ts
 import { API_URL } from "@/src/utils/config";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
-import { Alert } from "react-native";
+import Toast from "react-native-toast-message";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -27,15 +26,18 @@ export const useGoogleAuth = () => {
         const status = queryParams?.status as string | undefined;
 
         if (error) {
-          Alert.alert("Authentication Failed", error);
+          Toast.show({
+            type: "error",
+            text1: error,
+          });
           return null;
         }
 
         if (status === "signup_success") {
-          Alert.alert(
-            "Account Created",
-            "Please check your email to verify your account before logging in.",
-          );
+          Toast.show({
+            type: "success",
+            text1: "Account Created! Please verify your email.",
+          });
           return null;
         }
 
@@ -44,7 +46,10 @@ export const useGoogleAuth = () => {
         }
       }
     } catch (error) {
-      Alert.alert("Error", "Something went wrong opening Google Sign-In.");
+      Toast.show({
+        type: "error",
+        text1: "Something went wrong opening Google Sign-In.",
+      });
     }
     return null;
   };

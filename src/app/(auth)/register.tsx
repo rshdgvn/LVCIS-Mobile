@@ -7,7 +7,7 @@ import { authService } from "@/src/services/authService";
 import { RegisterPayload } from "@/src/types/auth";
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { Alert } from "react-native";
+import Toast from "react-native-toast-message";
 
 const Register = () => {
   const router = useThrottledRouter();
@@ -19,16 +19,13 @@ const Register = () => {
     mutationFn: (data: RegisterPayload) => authService.register(data),
     onSuccess: (data) => {
       setErrors({});
-      Alert.alert(
-        "Account Created",
-        "Please check your email to verify your account before logging in.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.push("/(auth)/login"),
-          },
-        ],
-      );
+
+      Toast.show({
+        type: "success",
+        text1: "Account Created! Please verify your email.",
+      });
+
+      router.push("/(auth)/login");
     },
     onError: (error: any) => {
       console.error("Registration Error:", error);
@@ -59,6 +56,11 @@ const Register = () => {
 
       setErrors({
         general: data?.message || "Registration failed. Please try again.",
+      });
+
+      Toast.show({
+        type: "error",
+        text1: data?.message || "Registration failed. Please try again.",
       });
     },
   });

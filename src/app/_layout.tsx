@@ -4,7 +4,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRootNavigationState, useSegments } from "expo-router";
 import React, { useEffect } from "react";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 import { useThrottledRouter } from "../hooks/useThrottledRouter";
+import { toastConfig } from "../components/common/ToastConfig";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +61,7 @@ export default function RootLayout() {
           <InitialLayout />
         </AuthProvider>
       </QueryClientProvider>
+      <Toast config={toastConfig} />
     </View>
   );
 }
