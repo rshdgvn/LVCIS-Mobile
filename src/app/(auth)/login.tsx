@@ -9,7 +9,8 @@ import { LoginPayload } from "@/src/types/auth";
 import { AuthScreen } from "@/src/types/navigation";
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
+import Toast from "react-native-toast-message"; // <-- Import Toast
 
 const Login = () => {
   const router = useThrottledRouter();
@@ -23,6 +24,12 @@ const Login = () => {
     mutationFn: (data: LoginPayload) => authService.login(data),
     onSuccess: async (data) => {
       setErrors({});
+      
+      Toast.show({
+        type: "success",
+        text1: "Successfully logged in!",
+      });
+
       await signIn(data.token, data.user);
     },
     onError: (error: any, variables: LoginPayload) => {
@@ -68,9 +75,18 @@ const Login = () => {
       try {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         const user = await authService.getUser();
+        
+        Toast.show({
+          type: "success",
+          text1: "Successfully logged in with Google!",
+        });
+
         await signIn(token, user);
       } catch (error) {
-        Alert.alert("Error", "Failed to fetch user profile from Google.");
+        Toast.show({
+          type: "error",
+          text1: "Failed to fetch user profile from Google.",
+        });
       }
     }
     setIsGoogleLoading(false);

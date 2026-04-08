@@ -1,15 +1,17 @@
+import { CustomAlertDialog } from "@/src/components/common/CustomAlertDialog";
 import { useTheme } from "@/src/hooks/useTheme";
 import { membershipService } from "@/src/services/membershipService";
+import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import React from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 
 interface Props {
   clubId: number;
@@ -18,6 +20,10 @@ interface Props {
 export const ClubApplicationsTab = ({ clubId }: Props) => {
   const { primaryColor } = useTheme();
   const queryClient = useQueryClient();
+
+  const [isDialogVisible, setIsDialogVisible] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
+  const [actionType, setActionType] = useState<"approved" | "rejected" | null>(null);
 
   const { data: applicants = [], isLoading } = useQuery({
     queryKey: ["pendingApplicants", clubId],
@@ -36,16 +42,40 @@ export const ClubApplicationsTab = ({ clubId }: Props) => {
       queryClient.invalidateQueries({
         queryKey: ["pendingApplicants", clubId],
       });
-
       queryClient.invalidateQueries({ queryKey: ["club", clubId] });
 
-      Alert.alert("Success", `Applicant has been ${variables.status}.`);
+      setIsDialogVisible(false);
+      setSelectedApplicant(null);
+      setActionType(null);
+
+      Toast.show({
+        type: "success",
+        text1: `Applicant has been ${variables.status}.`,
+      });
     },
     onError: (error) => {
       console.error(error);
-      Alert.alert("Error", "Failed to update application status.");
+      setIsDialogVisible(false);
+      Toast.show({
+        type: "error",
+        text1: "Failed to update application status.",
+      });
     },
   });
+
+  const handleOpenDialog = (applicant: any, action: "approved" | "rejected") => {
+    setSelectedApplicant(applicant);
+    setActionType(action);
+    setIsDialogVisible(true);
+  };
+
+  const handleConfirmAction = () => {
+    if (!selectedApplicant || !actionType) return;
+    updateStatusMutation.mutate({
+      userId: selectedApplicant.user_id,
+      status: actionType,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -73,7 +103,7 @@ export const ClubApplicationsTab = ({ clubId }: Props) => {
           </Text>
         </View>
       ) : (
-        applicants.map((applicant) => {
+        applicants.map((applicant: any) => {
           const isProcessing =
             updateStatusMutation.isPending &&
             updateStatusMutation.variables?.userId === applicant.user_id;
@@ -81,73 +111,73 @@ export const ClubApplicationsTab = ({ clubId }: Props) => {
           return (
             <View
               key={applicant.user_id}
-              className={`border border-border dark:border-dark-border rounded-xl p-4 mb-4 bg-card dark:bg-dark-card shadow-sm ${
+              className={`flex-row items-center justify-between border border-border dark:border-dark-border rounded-xl p-4 mb-4 bg-card dark:bg-dark-card shadow-sm ${
                 isProcessing ? "opacity-50" : "opacity-100"
               }`}
             >
-              <View className="flex-row justify-between items-start">
-                <View className="flex-row flex-1">
-                  <Image
-                    source={{
-                      uri:
-                        applicant.avatar || "https://via.placeholder.com/150",
-                    }}
-                    className="w-12 h-12 rounded-full border border-border dark:border-dark-border bg-muted dark:bg-dark-muted"
-                  />
-                  <View className="ml-3 flex-1">
-                    <Text
-                      className="text-base font-bold text-card-fg dark:text-dark-card-fg"
-                      numberOfLines={1}
-                    >
-                      {applicant.first_name} {applicant.last_name}
-                    </Text>
-                    <Text className="text-sm text-muted-fg dark:text-dark-muted-fg mt-0.5">
-                      {applicant.course || "No Course"} •{" "}
-                      {applicant.year_level || "N/A"}
-                    </Text>
-                  </View>
+              {/* Left Side: Avatar and Info */}
+              <View className="flex-row items-center flex-1">
+                <Image
+                  source={{
+                    uri: applicant.avatar || "https://via.placeholder.com/150",
+                  }}
+                  className="w-12 h-12 rounded-full border border-border dark:border-dark-border bg-muted dark:bg-dark-muted"
+                />
+                <View className="ml-3 flex-1">
+                  <Text
+                    className="text-base font-bold text-card-fg dark:text-dark-card-fg"
+                    numberOfLines={1}
+                  >
+                    {applicant.first_name} {applicant.last_name}
+                  </Text>
+                  <Text className="text-sm text-muted-fg dark:text-dark-muted-fg mt-0.5">
+                    {applicant.course || "No Course"} {applicant.year_level ? `${applicant.year_level}` : ""}
+                  </Text>
                 </View>
-
-                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg ml-2 whitespace-nowrap">
-                  {applicant.requested_at}
-                </Text>
               </View>
 
-              <View className="flex-row items-center mt-4 gap-x-3">
+              {/* Right Side: Action Icons */}
+              <View className="flex-row items-center gap-x-5 ml-2">
                 <TouchableOpacity
                   disabled={isProcessing}
-                  className="border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 py-2 rounded-lg flex-1 items-center"
-                  onPress={() =>
-                    updateStatusMutation.mutate({
-                      userId: applicant.user_id,
-                      status: "approved",
-                    })
-                  }
+                  onPress={() => handleOpenDialog(applicant, "approved")}
+                  className="p-1"
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                  <Text className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm">
-                    Approved
-                  </Text>
+                  <Ionicons name="checkmark-sharp" size={24} color="#10b981" />
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   disabled={isProcessing}
-                  className="border border-red-200 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg flex-1 items-center"
-                  onPress={() =>
-                    updateStatusMutation.mutate({
-                      userId: applicant.user_id,
-                      status: "rejected",
-                    })
-                  }
+                  onPress={() => handleOpenDialog(applicant, "rejected")}
+                  className="p-1"
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                  <Text className="text-red-500 dark:text-red-400 font-semibold text-sm">
-                    Reject
-                  </Text>
+                  <Ionicons name="close-sharp" size={24} color="#ef4444" />
                 </TouchableOpacity>
               </View>
             </View>
           );
         })
       )}
+
+      <CustomAlertDialog
+        visible={isDialogVisible}
+        title={actionType === "approved" ? "Approve Application" : "Reject Application"}
+        message={`Are you sure you want to ${
+          actionType === "approved" ? "approve" : "reject"
+        } ${selectedApplicant?.first_name || "this user"}'s club application?`}
+        cancelText="Cancel"
+        confirmText={actionType === "approved" ? "Approve" : "Reject"}
+        isDestructive={actionType === "rejected"}
+        isLoading={updateStatusMutation.isPending}
+        onCancel={() => {
+          setIsDialogVisible(false);
+          setSelectedApplicant(null);
+          setActionType(null);
+        }}
+        onConfirm={handleConfirmAction}
+      />
     </View>
   );
 };

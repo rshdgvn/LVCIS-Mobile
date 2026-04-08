@@ -1,5 +1,6 @@
 import { ClubCard } from "@/src/components/clubs/ClubCard";
 import { CustomDropdown } from "@/src/components/common/CustomDropdown";
+import { CreateClubModal } from "@/src/components/modals/CreateClubModal";
 import {
   CATEGORY_LABEL_MAP,
   CATEGORY_OPTIONS,
@@ -8,13 +9,15 @@ import {
   VIEW_FILTER_OPTIONS,
   VIEW_FILTER_VALUE_MAP,
 } from "@/src/constants/clubOptions";
+import { useIsAdmin } from "@/src/hooks/useIsAdmin";
 import { useTheme } from "@/src/hooks/useTheme";
 import { clubService } from "@/src/services/clubService";
 import { membershipService } from "@/src/services/membershipService";
 import { Club, ClubCategory, ClubViewFilter } from "@/src/types/club";
+import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import React from "react";
-import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
@@ -38,6 +41,9 @@ export default function ClubsScreen({
 }: Props) {
   const { primaryColor } = useTheme();
   const queryClient = useQueryClient();
+  const isAdmin = useIsAdmin();
+
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
 
   const { data: membershipStatuses = {} } = useQuery({
     queryKey: ["userMemberships"],
@@ -112,7 +118,7 @@ export default function ClubsScreen({
     selectedCategory !== undefined || viewFilter !== "all";
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-5 pt-4">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-5 pt-4 relative">
       <View className="mb-6">
         <Text className="text-muted-fg dark:text-dark-muted-fg text-lg">
           Welcome to,
@@ -173,7 +179,7 @@ export default function ClubsScreen({
           data={clubs}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 24 }}
+          contentContainerStyle={{ paddingBottom: 80 }} 
           ListEmptyComponent={
             <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
               No clubs found for this filter.
@@ -192,6 +198,20 @@ export default function ClubsScreen({
           )}
         />
       )}
+
+      {isAdmin && (
+        <TouchableOpacity
+          onPress={() => setIsCreateModalVisible(true)}
+          className="absolute bottom-6 right-5 w-14 h-14 bg-primary dark:bg-dark-primary rounded-full items-center justify-center shadow-lg shadow-primary/30 elevation-5"
+        >
+          <Ionicons name="add" size={30} color="#ffffff" />
+        </TouchableOpacity>
+      )}
+
+      <CreateClubModal
+        isVisible={isCreateModalVisible}
+        onClose={() => setIsCreateModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
