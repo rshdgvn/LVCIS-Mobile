@@ -24,12 +24,14 @@ export const eventService = {
   },
 
   // Update an existing event
-  updateEvent: async (id: number, formData: FormData) => {
-    const response = await api.patch(`/events/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data;
-  },
+  updateEvent: async (id: number, data: FormData) => {
+      data.append("_method", "PUT");
+      
+      const response = await api.post(`/events/${id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    },
 
   // Delete an event
   deleteEvent: async (id: number) => {
