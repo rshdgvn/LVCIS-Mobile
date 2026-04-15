@@ -78,7 +78,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       // Note: No router.replace here! The _layout.tsx will see user is null,
-      // see that isLoading is false, and smoothly transition you to login on its own.
     }
   };
 
