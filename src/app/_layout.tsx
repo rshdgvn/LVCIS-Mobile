@@ -1,12 +1,13 @@
 import "@/global.css";
 import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
+import { ClubProvider } from "@/src/contexts/ClubContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRootNavigationState, useSegments } from "expo-router";
 import React, { useEffect } from "react";
 import { View } from "react-native";
 import Toast from "react-native-toast-message";
-import { useThrottledRouter } from "../hooks/useThrottledRouter";
 import { toastConfig } from "../components/common/ToastConfig";
+import { useThrottledRouter } from "../hooks/useThrottledRouter";
 
 const queryClient = new QueryClient();
 
@@ -58,7 +59,9 @@ export default function RootLayout() {
     <View className="flex-1 bg-background dark:bg-dark-bg">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <InitialLayout />
+          <ClubProvider>
+            <InitialLayout />
+          </ClubProvider>
         </AuthProvider>
       </QueryClientProvider>
       <Toast config={toastConfig} />

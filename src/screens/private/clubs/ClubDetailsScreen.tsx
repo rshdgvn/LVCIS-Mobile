@@ -1,13 +1,19 @@
 import { ClubApplicationsTab } from "@/src/components/clubs/ClubApplicationsTab";
 import { ClubDetailsTab } from "@/src/components/clubs/ClubDetailsTab";
 import { ClubMembersTab } from "@/src/components/clubs/ClubMembersTab";
+import { ClubOfficersTab } from "@/src/components/clubs/ClubOfficersTab";
 import { BackButton } from "@/src/components/common/BackButton";
+import { AddMemberModal } from "@/src/components/modals/AddMemberModal";
+import { useCanManageClub } from "@/src/hooks/useCanManageClub";
 import { useTheme } from "@/src/hooks/useTheme";
+import { membershipService } from "@/src/services/membershipService";
 import { Club } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   ScrollView,
   Text,
@@ -23,7 +29,7 @@ interface Props {
   onEdit: (clubId: number) => void;
 }
 
-type TabType = "details" | "members" | "applications";
+type TabType = "details" | "officer" | "members" | "applications";
 
 export default function ClubDetailsScreen({
   club,
@@ -31,8 +37,37 @@ export default function ClubDetailsScreen({
   onBack,
   onEdit,
 }: Props) {
-  const { primaryColor, mutedFgColor } = useTheme();
+  const { primaryColor, fgColor } = useTheme();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>("details");
+  const { canManageClub } = useCanManageClub();
+
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+
+  const { data: rawData } = useQuery({
+    queryKey: ["clubMembers", club?.id],
+    queryFn: () => membershipService.getClubMembers(club!.id),
+    enabled: !!club?.id,
+  });
+
+  const addMemberMutation = useMutation({
+    mutationFn: (data: {
+      email: string;
+      role: "member" | "officer";
+      officerTitle?: string;
+    }) => membershipService.addMember(club!.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clubMembers", club!.id] });
+      setIsAddModalVisible(false);
+      Alert.alert("Success", "User added successfully.");
+    },
+    onError: (error: any) => {
+      Alert.alert(
+        "Error",
+        error?.response?.data?.message || "Failed to add user.",
+      );
+    },
+  });
 
   if (isLoading) {
     return (
@@ -44,6 +79,11 @@ export default function ClubDetailsScreen({
 
   if (!club) return null;
 
+  const hasManageAccess = canManageClub(club.id);
+  const membersList = Array.isArray(rawData)
+    ? rawData
+    : rawData?.data || rawData?.members || [];
+
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <View className="flex-row justify-between items-center px-5 pt-2 pb-4">
@@ -51,9 +91,16 @@ export default function ClubDetailsScreen({
         <Text className="text-lg font-semibold text-muted-fg dark:text-dark-muted-fg">
           Club Profile
         </Text>
-        <TouchableOpacity className="w-12 h-12 items-center justify-center">
-          <Ionicons name="ellipsis-horizontal" size={24} color={mutedFgColor} />
-        </TouchableOpacity>
+        {hasManageAccess ? (
+          <TouchableOpacity
+            className="w-12 h-12 items-center justify-center"
+            onPress={() => setIsAddModalVisible(true)}
+          >
+            <Ionicons name="person-add" size={24} color={primaryColor} />
+          </TouchableOpacity>
+        ) : (
+          <View className="w-12 h-12" />
+        )}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -78,23 +125,29 @@ export default function ClubDetailsScreen({
             </Text>
           </View>
 
-          <TouchableOpacity
-            className="bg-primary dark:bg-dark-primary w-full py-3.5 rounded-xl items-center flex-row justify-center mt-6 shadow-sm"
-            onPress={() => onEdit(club.id)}
-          >
-            <Ionicons
-              name="create-outline"
-              size={18}
-              color="#ffffff"
-              className="mr-2"
-            />
-            <Text className="text-primary-fg dark:text-dark-primary-fg font-semibold ml-2">
-              Edit Club Profile
-            </Text>
-          </TouchableOpacity>
+          {hasManageAccess && (
+            <TouchableOpacity
+              className="bg-primary dark:bg-dark-primary w-full py-3.5 rounded-xl items-center flex-row justify-center mt-6 shadow-sm"
+              onPress={() => onEdit(club.id)}
+            >
+              <Ionicons
+                name="create-outline"
+                size={18}
+                color="#ffffff"
+                className="mr-2"
+              />
+              <Text className="text-primary-fg dark:text-dark-primary-fg font-semibold ml-2">
+                Edit Club Profile
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        <View className="flex-row mt-8 px-5 border-b border-border dark:border-dark-border">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="flex-row mt-8 px-5 border-b border-border dark:border-dark-border"
+        >
           <TouchableOpacity
             className={`pb-3 mr-6 ${activeTab === "details" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
             onPress={() => setActiveTab("details")}
@@ -118,33 +171,55 @@ export default function ClubDetailsScreen({
           </TouchableOpacity>
 
           <TouchableOpacity
-            className={`pb-3 flex-row items-center ${activeTab === "applications" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
-            onPress={() => setActiveTab("applications")}
+            className={`pb-3 mr-6 ${activeTab === "officer" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
+            onPress={() => setActiveTab("officer")}
           >
             <Text
-              className={`font-semibold ${activeTab === "applications" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
+              className={`font-semibold ${activeTab === "officer" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
             >
-              Applications
+              Officer
             </Text>
-
-            {(club.pending_applications_count || 0) > 0 && (
-              <View className="w-2 h-2 rounded-full bg-destructive dark:bg-dark-destructive ml-1 mb-3" />
-            )}
           </TouchableOpacity>
-        </View>
+
+          {hasManageAccess && (
+            <TouchableOpacity
+              className={`pb-3 pr-5 flex-row items-center ${activeTab === "applications" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
+              onPress={() => setActiveTab("applications")}
+            >
+              <Text
+                className={`font-semibold ${activeTab === "applications" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
+              >
+                Applications
+              </Text>
+
+              {(club.pending_applications_count || 0) > 0 && (
+                <View className="w-2 h-2 rounded-full bg-destructive dark:bg-dark-destructive ml-1 mb-3" />
+              )}
+            </TouchableOpacity>
+          )}
+        </ScrollView>
 
         <View className="px-5 mt-4 mb-10">
           {activeTab === "details" && (
             <ClubDetailsTab description={club.description} />
           )}
-          {activeTab === "members" && (
-            <ClubMembersTab clubId={club.id} />
-          )}
-          {activeTab === "applications" && (
+          {activeTab === "members" && <ClubMembersTab clubId={club.id} />}
+          {activeTab === "officer" && <ClubOfficersTab clubId={club.id} />}
+          {activeTab === "applications" && hasManageAccess && (
             <ClubApplicationsTab clubId={club.id} />
           )}
         </View>
       </ScrollView>
+
+      {hasManageAccess && (
+        <AddMemberModal
+          isVisible={isAddModalVisible}
+          onClose={() => setIsAddModalVisible(false)}
+          onAdd={(data: any) => addMemberMutation.mutate(data)}
+          isPending={addMemberMutation.isPending}
+          currentMembers={membersList}
+        />
+      )}
     </SafeAreaView>
   );
 }
