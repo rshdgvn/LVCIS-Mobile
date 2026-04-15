@@ -14,6 +14,7 @@ export default function TabsLayout() {
 
   const insets = useSafeAreaInsets();
   const [isReady, setIsReady] = useState(false);
+  const hasNotifications = false;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsReady(true), 150);
@@ -59,8 +60,8 @@ export default function TabsLayout() {
           <Tabs.Screen name="attendance" />
           <Tabs.Screen name="clubs" />
           <Tabs.Screen name="events" />
-          <Tabs.Screen 
-            name="create-event" 
+          <Tabs.Screen
+            name="create-event"
             options={{
               href: null,
             }}
@@ -77,7 +78,7 @@ export default function TabsLayout() {
           }}
         >
           <TouchableOpacity
-            className="w-12 h-12 rounded-full bg-muted dark:bg-dark-muted justify-center items-center relative shadow-sm"
+            className="w-12 h-12 rounded-full bg-muted dark:bg-dark-muted justify-center items-center relative"
             activeOpacity={0.7}
             onPress={() => router.push("/profile/notifications")}
           >
@@ -86,7 +87,10 @@ export default function TabsLayout() {
               size={24}
               color={primaryColor}
             />
-            <View className="absolute top-2.5 right-3 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-background dark:border-dark-bg" />
+
+            {hasNotifications && (
+              <View className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-red-500" />
+            )}
           </TouchableOpacity>
         </View>
       )}

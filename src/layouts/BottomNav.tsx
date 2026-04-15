@@ -16,30 +16,35 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     { name: "Home", icon: "home-outline", activeIcon: "home" },
     {
       name: "Attendance",
-      icon: "account-check-outline",
-      activeIcon: "account-check",
+      icon: "clipboard-check-outline",
+      activeIcon: "clipboard-check",
     },
-    { name: "Clubs", icon: "school-outline", activeIcon: "school" },
+    {
+      name: "Clubs",
+      icon: "account-group-outline",
+      activeIcon: "account-group",
+    },
     {
       name: "Events",
-      icon: "calendar-check-outline",
-      activeIcon: "calendar-check",
+      icon: "calendar-blank-outline",
+      activeIcon: "calendar-blank",
     },
   ];
 
-  const containerPadding = Platform.OS === "ios" ? "pb-8 pt-3" : "py-3";
+  const containerPadding = Platform.OS === "ios" ? "pb-8 pt-4" : "py-4";
 
   return (
     <View
-      className={`flex-row bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border justify-around items-center ${containerPadding}`}
+      className={`flex-row bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border justify-between items-center px-6 ${containerPadding}`}
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.name;
 
         const iconColor = isActive ? "#2563EB" : "#9CA3AF";
+
         const textClass = isActive
-          ? "text-primary dark:text-dark-primary"
-          : "text-muted-fg dark:text-dark-muted-fg";
+          ? "text-[#2563EB] dark:text-blue-400 font-bold"
+          : "text-[#9CA3AF] dark:text-dark-muted-fg font-medium";
 
         return (
           <TouchableOpacity
@@ -50,12 +55,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <MaterialCommunityIcons
               name={isActive ? tab.activeIcon : tab.icon}
-              size={24}
+              size={28} // Increased icon size from 24 to 28
               color={iconColor}
             />
-            <Text className={`text-[10px] mt-1 font-semibold ${textClass}`}>
-              {tab.name}
-            </Text>
+            {/* Increased text size to xs and added slightly more margin top */}
+            <Text className={`text-xs mt-1.5 ${textClass}`}>{tab.name}</Text>
           </TouchableOpacity>
         );
       })}
