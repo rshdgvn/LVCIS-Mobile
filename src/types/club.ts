@@ -3,28 +3,23 @@ export type ClubCategory =
   | "culture_and_performing_arts"
   | "socio_politics";
 
+export type ClubViewFilter = "all" | "my" | "pending" | "other";
 
-export interface ClubMember {
+export interface ClubMembershipPivot {
+  club_id: number;
   user_id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  avatar: string | null;
-  course: string | null;
-  year_level: string | null;
-  student_id: string | null;
-  role: "member" | "officer";
+  role: "member" | "officer" | "adviser" | string;
   officer_title: string | null;
+  status: "pending" | "approved" | "rejected";
+  activity_status?: "active" | "inactive"; 
   joined_at: string;
 }
-
-export type ClubViewFilter = "all" | "my" | "pending" | "other";
 
 export interface Club {
   id: number;
   name: string;
   category: ClubCategory | string;
-  description: string | undefined;
+  description: string | null;
   adviser: string | null;
   logo: string | null;
   logo_url: string | null;
@@ -33,12 +28,26 @@ export interface Club {
   approved_users_count?: number;
   pending_applications_count?: number;
   users?: ClubMember[]; 
+  approved_users?: ClubMember[];
+  pivot?: ClubMembershipPivot; 
+}
+
+export interface ClubMember {
+  id: number; 
+  first_name: string;
+  last_name: string;
+  email: string;
+  avatar: string | null;
+  course: string | null;
+  year_level: string | null;
+  student_id: string | null;
+  pivot: ClubMembershipPivot; 
 }
 
 export interface ClubPayload {
   name: string;
   category: ClubCategory | string;
-  description?: string | undefined;
+  description?: string;
   adviser?: string;
   logo?: string;
 }
@@ -54,22 +63,11 @@ export interface MemberProfile {
 
 export interface PendingApplicant {
   user_id: number;
-  avatar: string;
+  avatar: string | null;
   first_name: string;
   last_name: string;
   email: string;
-  course?: string;
-  year_level?: string;
+  course?: string | null;
+  year_level?: string | null;
   requested_at: string;
-}
-
-export interface ClubMembership {
-  id: number;
-  club_id: number;
-  user_id: number;
-  role: "member" | "officer" | "adviser";
-  officer_title: string | null;
-  status: "pending" | "approved" | "rejected";
-  activity_status: "active" | "inactive";
-  joined_at: string;
 }

@@ -7,20 +7,24 @@ import { TOKEN_KEY } from "@/src/utils/config";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect } from "react";
-import { useThrottledRouter } from "../hooks/useThrottledRouter";
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-  const router = useThrottledRouter();
 
   useEffect(() => {
     setUnauthorizedCallback(() => {
+      // 1. Instantly set user to null (isAuthenticated becomes false, isLoading stays false)
       queryClient.setQueryData(["user"], null);
-      router.replace("/(auth)/login");
+
+      // 2. Wipe all other queries (clubs, members) to protect sensitive data,
+      // but leave the "user" query alone so it doesn't trigger a hard layout-freezing re-fetch.
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== "user",
+      });
     });
-  }, [queryClient, router]);
+  }, [queryClient]);
 
   const { data: user, isLoading } = useQuery({
     queryKey: ["user"],
@@ -66,8 +70,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("Logout error", e);
     } finally {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
+
+      // Use the exact same clean wipe logic here!
       queryClient.setQueryData(["user"], null);
-      queryClient.removeQueries();
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== "user",
+      });
+
+      // Note: No router.replace here! The _layout.tsx will see user is null,
+      // see that isLoading is false, and smoothly transition you to login on its own.
     }
   };
 

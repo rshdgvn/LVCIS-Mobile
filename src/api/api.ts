@@ -24,6 +24,8 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+let isHandling401 = false;
+
 api.interceptors.response.use(
   (response) => {
     return response;
@@ -37,6 +39,7 @@ api.interceptors.response.use(
       "/reset-password",
       "/verify",
       "/email",
+      "/logout",
     ];
 
     const isAuthRoute = authEndpoints.some((endpoint) =>
@@ -45,9 +48,16 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !isAuthRoute) {
       console.warn("API 401: Token invalid or expired. Auto-logging out.");
-      await SecureStore.deleteItemAsync(TOKEN_KEY);
 
-      onUnauthorizedCallback();
+      if (!isHandling401) {
+        isHandling401 = true;
+        await SecureStore.deleteItemAsync(TOKEN_KEY);
+        onUnauthorizedCallback();
+
+        setTimeout(() => {
+          isHandling401 = false;
+        }, 2000);
+      }
     }
 
     return Promise.reject(error);

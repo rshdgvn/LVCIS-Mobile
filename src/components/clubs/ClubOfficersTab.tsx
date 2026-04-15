@@ -12,7 +12,7 @@ interface Props {
   clubId: number;
 }
 
-export const ClubMembersTab = ({ clubId }: Props) => {
+export const ClubOfficersTab = ({ clubId }: Props) => {
   const { primaryColor } = useTheme();
   const queryClient = useQueryClient();
 
@@ -43,7 +43,7 @@ export const ClubMembersTab = ({ clubId }: Props) => {
       queryClient.invalidateQueries({ queryKey: ["clubMembers", clubId] });
       setIsEditModalVisible(false);
       setSelectedMember(null);
-      Alert.alert("Success", "Member role updated.");
+      Alert.alert("Success", "Officer role updated.");
     },
     onError: (error: any) => {
       Alert.alert(
@@ -60,14 +60,14 @@ export const ClubMembersTab = ({ clubId }: Props) => {
       queryClient.invalidateQueries({ queryKey: ["clubMembers", clubId] });
       setIsRemoveDialogVisible(false);
       setMemberToRemove(null);
-      Alert.alert("Success", "Member removed.");
+      Alert.alert("Success", "Officer removed from club.");
     },
     onError: (error: any) => {
       setIsRemoveDialogVisible(false);
       setMemberToRemove(null);
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "Failed to remove member.",
+        error?.response?.data?.message || "Failed to remove officer.",
       );
     },
   });
@@ -102,30 +102,33 @@ export const ClubMembersTab = ({ clubId }: Props) => {
     ? rawData
     : rawData?.data || rawData?.members || [];
 
-  const regularMembers = membersList.filter(
+  const officersList = membersList.filter(
     (member: any) =>
-      member?.role === "member" || member?.pivot?.role === "member",
+      member?.role === "officer" ||
+      member?.pivot?.role === "officer" ||
+      member?.role === "admin" ||
+      member?.pivot?.role === "admin",
   );
 
   return (
     <View className="flex-1 mt-2">
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-sm font-semibold text-muted-fg dark:text-dark-muted-fg uppercase tracking-wider">
-          Active Members
+          Active Officers
         </Text>
         <Text className="text-sm text-muted-fg dark:text-dark-muted-fg">
-          {regularMembers.length} Total
+          {officersList.length} Total
         </Text>
       </View>
 
-      {regularMembers.length === 0 ? (
+      {officersList.length === 0 ? (
         <View className="py-10 items-center border border-dashed border-border dark:border-dark-border rounded-xl">
           <Text className="text-muted-fg dark:text-dark-muted-fg py-8">
-            No active members yet.
+            No active officers yet.
           </Text>
         </View>
       ) : (
-        regularMembers.map((member: any, index: number) => (
+        officersList.map((member: any, index: number) => (
           <MemberListItem
             key={
               member?.user_id?.toString() ||
@@ -159,7 +162,7 @@ export const ClubMembersTab = ({ clubId }: Props) => {
           />
           <CustomAlertDialog
             visible={isRemoveDialogVisible}
-            title="Remove Member"
+            title="Remove Officer"
             message={`Are you sure you want to remove ${
               memberToRemove?.first_name || "this user"
             } from the club? They will lose access to all club activities.`}
