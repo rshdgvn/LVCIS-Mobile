@@ -12,13 +12,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { EditEventModal } from "@/src/components/modals/EditEventModal"; 
 
 interface Props {
   event?: Event;
   isLoading: boolean;
   isDeleting: boolean;
   onBack: () => void;
-  onEdit: (eventId: number) => void;
+  onEdit?: (eventId: number) => void; 
   onDelete: () => void; 
 }
 
@@ -29,8 +30,10 @@ interface Task {
   assignee: string;
 }
 
-export default function EventDetailsScreen({ event, isLoading, isDeleting, onBack, onEdit, onDelete}: Props) {
+export default function EventDetailsScreen({ event, isLoading, isDeleting, onBack, onDelete}: Props) {
   const { primaryColor } = useTheme();
+  
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
   // Mock tasks for the UI until task management is implemented
   const [tasks, setTasks] = useState<Task[]>([
@@ -76,21 +79,21 @@ export default function EventDetailsScreen({ event, isLoading, isDeleting, onBac
         <Text className="text-lg font-semibold text-gray-800 dark:text-dark-fg">
           Event Details
         </Text>
-        <TouchableOpacity onPress={() => {onEdit(event.id);}}
-            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-            >
+        <TouchableOpacity 
+          onPress={() => setIsEditModalVisible(true)} // <-- 2. Open Modal on Edit press
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
           <Text className="text-blue-600 font-medium hover:text-blue-700">Edit</Text>
         </TouchableOpacity>
       </View>
+    
       <View className="px-6 mt-4">    
-          {/* Event Hero Card */}
         <View className="relative h-56 rounded-3xl overflow-hidden shadow-lg bg-gray-200 mb-6">
           <Image
             source={{ uri: cover_image || 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=800' }}
             className="w-full h-full"
             resizeMode="cover"
           />
-          {/* Gradient Overlay Fallback using a semi-transparent view */}
           <View className="absolute inset-0 bg-black/40 justify-end p-6">
             <Text className="text-2xl font-bold text-white leading-tight">
               {title || "Untitled Event"}
@@ -98,7 +101,6 @@ export default function EventDetailsScreen({ event, isLoading, isDeleting, onBac
           </View>
         </View>
 
-        {/* Info Box */}
         <View className="bg-white dark:bg-dark-input rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-dark-border flex-row items-center gap-4 mb-6">
           <View className="flex-col items-center justify-center bg-blue-50 dark:bg-blue-900/30 rounded-2xl px-4 py-2 min-w-[70px]">
             <Text className="text-[10px] uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400">
@@ -121,6 +123,7 @@ export default function EventDetailsScreen({ event, isLoading, isDeleting, onBac
           </View>
         </View>
       </View>
+
       {/* Tasks Section (UI Only) */}
       <View className="flex-row items-center justify-between px-6 mb-4">
         <View className="flex-row items-center gap-2">
@@ -181,21 +184,29 @@ export default function EventDetailsScreen({ event, isLoading, isDeleting, onBac
           </TouchableOpacity>
         </View>
       </ScrollView>
-        {/* Footer Actions */}
-        <View className="px-6 border-gray-100 dark:border-dark-border">
-          <TouchableOpacity onPress={onDelete}
-              disabled={isDeleting}
-              className={`w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 mb-3 ${isDeleting ? 'opacity-50' : 'opacity-100'}`}
-            > 
-            <Ionicons name="trash" size={20} color="#ef4444" />
-            <Text className="text-red-500 font-bold text-base">
-              {isDeleting ? "Deleting..." : "Delete Event"}
-            </Text>
-          </TouchableOpacity>
-          <Text className="text-center text-[10px] text-gray-400 uppercase tracking-widest font-bold">
-            This action cannot be undone
+
+      {/* Footer Actions */}
+      <View className="px-6 border-gray-100 dark:border-dark-border">
+        <TouchableOpacity onPress={onDelete}
+            disabled={isDeleting}
+            className={`w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 mb-3 ${isDeleting ? 'opacity-50' : 'opacity-100'}`}
+          > 
+          <Ionicons name="trash" size={20} color="#ef4444" />
+          <Text className="text-red-500 font-bold text-base">
+            {isDeleting ? "Deleting..." : "Delete Event"}
           </Text>
-        </View>
+        </TouchableOpacity>
+        <Text className="text-center text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-4">
+          This action cannot be undone
+        </Text>
+      </View>
+
+      {/* 3. Include the Edit Modal */}
+      <EditEventModal 
+        isVisible={isEditModalVisible}
+        onClose={() => setIsEditModalVisible(false)}
+        event={event}
+      />
     </SafeAreaView>
   );
 }
