@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Href, useRouter } from "expo-router";
 import { View } from "react-native";
-import { useFilteredClubs, ClubViewFilter } from "@/src/hooks/useClubs";
+import { useFilteredClubs } from "@/src/hooks/useClubs";
+import { ClubViewFilter } from "@/src/types/club";
 import { ClubCategory } from "@/src/types/club";
 import ClubsScreen from "@/src/screens/private/clubs/ClubsScreen";
 

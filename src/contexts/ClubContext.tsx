@@ -1,12 +1,23 @@
+// src/contexts/ClubContext.tsx
+
 import { api } from "@/src/api/api";
 import { useQuery } from "@tanstack/react-query";
-import React, { createContext, useCallback, useContext, useMemo } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Club } from "../types/club";
 import { useAuth } from "./AuthContext";
 
 type ClubContextType = {
   clubs: Club[];
   isLoading: boolean;
+  activeClubId: number | null;
+  setActiveClubId: (id: number | null) => void;
   getUserRole: (clubId: number | string) => string | null;
   isOfficer: (clubId: number | string) => boolean;
   isMember: (clubId: number | string) => boolean;
@@ -16,17 +27,23 @@ const ClubContext = createContext<ClubContextType>({} as ClubContextType);
 
 export function ClubProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
+  const [activeClubId, setActiveClubId] = useState<number | null>(null);
 
   const { data: clubs = [], isLoading } = useQuery<Club[]>({
     queryKey: ["userClubs"],
     queryFn: async () => {
       const response = await api.get("/my/clubs");
-      console.log("Fetched clubs:", response.data);
       return response.data;
     },
     enabled: isAuthenticated,
     staleTime: 1000 * 60 * 5,
   });
+
+  useEffect(() => {
+    if (clubs.length > 0 && !activeClubId) {
+      setActiveClubId(clubs[0].id);
+    }
+  }, [clubs, activeClubId]);
 
   const getUserRole = useCallback(
     (clubId: number | string) => {
@@ -39,7 +56,7 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
   const isOfficer = useCallback(
     (clubId: number | string) => {
       const role = getUserRole(clubId);
-      return role === "officer" || role === "adviser";
+      return role === "officer" || role === "adviser" || role === "admin";
     },
     [getUserRole],
   );
@@ -47,7 +64,7 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
   const isMember = useCallback(
     (clubId: number | string) => {
       const role = getUserRole(clubId);
-      return ["member", "officer", "adviser"].includes(role as string);
+      return ["member", "officer", "adviser", "admin"].includes(role as string);
     },
     [getUserRole],
   );
@@ -56,11 +73,13 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
     () => ({
       clubs,
       isLoading,
+      activeClubId,
+      setActiveClubId,
       getUserRole,
       isOfficer,
       isMember,
     }),
-    [clubs, isLoading, getUserRole, isOfficer, isMember],
+    [clubs, isLoading, activeClubId, getUserRole, isOfficer, isMember],
   );
 
   return <ClubContext.Provider value={value}>{children}</ClubContext.Provider>;
