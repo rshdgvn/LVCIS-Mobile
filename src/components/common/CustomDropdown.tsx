@@ -21,6 +21,7 @@ export const CustomDropdown = ({
   error,
   placeholder,
   emptyMessage = "No options available",
+  showLabelOnly = false,
 }: {
   label: string;
   value: string;
@@ -29,6 +30,7 @@ export const CustomDropdown = ({
   error?: string;
   placeholder?: string;
   emptyMessage?: string;
+  showLabelOnly?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { mutedFgColor } = useTheme();
@@ -65,6 +67,100 @@ export const CustomDropdown = ({
   const borderClass = error
     ? "border-red-500 dark:border-red-500"
     : "border-input dark:border-dark-input";
+
+  if (showLabelOnly) {
+    return (
+      <>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => setIsOpen(true)}
+          className="self-start flex-row items-center px-3 py-1.5 rounded-full border border-border dark:border-dark-border bg-card dark:bg-dark-card gap-1"
+        >
+          <Text className="text-sm font-medium text-foreground dark:text-dark-fg">
+            {label}
+          </Text>
+          <ChevronDown size={16} color={mutedFgColor} />
+        </TouchableOpacity>
+
+        <Modal
+          visible={isOpen}
+          transparent
+          animationType="slide"
+          onRequestClose={closeModal}
+        >
+          <Pressable
+            className="flex-1 bg-black/40 justify-end"
+            onPress={closeModal}
+          >
+            <Animated.View
+              {...panResponder.panHandlers}
+              style={{ transform: [{ translateY: panY }] }}
+              className="bg-background dark:bg-dark-bg rounded-t-3xl pt-3 pb-10 px-6 max-h-[80%]"
+            >
+              <View className="w-12 h-1.5 bg-border dark:bg-dark-border rounded-full self-center mb-6" />
+
+              <Text className="text-xl font-bold mb-4 text-foreground dark:text-dark-fg">
+                Choose {label}
+              </Text>
+
+              <FlatList
+                data={options}
+                keyExtractor={(item) => item}
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={
+                  <View className="py-6 items-center justify-center">
+                    <Text className="text-muted-fg dark:text-dark-muted-fg text-base text-center">
+                      {emptyMessage}
+                    </Text>
+                  </View>
+                }
+                renderItem={({ item }) => {
+                  const isSelected = value === item;
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        onSelect(item);
+                        closeModal();
+                      }}
+                      className={`flex-row items-center justify-between p-4 mb-2 rounded-2xl ${
+                        isSelected
+                          ? "bg-primary/10 dark:bg-dark-primary/10"
+                          : "bg-transparent"
+                      }`}
+                    >
+                      <Text
+                        className={`text-base ${
+                          isSelected
+                            ? "font-bold text-foreground dark:text-dark-fg"
+                            : "font-medium text-foreground dark:text-dark-fg"
+                        }`}
+                      >
+                        {item}
+                      </Text>
+                      {isSelected ? (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color="#3b82f6"
+                        />
+                      ) : (
+                        <Ionicons
+                          name="ellipse-outline"
+                          size={24}
+                          color={mutedFgColor}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            </Animated.View>
+          </Pressable>
+        </Modal>
+      </>
+    );
+  }
 
   return (
     <View className="mb-4">
@@ -133,7 +229,6 @@ export const CustomDropdown = ({
               }
               renderItem={({ item }) => {
                 const isSelected = value === item;
-
                 return (
                   <TouchableOpacity
                     activeOpacity={0.7}
@@ -156,7 +251,6 @@ export const CustomDropdown = ({
                     >
                       {item}
                     </Text>
-
                     {isSelected ? (
                       <Ionicons
                         name="checkmark-circle"

@@ -1,5 +1,3 @@
-// src/screens/private/attendance/AttendanceScreen.tsx
-
 import { CustomDropdown } from "@/src/components/common/CustomDropdown";
 import { CreateSessionModal } from "@/src/components/modals/CreateSessionModal";
 import { useClub } from "@/src/contexts/ClubContext";
@@ -12,20 +10,29 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
+  ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
-  sessions: AttendanceSession[] | undefined;
+  sessions: AttendanceSession[];
+  analytics: {
+    active_members: number;
+    inactive_members: number;
+    total_members: number;
+  } | null;
   isLoading: boolean;
   onAccessSession: (sessionId: number) => void;
 }
 
 export default function AttendanceScreen({
   sessions,
+  analytics,
   isLoading,
   onAccessSession,
 }: Props) {
@@ -33,73 +40,177 @@ export default function AttendanceScreen({
   const { clubs, activeClubId, setActiveClubId, isOfficer } = useClub();
   const { isAdmin } = useRole();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-
-  const clubOptions = clubs.map((c) => c.name);
-  const activeClubName = clubs.find((c) => c.id === activeClubId)?.name || "";
+  const [searchQuery, setSearchQuery] = useState("");
 
   const canManage = isAdmin || (activeClubId && isOfficer(activeClubId));
+
+  const clubOptions = clubs.map((c) => c.name);
+  const activeClub = clubs.find((c) => c.id === activeClubId);
+  const activeClubName = activeClub?.name || "";
+
+  const filteredSessions = sessions.filter((s) =>
+    s.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   const renderSessionCard = ({ item }: { item: AttendanceSession }) => (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={() => onAccessSession(item.id)}
-      className="bg-card dark:bg-dark-card p-4 rounded-2xl mb-4 border border-border dark:border-dark-border"
+      className="bg-card dark:bg-dark-card rounded-2xl mb-4 border border-border dark:border-dark-border flex-row items-center overflow-hidden"
     >
-      <View className="flex-row justify-between items-center mb-2">
-        <Text className="text-lg font-bold text-foreground dark:text-dark-fg flex-1">
+      <View className="px-4 py-5 items-start justify-center min-w-[85px]">
+        <Text className="text-sm font-bold text-foreground dark:text-dark-fg">
+          {dayjs(item.date).format("h:mm A")}
+        </Text>
+        <Text className="text-xs text-muted-fg dark:text-dark-muted-fg mt-1">
+          {dayjs(item.date).format("MMM, D")}
+        </Text>
+      </View>
+
+      <View className="w-[3px] self-stretch bg-primary dark:bg-dark-primary rounded-full my-4" />
+
+      <View className="flex-1 px-4 py-5">
+        <Text className="text-base font-bold text-foreground dark:text-dark-fg mb-1.5">
           {item.title}
         </Text>
-        <View
-          className={`px-2 py-1 rounded-md ${item.is_open ? "bg-green-100 dark:bg-green-900/30" : "bg-red-100 dark:bg-red-900/30"}`}
-        >
-          <Text
-            className={`text-xs font-bold ${item.is_open ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
-          >
-            {item.is_open ? "OPEN" : "CLOSED"}
-          </Text>
-        </View>
+        {item.venue && (
+          <View className="flex-row items-center">
+            <Ionicons name="location-sharp" size={14} color="#6b7280" />
+            <Text className="text-sm text-muted-fg dark:text-dark-muted-fg ml-1">
+              {item.venue}
+            </Text>
+          </View>
+        )}
       </View>
-      <View className="flex-row items-center mt-1">
-        <Ionicons name="calendar-outline" size={16} color="#6b7280" />
-        <Text className="text-muted-fg dark:text-dark-muted-fg ml-2 text-sm">
-          {dayjs(item.date).format("MMMM D, YYYY")}
-        </Text>
+
+      <View className="pr-4">
+        <Ionicons name="chevron-forward" size={20} color="#6b7280" />
       </View>
-      {item.venue && (
-        <View className="flex-row items-center mt-1">
-          <Ionicons name="location-outline" size={16} color="#6b7280" />
-          <Text className="text-muted-fg dark:text-dark-muted-fg ml-2 text-sm">
-            {item.venue}
-          </Text>
-        </View>
-      )}
     </TouchableOpacity>
+  );
+
+  const renderHeader = () => (
+    <View className="mb-2">
+      <View className="flex-row items-center mb-6 mt-2 gap-3">
+        {activeClub?.logo_url ? (
+          <Image
+            source={{ uri: activeClub.logo_url }}
+            className="w-20 h-20 rounded-full"
+          />
+        ) : (
+          <View className="w-20 h-20 rounded-full bg-primary/10 dark:bg-dark-primary/10 items-center justify-center">
+            <Ionicons name="people" size={30} color={primaryColor} />
+          </View>
+        )}
+
+        <View className="flex-1">
+          {activeClubName ? (
+            <Text className="text-lg font-bold text-foreground dark:text-dark-fg mb-1">
+              {activeClubName}
+            </Text>
+          ) : null}
+          {clubs.length > 0 ? (
+            <CustomDropdown
+              label="Switch Club"
+              value={activeClubName}
+              options={clubOptions}
+              showLabelOnly
+              onSelect={(selectedName) => {
+                const selectedClub = clubs.find((c) => c.name === selectedName);
+                if (selectedClub) setActiveClubId(selectedClub.id);
+              }}
+            />
+          ) : (
+            <Text className="text-sm text-muted-fg dark:text-dark-muted-fg">
+              No clubs yet
+            </Text>
+          )}
+        </View>
+      </View>
+
+      {activeClubId && (
+        <>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="mb-6"
+            contentContainerStyle={{ paddingRight: 20, gap: 12 }}
+          >
+            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+              <View className="flex-row items-center mb-4">
+                <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center mr-3">
+                  <Ionicons name="people" size={24} color="#3b82f6" />
+                </View>
+                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                  Total Members
+                </Text>
+              </View>
+              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                {analytics?.total_members || 0}
+              </Text>
+            </View>
+
+            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+              <View className="flex-row items-center mb-4">
+                <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center mr-3">
+                  <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
+                </View>
+                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                  Active Members
+                </Text>
+              </View>
+              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                {analytics?.active_members || 0}
+              </Text>
+            </View>
+
+            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+              <View className="flex-row items-center mb-4">
+                <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center mr-3">
+                  <Ionicons name="close-circle" size={24} color="#ef4444" />
+                </View>
+                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                  Inactive Members
+                </Text>
+              </View>
+              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                {analytics?.inactive_members || 0}
+              </Text>
+            </View>
+          </ScrollView>
+
+          <View className="flex-row items-center mb-6 gap-2">
+            <View className="flex-1 flex-row items-center bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 h-12">
+              <Ionicons name="search-outline" size={20} color="#9ca3af" />
+              <TextInput
+                placeholder="Search events"
+                placeholderTextColor="#9ca3af"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                className="flex-1 ml-2 text-base text-foreground dark:text-dark-fg"
+              />
+            </View>
+            <TouchableOpacity className="w-12 h-12 bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl items-center justify-center">
+              <Ionicons name="filter-outline" size={20} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+
+          <Text className="text-lg font-bold text-foreground dark:text-dark-fg mb-4">
+            Recent events
+          </Text>
+        </>
+      )}
+
+      {!activeClubId && clubs.length === 0 && (
+        <Text className="text-muted-fg dark:text-dark-muted-fg text-base mt-2">
+          You are not part of any clubs yet.
+        </Text>
+      )}
+    </View>
   );
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-4">
-      <View className="mb-6 mt-2">
-        <Text className="text-2xl font-bold text-foreground dark:text-dark-fg mb-4">
-          Attendance
-        </Text>
-
-        {clubs.length > 0 ? (
-          <CustomDropdown
-            label="Selected Club"
-            value={activeClubName}
-            options={clubOptions}
-            onSelect={(selectedName) => {
-              const selectedClub = clubs.find((c) => c.name === selectedName);
-              if (selectedClub) setActiveClubId(selectedClub.id);
-            }}
-          />
-        ) : (
-          <Text className="text-muted-fg dark:text-dark-muted-fg">
-            You are not part of any clubs yet.
-          </Text>
-        )}
-      </View>
-
       {isLoading ? (
         <ActivityIndicator
           size="large"
@@ -108,14 +219,17 @@ export default function AttendanceScreen({
         />
       ) : (
         <FlatList
-          data={sessions}
+          data={filteredSessions}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 80 }}
+          ListHeaderComponent={renderHeader}
           ListEmptyComponent={
-            <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
-              No attendance sessions found for this club.
-            </Text>
+            activeClubId ? (
+              <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
+                No attendance sessions found for this club.
+              </Text>
+            ) : null
           }
           renderItem={renderSessionCard}
         />

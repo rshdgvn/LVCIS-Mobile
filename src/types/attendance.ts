@@ -16,6 +16,7 @@ export interface AttendanceSession {
   event?: Event;
   created_at?: string;
   updated_at?: string;
+  members?: Attendance[];
 }
 
 export interface Attendance {
