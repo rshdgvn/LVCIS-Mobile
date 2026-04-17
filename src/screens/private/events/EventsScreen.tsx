@@ -1,11 +1,18 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, FlatList } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { EventCard } from "@/src/components/events/EventCard";
-import { Event } from "@/src/types/event";
-import { useTheme } from "@/src/hooks/useTheme";
 import { useIsAdmin } from "@/src/hooks/useIsAdmin";
+import { useTheme } from "@/src/hooks/useTheme";
+import { Event } from "@/src/types/event";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
   events: Event[] | undefined;
@@ -14,23 +21,31 @@ interface Props {
   onCreateEvent: () => void;
 }
 
-export default function EventsScreen({ events, isLoading, onAccessEvent, onCreateEvent }: Props) {
+export default function EventsScreen({
+  events,
+  isLoading,
+  onAccessEvent,
+  onCreateEvent,
+}: Props) {
   const [search, setSearch] = useState("");
   const { primaryColor } = useTheme();
   const isAdmin = useIsAdmin(); // Or check if user is officer, depending on your logic
 
   // Simple search filter
-  const filteredEvents = events?.filter(e => 
-    e.title.toLowerCase().includes(search.toLowerCase())
+  const filteredEvents = events?.filter((e) =>
+    e.title.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-5 pt-4 relative">
-      
       {/* Header */}
       <View className="mb-6">
-        <Text className="text-muted-fg dark:text-dark-muted-fg text-lg">Welcome to,</Text>
-        <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">Events</Text>
+        <Text className="text-muted-fg dark:text-dark-muted-fg text-lg">
+          Welcome to,
+        </Text>
+        <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">
+          Events
+        </Text>
       </View>
 
       {/* Search Bar */}
@@ -47,7 +62,11 @@ export default function EventsScreen({ events, isLoading, onAccessEvent, onCreat
 
       {/* Event List */}
       {isLoading ? (
-        <ActivityIndicator size="large" color={primaryColor} className="mt-10" />
+        <ActivityIndicator
+          size="large"
+          color={primaryColor}
+          className="mt-10"
+        />
       ) : (
         <FlatList
           data={filteredEvents}
@@ -60,24 +79,20 @@ export default function EventsScreen({ events, isLoading, onAccessEvent, onCreat
             </Text>
           }
           renderItem={({ item }) => (
-            <EventCard 
-              event={item} 
-              onPress={() => onAccessEvent(item.id)} 
-            />
+            <EventCard event={item} onPress={() => onAccessEvent(item.id)} />
           )}
         />
       )}
 
       {/* Floating Action Button for Admins/Officers */}
       {isAdmin && (
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={onCreateEvent}
-          className="absolute bottom-6 right-5 w-14 h-14 bg-blue-600 rounded-full items-center justify-center shadow-lg elevation-5"
+          className="absolute bottom-6 right-5 w-14 h-14 bg-primary dark:bg-dark-primary rounded-full items-center justify-center shadow-lg shadow-primary/30 elevation-5"
         >
           <Ionicons name="add" size={30} color="white" />
         </TouchableOpacity>
       )}
-
     </SafeAreaView>
   );
 }

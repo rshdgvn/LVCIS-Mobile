@@ -4,7 +4,7 @@ import { ProfileOption } from "@/src/components/profile/ProfileOption";
 import { ToggleTheme } from "@/src/components/profile/ToggleTheme";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { router } from "expo-router";
-import { Bell, LogOut, ShieldCheck, User } from "lucide-react-native";
+import { LogOut, ShieldCheck, User } from "lucide-react-native";
 import React, { useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -35,7 +35,11 @@ const ProfileScreen = ({
         <View style={{ width: 48 }} />
       </View>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 24,
+          paddingBottom: 40,
+        }}
       >
         <View className="items-center mt-4 mb-8">
           <View className="relative">
@@ -72,19 +76,13 @@ const ProfileScreen = ({
           Preferences
         </Text>
         <ToggleTheme />
-        <ProfileOption
-          icon={Bell}
-          title="Notifications"
-          onPress={onNotifications}
-        />
-
         <TouchableOpacity
           onPress={() => setSignOutVisible(true)}
           activeOpacity={0.8}
-          className="flex-row items-center justify-center bg-red-200 dark:bg-red-900/30 p-4 rounded-2xl mt-8"
+          className="w-full py-4 rounded-2xl border mt-20 border-red-200 bg-red-50 dark:bg-red-900/50 dark:border-red-800 flex-row items-center justify-center gap-2 mb-3"
         >
           <LogOut size={20} color="#EF4444" className="mr-2" />
-          <Text className="text-red-500 dark:text-red-400 font-bold text-base ml-2">
+          <Text className="text-red-500 font-bold dark:text-200 text-base">
             Sign Out
           </Text>
         </TouchableOpacity>
