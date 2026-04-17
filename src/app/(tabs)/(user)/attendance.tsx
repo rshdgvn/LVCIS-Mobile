@@ -9,10 +9,12 @@ export default function AttendanceRoute() {
   const router = useRouter();
   const { activeClubId } = useClub();
 
-  const { data: sessions = [], isLoading } = useSessions(activeClubId);
+  const { data, isLoading } = useSessions(activeClubId);
+
+  const sessions = data?.sessions || [];
+  const analytics = data?.analytics || null;
 
   const handleAccessSession = (sessionId: number) => {
-    console.log("Accessing session with ID:", sessionId);
     router.push(`/attendance/${sessionId}` as Href);
   };
 
@@ -20,6 +22,7 @@ export default function AttendanceRoute() {
     <View className="flex-1">
       <AttendanceScreen
         sessions={sessions}
+        analytics={analytics}
         isLoading={isLoading}
         onAccessSession={handleAccessSession}
       />

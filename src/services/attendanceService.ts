@@ -12,7 +12,10 @@ export const attendanceService = {
     const response = await api.get<any>("/attendance-sessions", {
       params: { club_id: clubId },
     });
-    return response.data?.sessions || [];
+    return {
+      sessions: response.data?.sessions || [],
+      analytics: response.data?.analytics || null,
+    };
   },
 
   createSession: async (data: SessionPayload) => {
