@@ -1,10 +1,4 @@
 import { EventCard } from "@/src/components/events/EventCard";
-<<<<<<< HEAD
-=======
-import { CreateEventModal } from "@/src/components/modals/CreateEventModal"; 
-import { Event } from "@/src/types/event";
-import { useTheme } from "@/src/hooks/useTheme";
->>>>>>> 74f395b (improve ui)
 import { useIsAdmin } from "@/src/hooks/useIsAdmin";
 import { useTheme } from "@/src/hooks/useTheme";
 import { Event } from "@/src/types/event";
@@ -27,22 +21,17 @@ interface Props {
   onCreateEvent?: () => void;
 }
 
-<<<<<<< HEAD
 export default function EventsScreen({
   events,
   isLoading,
   onAccessEvent,
   onCreateEvent,
 }: Props) {
-=======
-export default function EventsScreen({ events, isLoading, onAccessEvent }: Props) {
->>>>>>> 74f395b (improve ui)
   const [search, setSearch] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false); // Local visibility state
   const { primaryColor } = useTheme();
   const isAdmin = useIsAdmin();
 
-<<<<<<< HEAD
   // Simple search filter
   const filteredEvents = events?.filter((e) =>
     e.title.toLowerCase().includes(search.toLowerCase()),
@@ -58,20 +47,6 @@ export default function EventsScreen({ events, isLoading, onAccessEvent }: Props
         <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">
           Events
         </Text>
-=======
-  const filteredEvents = events?.filter(e =>
-    e.title.toLowerCase().includes(search.toLowerCase())
-  );
-
-  return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-dark-bg">
-      {/* Header */}
-      <View className="px-8 mt-6 flex-row justify-between items-start">
-        <View>
-          <Text className="text-zinc-500 dark:text-gray-400 text-2xl font-medium">Welcome to,</Text>
-          <Text className="text-zinc-900 dark:text-white text-3xl font-bold">Events</Text>
-        </View>
->>>>>>> 74f395b (improve ui)
       </View>
 
       {/* Search & Add Section */}
@@ -97,7 +72,6 @@ export default function EventsScreen({ events, isLoading, onAccessEvent }: Props
         )}
       </View>
 
-<<<<<<< HEAD
       {/* Event List */}
       {isLoading ? (
         <ActivityIndicator
@@ -131,29 +105,6 @@ export default function EventsScreen({ events, isLoading, onAccessEvent }: Props
           <Ionicons name="add" size={30} color="white" />
         </TouchableOpacity>
       )}
-=======
-      {/* Events List */}
-      <View className="flex-1 px-8 mt-8">
-        {isLoading ? (
-          <ActivityIndicator size="large" color={primaryColor} className="mt-10" />
-        ) : (
-          <FlatList
-            data={filteredEvents}
-            keyExtractor={(item) => item.id.toString()}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 40 }}
-            ListEmptyComponent={<Text className="text-center text-zinc-400 mt-10">No events found.</Text>}
-            renderItem={({ item }) => (
-              <EventCard event={item} onPress={() => onAccessEvent(item.id)} />
-            )}
-          />
-        )}
-      </View>
-      <CreateEventModal 
-        isVisible={isModalVisible} 
-        onClose={() => setIsModalVisible(false)} 
-      />
->>>>>>> 74f395b (improve ui)
     </SafeAreaView>
   );
 }
