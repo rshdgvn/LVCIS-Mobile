@@ -9,9 +9,7 @@ export default function EditEventRoute() {
   const router = useThrottledRouter();
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
 
-  // Fetch the existing event data
   const { data: event, isLoading, isError } = useEventDetails(Number(eventId));
-  // Grab the update mutation
   const { updateEvent, isUpdating } = useEventMutations();
 
   const handleUpdate = async (formData: FormData) => {
@@ -23,11 +21,9 @@ export default function EditEventRoute() {
         Alert.alert("Success", "Event updated!");
         router.back();
       } catch (error: any) {
-        // FIX: Extract Laravel's 422 validation errors and show them in an Alert
         console.error(error.response?.data); 
         
         if (error.response?.status === 422) {
-          // Grab the first validation error message Laravel sends back
           const errors = error.response.data.errors;
           const firstErrorKey = Object.keys(errors)[0];
           const firstErrorMessage = errors[firstErrorKey][0];
