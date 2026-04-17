@@ -17,7 +17,6 @@ export const useEventDetails = (id: number) => {
   });
 };
 
-// Mutation hook (You already have this, just keeping it here for reference)
 export const useEventMutations = () => {
   const queryClient = useQueryClient();
 
@@ -29,18 +28,19 @@ export const useEventMutations = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: FormData }) => eventService.updateEvent(id, data),
-    onSuccess: (_, variables) => {
-      // Refresh both the main list AND the specific event details
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["event", variables.id] });
-    },
-  });
+      mutationFn: ({ id, data }: { id: number; data: FormData }) => 
+          eventService.updateEvent({ id, data }), 
+      onSuccess: (_, variables) => {
+
+        queryClient.invalidateQueries({ queryKey: ["events"] });
+        queryClient.invalidateQueries({ queryKey: ["event", variables.id] });
+      },
+    });
 
   return {
     createEvent: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
-    updateEvent: updateMutation.mutateAsync, // Export the new mutation
-    isUpdating: updateMutation.isPending,    // Export loading state
+    updateEvent: updateMutation.mutateAsync, 
+    isUpdating: updateMutation.isPending,    
   };
 };

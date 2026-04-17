@@ -74,9 +74,7 @@ export default function EventDetailsScreen({ event, isLoading, onBack, onEdit }:
         <Text className="text-lg font-semibold text-gray-800 dark:text-dark-fg">
           Event Details
         </Text>
-        <TouchableOpacity onPress={() => {
-            console.log("Edit button pressed for ID:", event.id); // Add this log
-            onEdit(event.id);}}
+        <TouchableOpacity onPress={() => {onEdit(event.id);}}
             hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
             >
           <Text className="text-blue-600 font-medium hover:text-blue-700">Edit</Text>

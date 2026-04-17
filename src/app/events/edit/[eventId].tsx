@@ -15,15 +15,29 @@ export default function EditEventRoute() {
   const { updateEvent, isUpdating } = useEventMutations();
 
   const handleUpdate = async (formData: FormData) => {
-    try {
-      await updateEvent({ id: Number(eventId), data: formData });
-      Alert.alert("Success", "Event updated successfully!");
-      router.back();
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "Failed to update event.");
-    }
-  };
+      try {
+        const id = Number(eventId); 
+        if (!id) return;
+
+        await updateEvent({ id, data: formData });
+        Alert.alert("Success", "Event updated!");
+        router.back();
+      } catch (error: any) {
+        // FIX: Extract Laravel's 422 validation errors and show them in an Alert
+        console.error(error.response?.data); 
+        
+        if (error.response?.status === 422) {
+          // Grab the first validation error message Laravel sends back
+          const errors = error.response.data.errors;
+          const firstErrorKey = Object.keys(errors)[0];
+          const firstErrorMessage = errors[firstErrorKey][0];
+          
+          Alert.alert("Validation Error", firstErrorMessage);
+        } else {
+          Alert.alert("Error", "Failed to update event.");
+        }
+      }
+    };
 
   if (isLoading) {
     return (

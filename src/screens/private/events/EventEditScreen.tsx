@@ -54,20 +54,22 @@ export default function EventEditScreen({ event, isUpdating, onBack, onSubmit }:
     }
   };
 
-  const handleSave = async () => {
+ const handleSave = async () => {
     if (!title.trim() || !venue.trim() || !date.trim()) {
       Alert.alert("Missing Info", "Please fill out the required fields.");
       return;
     }
 
     const formData = new FormData();
+    
+    // 1. Core UI Fields
     formData.append("title", title);
-    formData.append("event_date", date);
-    formData.append("event_time", time);
+    formData.append("event_date", date); // Ensure it's YYYY-MM-DD
+    formData.append("event_time", time); // Ensure it's HH:MM
     formData.append("venue", venue);
     formData.append("description", description);
-
-    // If a NEW image was selected (not an http URL from the existing data)
+    
+    // 2. Cover Image (Only append if a NEW image was selected)
     if (coverUri && !coverUri.startsWith("http")) {
       const uriParts = coverUri.split(".");
       const fileType = uriParts[uriParts.length - 1];
@@ -77,6 +79,15 @@ export default function EventEditScreen({ event, isUpdating, onBack, onSubmit }:
         name: `cover.${fileType}`,
       } as any);
     }
+
+    formData.append("club_id", event.club_id ? event.club_id.toString() : "1");
+    formData.append("purpose", event.purpose || "General Event");
+    formData.append("status", event.status || "upcoming");
+    formData.append("organizer", event.detail?.organizer || "Admin");
+    formData.append("contact_person", event.detail?.contact_person || "Admin");
+    formData.append("contact_email", event.detail?.contact_email || "admin@cis.com");
+    formData.append("event_mode", event.detail?.event_mode || "face_to_face");
+    formData.append("duration", event.detail?.duration || "2 hours");
 
     await onSubmit(formData);
   };
@@ -90,7 +101,6 @@ export default function EventEditScreen({ event, isUpdating, onBack, onSubmit }:
             Edit Event
           </Text>
         </View>
-
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
           {/* Editable Cover Image */}
           <View className="items-center mt-6 mb-6 px-5">
@@ -109,7 +119,6 @@ export default function EventEditScreen({ event, isUpdating, onBack, onSubmit }:
               </TouchableOpacity>
             </View>
           </View>
-
           <View className="px-5 gap-y-4">
             <InputField label="Event Title" placeholder="Enter event name" value={title} onChangeText={setTitle} />
             <View className="flex-row gap-4">
@@ -133,7 +142,6 @@ export default function EventEditScreen({ event, isUpdating, onBack, onSubmit }:
             />
           </View>
         </ScrollView>
-
         <View className="px-5 py-4 border-t border-gray-100 dark:border-dark-border bg-white dark:bg-dark-bg">
           <TouchableOpacity
             onPress={handleSave}
