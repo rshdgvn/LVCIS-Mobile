@@ -55,10 +55,10 @@ export default function TabsLayout() {
             tabBarStyle: { display: "none" },
           }}
         >
-          <Tabs.Screen name="dashboard" />
+          {/* <Tabs.Screen name="dashboard" />
           <Tabs.Screen name="attendance" />
           <Tabs.Screen name="clubs" />
-          <Tabs.Screen name="events" />
+          <Tabs.Screen name="events" /> */}
         </Tabs>
       </View>
 
