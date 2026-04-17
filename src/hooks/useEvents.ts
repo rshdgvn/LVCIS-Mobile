@@ -36,11 +36,19 @@ export const useEventMutations = () => {
         queryClient.invalidateQueries({ queryKey: ["event", variables.id] });
       },
     });
+    const deleteMutation = useMutation({
+    mutationFn: (id: number) => eventService.deleteEvent(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
 
   return {
     createEvent: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
     updateEvent: updateMutation.mutateAsync, 
-    isUpdating: updateMutation.isPending,    
+    isUpdating: updateMutation.isPending, 
+    deleteEvent: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
   };
 };

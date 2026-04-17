@@ -16,8 +16,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 interface Props {
   event?: Event;
   isLoading: boolean;
+  isDeleting: boolean;
   onBack: () => void;
   onEdit: (eventId: number) => void;
+  onDelete: () => void; 
 }
 
 interface Task {
@@ -27,7 +29,7 @@ interface Task {
   assignee: string;
 }
 
-export default function EventDetailsScreen({ event, isLoading, onBack, onEdit }: Props) {
+export default function EventDetailsScreen({ event, isLoading, isDeleting, onBack, onEdit, onDelete}: Props) {
   const { primaryColor } = useTheme();
 
   // Mock tasks for the UI until task management is implemented
@@ -181,9 +183,14 @@ export default function EventDetailsScreen({ event, isLoading, onBack, onEdit }:
       </ScrollView>
         {/* Footer Actions */}
         <View className="px-6 border-gray-100 dark:border-dark-border">
-          <TouchableOpacity className="w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 mb-3">
+          <TouchableOpacity onPress={onDelete}
+              disabled={isDeleting}
+              className={`w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 mb-3 ${isDeleting ? 'opacity-50' : 'opacity-100'}`}
+            > 
             <Ionicons name="trash" size={20} color="#ef4444" />
-            <Text className="text-red-500 font-bold text-base">Delete Event</Text>
+            <Text className="text-red-500 font-bold text-base">
+              {isDeleting ? "Deleting..." : "Delete Event"}
+            </Text>
           </TouchableOpacity>
           <Text className="text-center text-[10px] text-gray-400 uppercase tracking-widest font-bold">
             This action cannot be undone
