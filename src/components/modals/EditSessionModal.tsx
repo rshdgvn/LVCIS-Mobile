@@ -1,8 +1,9 @@
 import { useAttendanceMutations } from "@/src/hooks/useAttendance";
+import { AttendanceSession } from "@/src/types/attendance";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
@@ -19,17 +20,26 @@ import PrimaryButton from "../common/PrimaryButton";
 interface Props {
   isVisible: boolean;
   onClose: () => void;
-  clubId: number;
+  session: AttendanceSession | null;
 }
 
-export const CreateSessionModal = ({ isVisible, onClose, clubId }: Props) => {
+export const EditSessionModal = ({ isVisible, onClose, session }: Props) => {
   const [title, setTitle] = useState("");
   const [venue, setVenue] = useState("");
   const [dateObj, setDateObj] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
 
   const queryClient = useQueryClient();
-  const { createSession } = useAttendanceMutations();
+  const { updateSession } = useAttendanceMutations();
+
+  // Populate fields when session changes
+  useEffect(() => {
+    if (session) {
+      setTitle(session.title || "");
+      setVenue(session.venue || "");
+      setDateObj(session.date ? new Date(session.date) : new Date());
+    }
+  }, [session]);
 
   const onChangeDate = (event: any, selectedDate?: Date) => {
     if (Platform.OS === "android") {
@@ -40,32 +50,30 @@ export const CreateSessionModal = ({ isVisible, onClose, clubId }: Props) => {
     }
   };
 
-  const handleCreate = () => {
+  const handleUpdate = () => {
     if (!title) {
       Toast.show({ type: "error", text1: "Title is required." });
       return;
     }
+    if (!session?.id) return;
 
     const formattedDate = dateObj.toISOString().split("T")[0];
 
-    createSession.mutate(
-      { club_id: clubId, title, venue, date: formattedDate, is_open: true },
+    updateSession.mutate(
+      { id: session.id, data: { title, venue, date: formattedDate } },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["sessions"] });
+          queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] });
 
           Toast.show({
             type: "success",
-            text1: "Session created successfully!",
+            text1: "Session updated successfully!",
           });
 
-          setTitle("");
-          setVenue("");
-          setDateObj(new Date());
           onClose();
         },
         onError: (error: any) => {
-          let errorMessage = "Failed to create session.";
+          let errorMessage = "Failed to update session.";
 
           if (error?.response?.data) {
             const data = error.response.data;
@@ -97,7 +105,7 @@ export const CreateSessionModal = ({ isVisible, onClose, clubId }: Props) => {
         <View className="bg-background dark:bg-dark-bg rounded-t-3xl p-6 h-3/4">
           <View className="flex-row justify-between items-center mb-6">
             <Text className="text-xl font-bold text-foreground dark:text-dark-fg">
-              Create New Session
+              Edit Session
             </Text>
             <TouchableOpacity
               onPress={onClose}
@@ -169,9 +177,9 @@ export const CreateSessionModal = ({ isVisible, onClose, clubId }: Props) => {
 
             <View className="mt-6">
               <PrimaryButton
-                title="Create Session"
-                onPress={handleCreate}
-                isLoading={createSession.isPending}
+                title="Save Changes"
+                onPress={handleUpdate}
+                isLoading={updateSession.isPending}
               />
             </View>
           </ScrollView>
