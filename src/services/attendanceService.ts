@@ -24,39 +24,10 @@ export const attendanceService = {
   },
 
   getSession: async (id: number) => {
-    try {
-      console.log(`[Service] Making API request for session ID: ${id}`);
-      const response = await api.get<AttendanceSession>(
-        `/attendance-sessions/${id}`,
-      );
-      console.log("[Service] Success! Fetched single session:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error(
-        "[Service] Error fetching single session:",
-        error?.response?.data || error.message,
-      );
-      throw error;
-    }
-  },
-
-  getSessionAttendances: async (sessionId: number) => {
-    try {
-      console.log(
-        `[Service] Making API request for attendances of session ID: ${sessionId}`,
-      );
-      const response = await api.get<Attendance[]>(
-        `/attendance-sessions/${sessionId}/attendance`,
-      );
-      console.log("[Service] Success! Fetched attendances:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error(
-        "[Service] Error fetching attendances:",
-        error?.response?.data || error.message,
-      );
-      throw error;
-    }
+    const response = await api.get<AttendanceSession>(
+      `/attendance-sessions/${id}`,
+    );
+    return response.data;
   },
 
   updateSession: async (id: number, data: Partial<SessionPayload>) => {
@@ -74,21 +45,20 @@ export const attendanceService = {
     return response.data;
   },
 
-  // getSessionAttendances: async (sessionId: number) => {
-  //   const response = await api.get<Attendance[]>(
-  //     `/attendance-sessions/${sessionId}/attendance`,
-  //   );
-  //   console.log("Fetched attendances for session:", response.data);
-  //   return response.data;
-  // },
+  getSessionAttendances: async (sessionId: number) => {
+    const response = await api.get<Attendance[]>(
+      `/attendance-sessions/${sessionId}/attendances`,
+    );
+    return response.data;
+  },
 
   updateUserStatus: async (
     sessionId: number,
     userId: number,
     status: AttendanceStatus,
   ) => {
-    const response = await api.put(
-      `/attendance-sessions/${sessionId}/users/${userId}/status`,
+    const response = await api.patch(
+      `/attendance-sessions/${sessionId}/members/${userId}`,
       { status },
     );
     return response.data;
