@@ -1,6 +1,5 @@
 import { BackButton } from "@/src/components/common/BackButton";
 import { useClub } from "@/src/contexts/ClubContext";
-import { useAttendanceMutations } from "@/src/hooks/useAttendance";
 import { useRole } from "@/src/hooks/useRole";
 import { useTheme } from "@/src/hooks/useTheme";
 import { AttendanceStatus } from "@/src/types/attendance";
@@ -26,20 +25,18 @@ interface MemberData {
 }
 
 interface Props {
-  sessionId: number;
   session: any;
   isLoading: boolean;
+  updateStatus: any;
 }
 
 export default function AttendanceDetailsScreen({
-  sessionId,
   session,
   isLoading,
+  updateStatus,
 }: Props) {
   const router = useRouter();
   const { primaryColor } = useTheme();
-
-  const { updateStatus } = useAttendanceMutations();
 
   const { activeClubId, isOfficer } = useClub();
   const { isAdmin } = useRole();
@@ -48,13 +45,11 @@ export default function AttendanceDetailsScreen({
 
   const handleStatusChange = (userId: number, status: AttendanceStatus) => {
     if (!canManage) return;
-    updateStatus.mutate({ sessionId, userId, status });
+    updateStatus.mutate({ userId, status });
   };
 
-  // 1. Extract members directly from the session
   const membersArray: MemberData[] = session?.members || [];
 
-  // 2. Auto-calculate the statistics based on member statuses
   const stats = useMemo(() => {
     const counts = { present: 0, late: 0, absent: 0, excuse: 0 };
     membersArray.forEach((member) => {
@@ -106,7 +101,7 @@ export default function AttendanceDetailsScreen({
             return (
               <TouchableOpacity
                 key={st.value}
-                disabled={!canManage || updateStatus.isPending}
+                disabled={!canManage} // Removed updateStatus.isPending so it feels instant
                 onPress={() => handleStatusChange(item.user_id, st.value)}
                 className={`flex-1 mx-1 py-2 rounded-lg items-center border ${
                   isSelected
@@ -159,7 +154,6 @@ export default function AttendanceDetailsScreen({
           </View>
         )}
 
-        {/* Stats Section */}
         <View className="flex-row flex-wrap justify-between">
           <View className="w-[48%] bg-green-500/10 p-3 rounded-xl mb-3 border border-green-500/20">
             <Text className="text-green-600 dark:text-green-400 font-bold text-xs uppercase">

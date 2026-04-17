@@ -12,28 +12,52 @@ export const useSessions = (clubId: number | null) => {
 
 export const useSession = (sessionId: number | null) => {
   return useQuery({
-    queryKey: ["attendanceSession", sessionId],
+    queryKey: ["session", sessionId],
     queryFn: () => attendanceService.getSession(sessionId!),
-    enabled: !!sessionId, 
-  });
-};
-
-export const useSessionAttendances = (sessionId: number | null) => {
-  return useQuery({
-    queryKey: ["sessionAttendances", sessionId],
-    queryFn: () => attendanceService.getSessionAttendances(sessionId!),
     enabled: !!sessionId,
   });
 };
 
-export const useMemberAttendance = (
-  userId: number | null,
-  clubId: number | null,
-) => {
-  return useQuery({
-    queryKey: ["memberAttendance", userId, clubId],
-    queryFn: () => attendanceService.getMemberAttendance(userId!, clubId!),
-    enabled: !!userId && !!clubId,
+export const useUpdateAttendanceStatus = (sessionId: number | null) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      userId,
+      status,
+    }: {
+      userId: number;
+      status: AttendanceStatus;
+    }) => attendanceService.updateUserStatus(sessionId!, userId, status),
+
+    onMutate: async ({ userId, status }) => {
+      await queryClient.cancelQueries({ queryKey: ["session", sessionId] });
+      const previousSession = queryClient.getQueryData(["session", sessionId]);
+
+      queryClient.setQueryData(["session", sessionId], (oldData: any) => {
+        if (!oldData || !oldData.members) return oldData;
+        return {
+          ...oldData,
+          members: oldData.members.map((member: any) =>
+            member.user_id === userId ? { ...member, status: status } : member,
+          ),
+        };
+      });
+
+      return { previousSession };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousSession) {
+        queryClient.setQueryData(
+          ["session", sessionId],
+          context.previousSession,
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["session", sessionId] });
+      queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] });
+    },
   });
 };
 
@@ -42,48 +66,26 @@ export const useAttendanceMutations = () => {
 
   const createSession = useMutation({
     mutationFn: (data: SessionPayload) => attendanceService.createSession(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] });
-    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] }),
   });
 
   const updateSession = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<SessionPayload> }) =>
       attendanceService.updateSession(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] });
-    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] }),
   });
 
   const deleteSession = useMutation({
     mutationFn: (id: number) => attendanceService.deleteSession(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] });
-    },
-  });
-
-  const updateStatus = useMutation({
-    mutationFn: ({
-      sessionId,
-      userId,
-      status,
-    }: {
-      sessionId: number;
-      userId: number;
-      status: AttendanceStatus;
-    }) => attendanceService.updateUserStatus(sessionId, userId, status),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["sessionAttendances", variables.sessionId],
-      });
-      queryClient.invalidateQueries({ queryKey: ["memberAttendance"] });
-    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] }),
   });
 
   return {
     createSession,
     updateSession,
     deleteSession,
-    updateStatus,
   };
 };

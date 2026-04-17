@@ -1,4 +1,7 @@
-import { useSession } from "@/src/hooks/useAttendance";
+import {
+  useSession,
+  useUpdateAttendanceStatus,
+} from "@/src/hooks/useAttendance";
 import AttendanceDetailsScreen from "@/src/screens/private/attendance/AttendanceDetailsScreen";
 import { useGlobalSearchParams } from "expo-router";
 import React from "react";
@@ -10,13 +13,14 @@ export default function AttendanceDetailsRoute() {
   const sessionId = rawId ? Number(rawId) : null;
 
   const { data: session, isLoading } = useSession(sessionId);
+  const updateStatus = useUpdateAttendanceStatus(sessionId);
 
   return (
     <View className="flex-1">
       <AttendanceDetailsScreen
-        sessionId={sessionId || 0}
         session={session}
         isLoading={isLoading}
+        updateStatus={updateStatus}
       />
     </View>
   );
