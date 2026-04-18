@@ -4,6 +4,7 @@ import { CreateSessionModal } from "@/src/components/modals/CreateSessionModal";
 import { EditSessionModal } from "@/src/components/modals/EditSessionModal";
 import { useClub } from "@/src/contexts/ClubContext";
 import { useAttendanceMutations } from "@/src/hooks/useAttendance";
+import { useCanManageClub } from "@/src/hooks/useCanManageClub";
 import { useRole } from "@/src/hooks/useRole";
 import { useTheme } from "@/src/hooks/useTheme";
 import { AttendanceSession } from "@/src/types/attendance";
@@ -45,7 +46,7 @@ export default function AttendanceScreen({
 }: Props) {
   const { primaryColor } = useTheme();
   const { clubs, activeClubId, setActiveClubId, isOfficer } = useClub();
-  const { isAdmin } = useRole();
+  const { canManageClub } = useCanManageClub();
   const queryClient = useQueryClient();
   const { deleteSession } = useAttendanceMutations();
 
@@ -55,20 +56,17 @@ export default function AttendanceScreen({
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Three-dots menu
   const [menuSession, setMenuSession] = useState<AttendanceSession | null>(
     null,
   );
   const [isMenuVisible, setIsMenuVisible] = useState(false);
 
-  // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<AttendanceSession | null>(
     null,
   );
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const canManage = isAdmin || (activeClubId && isOfficer(activeClubId));
+  const canManage  = (activeClubId && canManageClub(activeClubId));
 
   const clubOptions = clubs.map((c) => c.name);
   const activeClub = clubs.find((c) => c.id === activeClubId);
@@ -127,7 +125,6 @@ export default function AttendanceScreen({
       onPress={() => onAccessSession(item.id)}
       className="bg-card dark:bg-dark-card rounded-2xl mb-4 border border-border dark:border-dark-border flex-row items-center overflow-hidden"
     >
-      {/* Time + Date */}
       <View className="px-4 py-5 items-start justify-center min-w-[85px]">
         <Text className="text-sm font-bold text-foreground dark:text-dark-fg">
           {dayjs(item.date).format("h:mm A")}
@@ -137,10 +134,8 @@ export default function AttendanceScreen({
         </Text>
       </View>
 
-      {/* Blue accent bar */}
       <View className="w-[3px] self-stretch bg-primary dark:bg-dark-primary rounded-full my-4" />
 
-      {/* Title + Venue */}
       <View className="flex-1 px-4 py-5">
         <Text className="text-base font-bold text-foreground dark:text-dark-fg mb-1.5">
           {item.title}
@@ -155,7 +150,6 @@ export default function AttendanceScreen({
         )}
       </View>
 
-      {/* Three dots for managers, chevron for others */}
       {canManage ? (
         <TouchableOpacity
           onPress={() => openMenu(item)}

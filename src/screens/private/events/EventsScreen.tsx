@@ -1,5 +1,5 @@
 import { EventCard } from "@/src/components/events/EventCard";
-import { CreateEventModal } from "@/src/components/modals/CreateEventModal"; 
+import { CreateEventModal } from "@/src/components/modals/CreateEventModal";
 import { useIsAdmin } from "@/src/hooks/useIsAdmin";
 import { useTheme } from "@/src/hooks/useTheme";
 import { Event } from "@/src/types/event";
@@ -22,43 +22,51 @@ interface Props {
   onCreateEvent?: () => void;
 }
 
-export default function EventsScreen({ events, isLoading, onAccessEvent }: Props) {
+export default function EventsScreen({
+  events,
+  isLoading,
+  onAccessEvent,
+}: Props) {
   const [search, setSearch] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false); // Local visibility state
   const { primaryColor } = useTheme();
   const isAdmin = useIsAdmin();
 
-  const filteredEvents = events?.filter(e =>
-    e.title.toLowerCase().includes(search.toLowerCase())
+  const filteredEvents = events?.filter((e) =>
+    e.title.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-dark-bg">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       {/* Header */}
       <View className="px-8 mt-6 flex-row justify-between items-start">
         <View>
-          <Text className="text-zinc-500 dark:text-gray-400 text-2xl font-medium">Welcome to,</Text>
-          <Text className="text-zinc-900 dark:text-white text-3xl font-bold">Events</Text>
+          <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
+            Welcome to,
+          </Text>
+          <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
+            Events
+          </Text>
         </View>
       </View>
 
       {/* Search & Add Section */}
       <View className="px-8 mt-8 flex-row gap-4">
-        <View className="flex-1 bg-zinc-50 dark:bg-dark-input rounded-2xl flex-row items-center px-4 h-14 border border-zinc-100 dark:border-dark-border">
-          <Ionicons name="search" size={20} color="#a1a1aa" />
+        <View className="flex-1 bg-card dark:bg-dark-card rounded-2xl flex-row items-center px-4 h-14 border border-border dark:border-dark-border">
+          <Ionicons name="search" size={20} color="#9ca3af" />
           <TextInput
             placeholder="Search events"
-            placeholderTextColor="#a1a1aa"
-            className="flex-1 ml-3 text-zinc-800 dark:text-white"
+            placeholderTextColor="#9ca3af"
+            className="flex-1 ml-3 text-base text-foreground dark:text-dark-fg"
             value={search}
             onChangeText={setSearch}
           />
         </View>
 
         {isAdmin && (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setIsModalVisible(true)} // Toggle Modal
-            className="w-14 h-14 bg-blue-500 rounded-2xl items-center justify-center shadow-lg shadow-blue-200"
+            className="w-14 h-14 bg-primary dark:bg-dark-primary rounded-2xl items-center justify-center shadow-lg shadow-primary/30"
           >
             <Ionicons name="add" size={28} color="white" />
           </TouchableOpacity>
@@ -68,23 +76,31 @@ export default function EventsScreen({ events, isLoading, onAccessEvent }: Props
       {/* Events List */}
       <View className="flex-1 px-8 mt-8">
         {isLoading ? (
-          <ActivityIndicator size="large" color={primaryColor} className="mt-10" />
+          <ActivityIndicator
+            size="large"
+            color={primaryColor}
+            className="mt-10"
+          />
         ) : (
           <FlatList
             data={filteredEvents}
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 40 }}
-            ListEmptyComponent={<Text className="text-center text-zinc-400 mt-10">No events found.</Text>}
+            ListEmptyComponent={
+              <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
+                No events found.
+              </Text>
+            }
             renderItem={({ item }) => (
               <EventCard event={item} onPress={() => onAccessEvent(item.id)} />
             )}
           />
         )}
       </View>
-      <CreateEventModal 
-        isVisible={isModalVisible} 
-        onClose={() => setIsModalVisible(false)} 
+      <CreateEventModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
       />
     </SafeAreaView>
   );

@@ -5,17 +5,17 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { InputField } from "../common/InputField";
-import PrimaryButton from "../common/PrimaryButton";
 
 interface Props {
   isVisible: boolean;
@@ -32,7 +32,6 @@ export const EditSessionModal = ({ isVisible, onClose, session }: Props) => {
   const queryClient = useQueryClient();
   const { updateSession } = useAttendanceMutations();
 
-  // Populate fields when session changes
   useEffect(() => {
     if (session) {
       setTitle(session.title || "");
@@ -51,97 +50,109 @@ export const EditSessionModal = ({ isVisible, onClose, session }: Props) => {
   };
 
   const handleUpdate = () => {
-    if (!title) {
-      Toast.show({ type: "error", text1: "Title is required." });
+    if (!session?.id) return;
+    if (!title.trim() || !venue.trim()) {
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Title and venue are required.",
+      });
       return;
     }
-    if (!session?.id) return;
 
-    const formattedDate = dateObj.toISOString().split("T")[0];
+    const dateStr = dateObj.toISOString().split("T")[0];
 
     updateSession.mutate(
-      { id: session.id, data: { title, venue, date: formattedDate } },
+      {
+        id: session.id,
+        data: { title, venue, date: dateStr },
+      },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] });
-
           Toast.show({
             type: "success",
-            text1: "Session updated successfully!",
+            text1: "Session Updated!",
+            text2: `"${title}" has been successfully updated.`,
           });
-
+          queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] });
+          queryClient.invalidateQueries({ queryKey: ["session", session.id] });
           onClose();
         },
         onError: (error: any) => {
-          let errorMessage = "Failed to update session.";
-
-          if (error?.response?.data) {
-            const data = error.response.data;
-            if (data.errors) {
-              errorMessage = (Object.values(data.errors)[0] as string[])[0];
-            } else if (data.error) {
-              errorMessage = data.error;
-            } else if (data.message) {
-              errorMessage = data.message;
-            }
-          }
-
+          const msg =
+            error.response?.data?.message || "Failed to update session.";
           Toast.show({
             type: "error",
-            text1: "Action Failed",
-            text2: errorMessage,
+            text1: "Update Failed",
+            text2: msg,
           });
         },
       },
     );
   };
 
+  const isFormValid = title.trim() && venue.trim();
+
   return (
-    <Modal visible={isVisible} animationType="slide" transparent={true}>
+    <Modal
+      transparent
+      visible={isVisible}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 justify-end bg-black/50"
+        className="flex-1 justify-end bg-black/40"
       >
-        <View className="bg-background dark:bg-dark-bg rounded-t-3xl p-6 h-3/4">
-          <View className="flex-row justify-between items-center mb-6">
-            <Text className="text-xl font-bold text-foreground dark:text-dark-fg">
-              Edit Session
-            </Text>
-            <TouchableOpacity
-              onPress={onClose}
-              className="p-2 bg-muted dark:bg-dark-muted rounded-full"
-            >
-              <Ionicons name="close" size={20} color="#6b7280" />
-            </TouchableOpacity>
-          </View>
+        <TouchableOpacity
+          className="flex-1"
+          onPress={onClose}
+          activeOpacity={1}
+        />
 
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 40 }}
-          >
-            <InputField
-              label="Session Title"
-              placeholder="e.g. General Assembly"
-              value={title}
-              onChangeText={setTitle}
-            />
+        <View className="bg-card dark:bg-dark-card rounded-t-[32px] p-6 max-h-[90%]">
+          <View className="w-12 h-1.5 bg-muted dark:bg-dark-muted rounded-full self-center mb-6" />
 
-            <InputField
-              label="Venue"
-              placeholder="e.g. Room 402"
-              value={venue}
-              onChangeText={setVenue}
-            />
+          <Text className="text-xl font-bold text-card-fg dark:text-dark-card-fg mb-6">
+            Edit Session
+          </Text>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
+                Session Title
+              </Text>
+              <TextInput
+                placeholder="e.g., General Assembly"
+                placeholderTextColor="#9ca3af"
+                value={title}
+                onChangeText={setTitle}
+                className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg"
+              />
+            </View>
 
             <View className="mb-4">
-              <Text className="text-sm font-medium text-foreground dark:text-dark-fg mb-2">
+              <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
+                Venue
+              </Text>
+              <TextInput
+                placeholder="e.g., Main Hall"
+                placeholderTextColor="#9ca3af"
+                value={venue}
+                onChangeText={setVenue}
+                className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg"
+              />
+            </View>
+
+            <View className="mb-8">
+              <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
                 Date
               </Text>
               <TouchableOpacity
                 onPress={() => setShowPicker(true)}
-                className="flex-row justify-between items-center bg-muted/30 dark:bg-dark-muted/30 border border-border dark:border-dark-border rounded-xl p-4 active:opacity-70"
+                className="border border-border dark:border-dark-border rounded-xl px-4 py-3 bg-background dark:bg-dark-bg flex-row justify-between items-center"
               >
-                <Text className="text-foreground dark:text-dark-fg text-base">
+                <Text className="text-card-fg dark:text-dark-card-fg">
                   {dateObj.toLocaleDateString("en-US", {
                     weekday: "short",
                     year: "numeric",
@@ -156,7 +167,7 @@ export const EditSessionModal = ({ isVisible, onClose, session }: Props) => {
             {showPicker && (
               <View
                 className={
-                  Platform.OS === "ios" ? "mb-4 bg-muted/20 rounded-xl p-2" : ""
+                  Platform.OS === "ios" ? "mb-6 bg-muted/20 rounded-xl p-2" : ""
                 }
               >
                 {Platform.OS === "ios" && (
@@ -175,13 +186,29 @@ export const EditSessionModal = ({ isVisible, onClose, session }: Props) => {
               </View>
             )}
 
-            <View className="mt-6">
-              <PrimaryButton
-                title="Save Changes"
-                onPress={handleUpdate}
-                isLoading={updateSession.isPending}
-              />
-            </View>
+            <TouchableOpacity
+              disabled={!isFormValid || updateSession.isPending}
+              onPress={handleUpdate}
+              className={`py-4 rounded-xl items-center ${
+                !isFormValid || updateSession.isPending
+                  ? "bg-primary/50 dark:bg-dark-primary/50"
+                  : "bg-primary dark:bg-dark-primary"
+              }`}
+            >
+              {updateSession.isPending ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <Text className="text-white font-bold text-base">
+                  Save Changes
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <Text className="text-center text-[10px] text-muted-fg dark:text-dark-muted-fg uppercase mt-3 tracking-widest">
+              Members will see these updates immediately
+            </Text>
+
+            <View className="h-8" />
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
