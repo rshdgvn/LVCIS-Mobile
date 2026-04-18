@@ -214,12 +214,12 @@ export const DashboardScreen = ({ onProfile }: Props) => {
               </Text>
             </View>
             <Text className="text-5xl font-bold text-foreground dark:text-dark-fg mb-3">
-              42
+              2
             </Text>
             <View className="flex-row items-center">
               <Ionicons name="trending-up" size={16} color="#22c55e" />
               <Text className="text-sm text-green-500 font-semibold ml-1">
-                +4 This Semester
+                +1 This Semester
               </Text>
             </View>
           </View>

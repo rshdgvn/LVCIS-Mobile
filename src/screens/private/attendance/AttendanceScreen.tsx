@@ -5,7 +5,6 @@ import { EditSessionModal } from "@/src/components/modals/EditSessionModal";
 import { useClub } from "@/src/contexts/ClubContext";
 import { useAttendanceMutations } from "@/src/hooks/useAttendance";
 import { useCanManageClub } from "@/src/hooks/useCanManageClub";
-import { useRole } from "@/src/hooks/useRole";
 import { useTheme } from "@/src/hooks/useTheme";
 import { AttendanceSession } from "@/src/types/attendance";
 import { Ionicons } from "@expo/vector-icons";
@@ -66,7 +65,7 @@ export default function AttendanceScreen({
   );
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const canManage  = (activeClubId && canManageClub(activeClubId));
+  const canManage = activeClubId && canManageClub(activeClubId);
 
   const clubOptions = clubs.map((c) => c.name);
   const activeClub = clubs.find((c) => c.id === activeClubId);
@@ -290,7 +289,7 @@ export default function AttendanceScreen({
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-4">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-8 pt-6">
       {isLoading ? (
         <ActivityIndicator
           size="large"

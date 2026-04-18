@@ -17,7 +17,14 @@ import { Club, ClubCategory, ClubViewFilter } from "@/src/types/club";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
@@ -118,12 +125,12 @@ export default function ClubsScreen({
     selectedCategory !== undefined || viewFilter !== "all";
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-5 pt-4 relative">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-8 pt-6 relative">
       <View className="mb-6">
-        <Text className="text-muted-fg dark:text-dark-muted-fg text-lg">
+        <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
           Welcome to,
         </Text>
-        <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">
+        <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
           Clubs
         </Text>
       </View>
@@ -179,7 +186,7 @@ export default function ClubsScreen({
           data={clubs}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 80 }} 
+          contentContainerStyle={{ paddingBottom: 80 }}
           ListEmptyComponent={
             <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
               No clubs found for this filter.
