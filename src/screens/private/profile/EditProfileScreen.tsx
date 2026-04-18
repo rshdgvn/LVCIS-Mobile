@@ -12,15 +12,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 type ProfileErrors = {
   first_name?: string;
@@ -70,18 +64,28 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
     onSuccess: (data) => {
       const updatedUser = { ...data.user, member: data.member };
       queryClient.setQueryData(["user"], updatedUser);
-      Alert.alert("Success", "Profile updated successfully!");
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: "Profile updated successfully!",
+      });
       if (onSave) onSave();
       router.back();
     },
     onError: (error: any) => {
       if (error.response?.status === 422) {
         setErrors(error.response.data.errors);
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Please check your inputs.",
+        });
       } else {
-        Alert.alert(
-          "Error",
-          error.response?.data?.message || "Failed to update profile",
-        );
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: error.response?.data?.message || "Failed to update profile",
+        });
       }
     },
   });
@@ -98,6 +102,11 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Please check the form for errors.",
+      });
       return;
     }
 
@@ -170,7 +179,6 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
             </TouchableOpacity>
           </View>
 
-          {/* FIXED: This now uses user data from context, not the form state */}
           <Text className="text-xl font-bold mt-4 text-foreground dark:text-dark-fg text-center">
             {user?.first_name} {user?.last_name}
           </Text>

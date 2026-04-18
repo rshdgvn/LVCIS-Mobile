@@ -6,8 +6,9 @@ import { userService } from "@/src/services/userService";
 import { evaluatePasswordStrength } from "@/src/utils/passwordUtils";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 type PasswordErrors = {
   current_password?: string;
@@ -49,20 +50,41 @@ const ChangePasswordScreen = () => {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Please check the form for errors.",
+      });
       return;
     }
 
     setLoading(true);
     try {
       await userService.changePassword(form);
-      Alert.alert("Success", "Password updated successfully!");
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: "Password updated successfully!",
+      });
       router.back();
     } catch (error: any) {
       if (error.response?.status === 422) {
         setErrors(error.response.data.errors);
+        Toast.show({
+          type: "error",
+          text1: "Validation Error",
+          text2: "Please check your inputs.",
+        });
       } else {
+        const msg =
+          error.response?.data?.message || "Failed to update password";
         setErrors({
-          general: error.response?.data?.message || "Failed to update password",
+          general: msg,
+        });
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: msg,
         });
       }
     } finally {
@@ -147,7 +169,9 @@ const ChangePasswordScreen = () => {
                 color={req.met ? "#2563EB" : "#9CA3AF"}
               />
               <Text
-                className={`ml-2 text-sm ${req.met ? "text-blue-600 font-medium" : "text-muted-fg"}`}
+                className={`ml-2 text-sm ${
+                  req.met ? "text-blue-600 font-medium" : "text-muted-fg"
+                }`}
               >
                 {req.label}
               </Text>
