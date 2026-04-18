@@ -1,5 +1,4 @@
 import { CustomAlertDialog } from "@/src/components/common/CustomAlertDialog";
-import { CustomDropdown } from "@/src/components/common/CustomDropdown";
 import { CreateSessionModal } from "@/src/components/modals/CreateSessionModal";
 import { EditSessionModal } from "@/src/components/modals/EditSessionModal";
 import { useClub } from "@/src/contexts/ClubContext";
@@ -35,6 +34,7 @@ interface Props {
   } | null;
   isLoading: boolean;
   onAccessSession: (sessionId: number) => void;
+  onSwitchClub: () => void;
 }
 
 export default function AttendanceScreen({
@@ -42,9 +42,10 @@ export default function AttendanceScreen({
   analytics,
   isLoading,
   onAccessSession,
+  onSwitchClub,
 }: Props) {
   const { primaryColor } = useTheme();
-  const { clubs, activeClubId, setActiveClubId, isOfficer } = useClub();
+  const { clubs, activeClubId } = useClub();
   const { canManageClub } = useCanManageClub();
   const queryClient = useQueryClient();
   const { deleteSession } = useAttendanceMutations();
@@ -67,7 +68,6 @@ export default function AttendanceScreen({
   const [isDeleting, setIsDeleting] = useState(false);
   const canManage = activeClubId && canManageClub(activeClubId);
 
-  const clubOptions = clubs.map((c) => c.name);
   const activeClub = clubs.find((c) => c.id === activeClubId);
   const activeClubName = activeClub?.name || "";
 
@@ -167,51 +167,70 @@ export default function AttendanceScreen({
 
   const renderHeader = () => (
     <View className="mb-2">
-      {/* Club Header */}
-      <View className="flex-row items-center mb-6 mt-2 gap-3">
-        {activeClub?.logo_url ? (
-          <Image
-            source={{ uri: activeClub.logo_url }}
-            className="w-16 h-16 rounded-full"
-          />
-        ) : (
-          <View className="w-16 h-16 rounded-full bg-primary/10 dark:bg-dark-primary/10 items-center justify-center">
-            <Ionicons name="people" size={30} color={primaryColor} />
-          </View>
-        )}
+      <Text className="text-lg font-bold text-foreground dark:text-dark-fg mb-4">
+        Recent events
+      </Text>
+    </View>
+  );
 
-        <View className="flex-1">
-          {activeClubName ? (
-            <Text className="text-lg font-bold text-foreground dark:text-dark-fg mb-1">
-              {activeClubName}
-            </Text>
-          ) : null}
-          {clubs.length > 0 ? (
-            <CustomDropdown
-              label="Switch Club"
-              value={activeClubName}
-              options={clubOptions}
-              showLabelOnly
-              onSelect={(selectedName) => {
-                const selectedClub = clubs.find((c) => c.name === selectedName);
-                if (selectedClub) setActiveClubId(selectedClub.id);
-              }}
+  return (
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
+      {/* ── Fixed top section ── */}
+      <View className="px-4 pt-5 pb-3">
+        {/* Page title */}
+        <View className="mb-5">
+          <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">
+            Attendance
+          </Text>
+          <Text className="text-sm text-muted-fg dark:text-dark-muted-fg mt-0.5">
+            Track and manage club attendance
+          </Text>
+        </View>
+
+        {/* Active Club card */}
+        <View className="bg-card dark:bg-dark-card rounded-2xl border border-border dark:border-dark-border p-4 flex-row items-center gap-3 mb-5">
+          {activeClub?.logo_url ? (
+            <Image
+              source={{ uri: activeClub.logo_url }}
+              className="w-12 h-12 rounded-full bg-muted dark:bg-dark-muted"
             />
           ) : (
-            <Text className="text-sm text-muted-fg dark:text-dark-muted-fg">
-              No clubs yet
-            </Text>
+            <View className="w-12 h-12 rounded-full bg-primary/10 dark:bg-dark-primary/10 items-center justify-center">
+              <Ionicons name="people" size={22} color={primaryColor} />
+            </View>
           )}
+          <View className="flex-1">
+            <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium mb-0.5">
+              Current Club
+            </Text>
+            <Text
+              className="text-base font-bold text-foreground dark:text-dark-fg"
+              numberOfLines={1}
+            >
+              {activeClubName || "No club selected"}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={onSwitchClub}
+            className="flex-row items-center px-3 py-1.5 rounded-full border border-border dark:border-dark-border bg-background dark:bg-dark-bg gap-1"
+          >
+            <Ionicons
+              name="swap-horizontal-outline"
+              size={13}
+              color="#6b7280"
+            />
+            <Text className="text-xs font-semibold text-muted-fg dark:text-dark-muted-fg">
+              Switch
+            </Text>
+          </TouchableOpacity>
         </View>
-      </View>
 
-      {activeClubId && (
-        <>
-          {/* Analytics Cards */}
+        {/* Analytics Cards */}
+        {activeClubId && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            className="mb-6"
+            className="mb-5"
             contentContainerStyle={{ paddingRight: 20, gap: 12 }}
           >
             <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
@@ -256,9 +275,11 @@ export default function AttendanceScreen({
               </Text>
             </View>
           </ScrollView>
+        )}
 
-          {/* Search + Filter */}
-          <View className="flex-row items-center mb-6 gap-2">
+        {/* Search + Filter */}
+        {activeClubId && (
+          <View className="flex-row items-center gap-2">
             <View className="flex-1 flex-row items-center bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 h-12">
               <Ionicons name="search-outline" size={20} color="#9ca3af" />
               <TextInput
@@ -273,23 +294,18 @@ export default function AttendanceScreen({
               <Ionicons name="filter-outline" size={20} color="#6b7280" />
             </TouchableOpacity>
           </View>
+        )}
 
-          <Text className="text-lg font-bold text-foreground dark:text-dark-fg mb-4">
-            Recent events
+        {!activeClubId && (
+          <Text className="text-muted-fg dark:text-dark-muted-fg text-sm mt-2">
+            {clubs.length === 0
+              ? "You are not part of any clubs yet."
+              : "Select a club from the Home tab to get started."}
           </Text>
-        </>
-      )}
+        )}
+      </View>
 
-      {!activeClubId && clubs.length === 0 && (
-        <Text className="text-muted-fg dark:text-dark-muted-fg text-base mt-2">
-          You are not part of any clubs yet.
-        </Text>
-      )}
-    </View>
-  );
-
-  return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-8 pt-6">
+      {/* ── Scrollable sessions list ── */}
       {isLoading ? (
         <ActivityIndicator
           size="large"
@@ -301,8 +317,12 @@ export default function AttendanceScreen({
           data={filteredSessions}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 80 }}
-          ListHeaderComponent={renderHeader}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: 80,
+            paddingTop: 16,
+          }}
+          ListHeaderComponent={activeClubId ? renderHeader : null}
           ListEmptyComponent={
             activeClubId ? (
               <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">

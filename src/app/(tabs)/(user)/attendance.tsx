@@ -18,6 +18,11 @@ export default function AttendanceRoute() {
     router.push(`/attendance/${sessionId}` as Href);
   };
 
+  // Navigate to Home tab where the club switcher lives
+  const handleSwitchClub = () => {
+    router.push("/(tabs)" as Href);
+  };
+
   return (
     <View className="flex-1">
       <AttendanceScreen
@@ -25,6 +30,7 @@ export default function AttendanceRoute() {
         analytics={analytics}
         isLoading={isLoading}
         onAccessSession={handleAccessSession}
+        onSwitchClub={handleSwitchClub}
       />
     </View>
   );

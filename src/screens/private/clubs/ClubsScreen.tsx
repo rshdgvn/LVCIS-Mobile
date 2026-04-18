@@ -125,7 +125,7 @@ export default function ClubsScreen({
     selectedCategory !== undefined || viewFilter !== "all";
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-8 pt-6 relative">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-4 pt-4 relative">
       <View className="mb-6">
         <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
           Welcome to,

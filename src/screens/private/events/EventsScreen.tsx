@@ -39,7 +39,7 @@ export default function EventsScreen({
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       {/* Header */}
-      <View className="px-8 mt-6 flex-row justify-between items-start">
+      <View className="px-4 mt-4 flex-row justify-between items-start">
         <View>
           <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
             Welcome to,
@@ -51,7 +51,7 @@ export default function EventsScreen({
       </View>
 
       {/* Search & Add Section */}
-      <View className="px-8 mt-8 flex-row gap-4">
+      <View className="px-4 mt-8 flex-row gap-4">
         <View className="flex-1 bg-card dark:bg-dark-card rounded-2xl flex-row items-center px-4 h-14 border border-border dark:border-dark-border">
           <Ionicons name="search" size={20} color="#9ca3af" />
           <TextInput
@@ -74,7 +74,7 @@ export default function EventsScreen({
       </View>
 
       {/* Events List */}
-      <View className="flex-1 px-8 mt-8">
+      <View className="flex-1 px-4 mt-8">
         {isLoading ? (
           <ActivityIndicator
             size="large"
