@@ -1,6 +1,4 @@
-import { CustomDropdown } from "@/src/components/common/CustomDropdown";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { useClub } from "@/src/contexts/ClubContext";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -161,10 +159,6 @@ interface Props {
 
 export const DashboardScreen = ({ onProfile }: Props) => {
   const { user } = useAuth();
-  const { clubs, activeClubId, setActiveClubId } = useClub();
-  const clubOptions = clubs.map((c) => c.name);
-  const activeClub = clubs.find((c) => c.id === activeClubId);
-  const activeClubName = activeClub?.name || "";
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
@@ -196,51 +190,6 @@ export const DashboardScreen = ({ onProfile }: Props) => {
               </Text>
             </View>
           </TouchableOpacity>
-
-          {/* Active Club card — logo left, name + Switch Club pill right */}
-          {clubs.length > 0 && (
-            <View className="bg-card dark:bg-dark-card rounded-2xl border border-border dark:border-dark-border p-4 flex-row items-center gap-3">
-              {activeClub?.logo_url ? (
-                <Image
-                  source={{ uri: activeClub.logo_url }}
-                  className="w-14 h-14 rounded-full bg-muted dark:bg-dark-muted"
-                />
-              ) : (
-                <View className="w-14 h-14 rounded-full bg-primary/10 dark:bg-dark-primary/10 items-center justify-center">
-                  <Ionicons name="people" size={24} color="#3b82f6" />
-                </View>
-              )}
-              <View className="flex-1">
-                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium mb-0.5">
-                  Active Club
-                </Text>
-                {activeClubName ? (
-                  <Text
-                    className="text-base font-bold text-foreground dark:text-dark-fg mb-1.5"
-                    numberOfLines={1}
-                  >
-                    {activeClubName}
-                  </Text>
-                ) : (
-                  <Text className="text-sm text-muted-fg dark:text-dark-muted-fg mb-1.5">
-                    No club selected
-                  </Text>
-                )}
-                <CustomDropdown
-                  label="Switch Club"
-                  value={activeClubName}
-                  options={clubOptions}
-                  showLabelOnly
-                  onSelect={(selectedName) => {
-                    const selectedClub = clubs.find(
-                      (c) => c.name === selectedName,
-                    );
-                    if (selectedClub) setActiveClubId(selectedClub.id);
-                  }}
-                />
-              </View>
-            </View>
-          )}
         </View>
 
         <View className="px-6 mt-4 gap-4">

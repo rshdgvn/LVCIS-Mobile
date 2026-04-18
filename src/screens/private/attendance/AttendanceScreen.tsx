@@ -13,7 +13,6 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -34,7 +33,6 @@ interface Props {
   } | null;
   isLoading: boolean;
   onAccessSession: (sessionId: number) => void;
-  onSwitchClub: () => void;
 }
 
 export default function AttendanceScreen({
@@ -42,7 +40,6 @@ export default function AttendanceScreen({
   analytics,
   isLoading,
   onAccessSession,
-  onSwitchClub,
 }: Props) {
   const { primaryColor } = useTheme();
   const { clubs, activeClubId } = useClub();
@@ -67,9 +64,6 @@ export default function AttendanceScreen({
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const canManage = activeClubId && canManageClub(activeClubId);
-
-  const activeClub = clubs.find((c) => c.id === activeClubId);
-  const activeClubName = activeClub?.name || "";
 
   const filteredSessions = sessions.filter((s) =>
     s.title.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -176,53 +170,17 @@ export default function AttendanceScreen({
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       {/* ── Fixed top section ── */}
-      <View className="px-4 pt-5 pb-3">
+      <View className="px-4 mt-4 pb-3">
         {/* Page title */}
-        <View className="mb-5">
-          <Text className="text-2xl font-bold text-foreground dark:text-dark-fg">
-            Attendance
-          </Text>
-          <Text className="text-sm text-muted-fg dark:text-dark-muted-fg mt-0.5">
-            Track and manage club attendance
-          </Text>
-        </View>
-
-        {/* Active Club card */}
-        <View className="bg-card dark:bg-dark-card rounded-2xl border border-border dark:border-dark-border p-4 flex-row items-center gap-3 mb-5">
-          {activeClub?.logo_url ? (
-            <Image
-              source={{ uri: activeClub.logo_url }}
-              className="w-12 h-12 rounded-full bg-muted dark:bg-dark-muted"
-            />
-          ) : (
-            <View className="w-12 h-12 rounded-full bg-primary/10 dark:bg-dark-primary/10 items-center justify-center">
-              <Ionicons name="people" size={22} color={primaryColor} />
-            </View>
-          )}
-          <View className="flex-1">
-            <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium mb-0.5">
-              Current Club
+        <View className="flex-row justify-between mb-8 items-start">
+          <View>
+            <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
+              Welcome to,
             </Text>
-            <Text
-              className="text-base font-bold text-foreground dark:text-dark-fg"
-              numberOfLines={1}
-            >
-              {activeClubName || "No club selected"}
+            <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
+              Attendance
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={onSwitchClub}
-            className="flex-row items-center px-3 py-1.5 rounded-full border border-border dark:border-dark-border bg-background dark:bg-dark-bg gap-1"
-          >
-            <Ionicons
-              name="swap-horizontal-outline"
-              size={13}
-              color="#6b7280"
-            />
-            <Text className="text-xs font-semibold text-muted-fg dark:text-dark-muted-fg">
-              Switch
-            </Text>
-          </TouchableOpacity>
         </View>
 
         {/* Analytics Cards */}
@@ -407,7 +365,6 @@ export default function AttendanceScreen({
         </Pressable>
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
       <CustomAlertDialog
         visible={isDeleteDialogVisible}
         title="Delete Session"
