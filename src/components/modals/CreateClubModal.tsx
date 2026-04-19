@@ -1,5 +1,8 @@
 import { CustomDropdown } from "@/src/components/common/CustomDropdown";
-import { CATEGORY_OPTIONS, CATEGORY_VALUE_MAP } from "@/src/constants/clubOptions";
+import {
+  CATEGORY_OPTIONS,
+  CATEGORY_VALUE_MAP,
+} from "@/src/constants/clubOptions";
 import { clubService } from "@/src/services/clubService";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -59,7 +62,7 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
   const createMutation = useMutation({
     mutationFn: async () => {
       const categoryValue = CATEGORY_VALUE_MAP[categoryLabel];
-      
+
       const formData = new FormData();
       formData.append("name", name);
       formData.append("category", categoryValue || "");
@@ -92,7 +95,8 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
     },
   });
 
-  const isFormValid = name.trim() !== "" && categoryLabel !== "" && description.trim() !== "";
+  const isFormValid =
+    name.trim() !== "" && categoryLabel !== "" && description.trim() !== "";
 
   return (
     <Modal
@@ -105,9 +109,13 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1 justify-end bg-black/40"
       >
-        <TouchableOpacity className="flex-1" onPress={handleClose} activeOpacity={1} />
-        
-        <View className="bg-card dark:bg-dark-card rounded-t-[32px] p-6 max-h-[90%]">
+        <TouchableOpacity
+          className="flex-1"
+          onPress={handleClose}
+          activeOpacity={1}
+        />
+
+        <View className="bg-background dark:bg-dark-bg rounded-t-[32px] p-6 max-h-[90%]">
           <View className="w-12 h-1.5 bg-muted dark:bg-dark-muted rounded-full self-center mb-6" />
 
           <Text className="text-xl font-bold text-card-fg dark:text-dark-card-fg mb-6">
@@ -121,10 +129,19 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
               className="border-2 border-dashed border-border dark:border-dark-border rounded-2xl h-36 items-center justify-center mb-6 bg-muted/30 dark:bg-dark-muted/10 overflow-hidden"
             >
               {logo ? (
-                <Image source={{ uri: logo }} className="w-full h-full" resizeMode="cover" />
+                <Image
+                  source={{ uri: logo }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
               ) : (
                 <View className="items-center">
-                  <Ionicons name="image" size={32} color="#9ca3af" className="mb-2" />
+                  <Ionicons
+                    name="image"
+                    size={32}
+                    color="#9ca3af"
+                    className="mb-2"
+                  />
                   <Text className="text-card-fg dark:text-dark-card-fg font-semibold">
                     Upload Club Logo
                   </Text>
@@ -190,14 +207,16 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
               {createMutation.isPending ? (
                 <ActivityIndicator color="#ffffff" />
               ) : (
-                <Text className="text-white font-bold text-base">Create Club</Text>
+                <Text className="text-white font-bold text-base">
+                  Create Club
+                </Text>
               )}
             </TouchableOpacity>
-            
+
             <Text className="text-center text-[10px] text-muted-fg dark:text-dark-muted-fg uppercase mt-3 tracking-widest">
               This action will notify the assigned president
             </Text>
-            
+
             <View className="h-8" />
           </ScrollView>
         </View>

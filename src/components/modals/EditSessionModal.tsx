@@ -110,7 +110,7 @@ export const EditSessionModal = ({ isVisible, onClose, session }: Props) => {
           activeOpacity={1}
         />
 
-        <View className="bg-card dark:bg-dark-card rounded-t-[32px] p-6 max-h-[90%]">
+        <View className="bg-background dark:bg-dark-bg rounded-t-[32px] p-6 max-h-[90%]">
           <View className="w-12 h-1.5 bg-muted dark:bg-dark-muted rounded-full self-center mb-6" />
 
           <Text className="text-xl font-bold text-card-fg dark:text-dark-card-fg mb-6">

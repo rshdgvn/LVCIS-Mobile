@@ -108,14 +108,27 @@ export default function EventDetailsScreen({
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4 bg-background dark:bg-dark-bg z-50">
         <BackButton onPress={onBack} />
-        <Text className="text-lg font-semibold text-foreground dark:text-dark-fg">
-          Event Details
-        </Text>
+        <View className="items-center">
+          <Text className="text-lg font-semibold text-foreground dark:text-dark-fg">
+            Event Details
+          </Text>
+          {event?.club?.name && (
+            <View className="flex-row items-center gap-1 mt-0.5">
+              <Ionicons name="people" size={11} color="#6b7280" />
+              <Text
+                className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium"
+                numberOfLines={1}
+              >
+                {event.club.name}
+              </Text>
+            </View>
+          )}
+        </View>
         <TouchableOpacity
-          onPress={() => setIsEditModalVisible(true)} // <-- 2. Open Modal on Edit press
+          onPress={() => setIsEditModalVisible(true)}
           hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         >
-          <Text className="text-primary dark:text-dark-primary font-medium hover:opacity-80">
+          <Text className="text-primary dark:text-dark-primary font-medium">
             Edit
           </Text>
         </TouchableOpacity>

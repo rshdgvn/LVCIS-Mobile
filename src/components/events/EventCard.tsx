@@ -22,10 +22,23 @@ export const EventCard = ({ event, onPress }: EventCardProps) => {
       activeOpacity={0.8}
       className="bg-card dark:bg-dark-card p-6 rounded-2xl mb-4 border border-border dark:border-dark-border"
     >
-      {/* Event Title */}
-      <Text className="text-xl font-bold text-foreground dark:text-dark-fg mb-4">
-        {title}
-      </Text>
+      {/* Event Title + Club Badge */}
+      <View className="flex-row items-start justify-between mb-4 gap-3">
+        <Text className="text-xl font-bold text-foreground dark:text-dark-fg flex-1">
+          {title}
+        </Text>
+        {club?.name && (
+          <View className="flex-row items-center gap-1.5 bg-primary/10 dark:bg-dark-primary/10 px-2.5 py-1 rounded-full">
+            <Ionicons name="people" size={11} color={primaryColor} />
+            <Text
+              className="text-[11px] font-semibold text-primary dark:text-dark-primary"
+              numberOfLines={1}
+            >
+              {club.name}
+            </Text>
+          </View>
+        )}
+      </View>
 
       {/* Date & Time Row */}
       <View className="flex-row items-center mb-3 gap-3">
@@ -61,7 +74,7 @@ export const EventCard = ({ event, onPress }: EventCardProps) => {
       {/* Avatars Section */}
       <View className="flex-row items-center">
         <View className="flex-row">
-          {users.slice(0, 3).map((user, index) => (
+          {users.slice(0, 3).map((user: any, index: number) => (
             <View
               key={user.id}
               style={{ marginLeft: index === 0 ? 0 : -12 }} // Overlap logic

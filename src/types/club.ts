@@ -11,7 +11,7 @@ export interface ClubMembershipPivot {
   role: "member" | "officer" | "adviser" | string;
   officer_title: string | null;
   status: "pending" | "approved" | "rejected";
-  activity_status?: "active" | "inactive"; 
+  activity_status?: "active" | "inactive";
   joined_at: string;
 }
 
@@ -27,13 +27,13 @@ export interface Club {
   updated_at: string;
   approved_users_count?: number;
   pending_applications_count?: number;
-  users?: ClubMember[]; 
+  users?: ClubMember[];
   approved_users?: ClubMember[];
-  pivot?: ClubMembershipPivot; 
+  pivot?: ClubMembershipPivot;
 }
 
 export interface ClubMember {
-  id: number; 
+  id: number;
   first_name: string;
   last_name: string;
   email: string;
@@ -41,7 +41,7 @@ export interface ClubMember {
   course: string | null;
   year_level: string | null;
   student_id: string | null;
-  pivot: ClubMembershipPivot; 
+  pivot: ClubMembershipPivot;
 }
 
 export interface ClubPayload {

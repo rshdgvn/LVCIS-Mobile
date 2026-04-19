@@ -2,7 +2,7 @@ import { api } from "@/src/api/api";
 import { Event } from "@/src/types/event";
 
 export const eventService = {
-  // Get all events with their details and club info
+  // Get all events — filtering by club is done on the frontend
   getAllEvents: async (): Promise<Event[]> => {
     const response = await api.get("/events");
     return response.data;
@@ -15,7 +15,6 @@ export const eventService = {
   },
 
   // Add a new event
-  // Note: This uses FormData because your controller handles file uploads
   addEvent: async (formData: FormData) => {
     const response = await api.post("/events", formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -24,19 +23,16 @@ export const eventService = {
   },
 
   // Update an existing event
-updateEvent: async ({ id, data }: { id: number, data: FormData }) => {
-    data.append("_method", "PATCH"); 
-
+  updateEvent: async ({ id, data }: { id: number; data: FormData }) => {
+    data.append("_method", "PATCH");
     return await api.post(`/events/${id}`, data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     });
   },
-  
-    // Delete an event
-    deleteEvent: async (id: number) => {
-      const response = await api.delete(`/events/${id}`);
-      return response.data;
-    },
-  };
+
+  // Delete an event
+  deleteEvent: async (id: number) => {
+    const response = await api.delete(`/events/${id}`);
+    return response.data;
+  },
+};
