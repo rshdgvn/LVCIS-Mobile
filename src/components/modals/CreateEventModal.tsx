@@ -1,5 +1,7 @@
+import { useClub } from "@/src/contexts/ClubContext";
 import { useEventMutations } from "@/src/hooks/useEvents";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
@@ -23,19 +25,20 @@ interface Props {
 
 export const CreateEventModal = ({ isVisible, onClose }: Props) => {
   const { createEvent, isCreating } = useEventMutations();
+  const { activeClubId } = useClub();
 
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
   const [venue, setVenue] = useState("");
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState<string | null>(null);
 
-  const isFormValid =
-    title.trim() !== "" &&
-    date.trim() !== "" &&
-    time.trim() !== "" &&
-    venue.trim() !== "";
+  // Date + Time as Date objects
+  const [dateObj, setDateObj] = useState(new Date());
+  const [timeObj, setTimeObj] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const isFormValid = title.trim() !== "" && venue.trim() !== "";
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -49,11 +52,11 @@ export const CreateEventModal = ({ isVisible, onClose }: Props) => {
 
   const resetForm = () => {
     setTitle("");
-    setDate("");
-    setTime("");
     setVenue("");
     setDescription("");
     setCoverImage(null);
+    setDateObj(new Date());
+    setTimeObj(new Date());
   };
 
   const handleClose = () => {
@@ -61,13 +64,31 @@ export const CreateEventModal = ({ isVisible, onClose }: Props) => {
     onClose();
   };
 
+  const formatDate = (d: Date) =>
+    d.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+  const formatTime = (d: Date) =>
+    d.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
   const handleCreate = async () => {
     const formData = new FormData();
     formData.append("title", title);
-    formData.append("event_date", date);
-    formData.append("event_time", time);
+    formData.append("event_date", dateObj.toISOString().split("T")[0]);
+    formData.append(
+      "event_time",
+      `${timeObj.getHours().toString().padStart(2, "0")}:${timeObj.getMinutes().toString().padStart(2, "0")}`,
+    );
     formData.append("venue", venue);
-    formData.append("description", description);
+    formData.append("description", description || "N/A");
 
     if (coverImage) {
       const uriParts = coverImage.split(".");
@@ -79,7 +100,7 @@ export const CreateEventModal = ({ isVisible, onClose }: Props) => {
       } as any);
     }
 
-    formData.append("club_id", "1");
+    formData.append("club_id", activeClubId ? activeClubId.toString() : "");
     formData.append("purpose", "General Event");
     formData.append("status", "upcoming");
     formData.append("organizer", "Admin");
@@ -90,11 +111,7 @@ export const CreateEventModal = ({ isVisible, onClose }: Props) => {
 
     try {
       await createEvent(formData);
-      Toast.show({
-        type: "success",
-        text1: "Success",
-        text2: "Event created!",
-      });
+      Toast.show({ type: "success", text1: "Event created successfully!" });
       handleClose();
     } catch (error) {
       Toast.show({
@@ -109,7 +126,7 @@ export const CreateEventModal = ({ isVisible, onClose }: Props) => {
     <Modal
       visible={isVisible}
       animationType="slide"
-      transparent={true}
+      transparent
       onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
@@ -122,19 +139,18 @@ export const CreateEventModal = ({ isVisible, onClose }: Props) => {
           activeOpacity={1}
         />
 
-        <View className="bg-background dark:bg-dark-bg rounded-t-[40px] max-h-[83%]">
+        <View className="bg-background dark:bg-dark-bg rounded-t-[40px] max-h-[90%]">
           <View className="w-12 h-1.5 bg-muted dark:bg-dark-muted rounded-full self-center mt-4 mb-2" />
 
-          <ScrollView showsVerticalScrollIndicator={false} className="px-8">
-            <View className="flex-row justify-between items-center mt-4 mb-6">
-              <Text className="text-2xl font-bold text-card-fg dark:text-dark-card-fg">
-                Create Event
-              </Text>
-            </View>
+          <ScrollView showsVerticalScrollIndicator={false} className="px-6">
+            <Text className="text-2xl font-bold text-foreground dark:text-dark-fg mt-4 mb-6">
+              Create Event
+            </Text>
 
+            {/* Cover Image */}
             <TouchableOpacity
               onPress={pickImage}
-              className="w-full h-40 border-2 border-dashed border-border dark:border-dark-border rounded-3xl flex flex-col items-center justify-center bg-background dark:bg-dark-bg mb-8"
+              className="w-full h-40 border-2 border-dashed border-border dark:border-dark-border rounded-3xl items-center justify-center bg-background dark:bg-dark-bg mb-6 overflow-hidden"
             >
               {coverImage ? (
                 <Image
@@ -143,124 +159,147 @@ export const CreateEventModal = ({ isVisible, onClose }: Props) => {
                 />
               ) : (
                 <>
-                  <View className="p-3 bg-card dark:bg-dark-card rounded-2xl shadow-sm mb-3">
+                  <View className="p-3 bg-background dark:bg-dark-bg rounded-2xl mb-3">
                     <Ionicons name="image-outline" size={28} color="#9ca3af" />
                   </View>
-                  <Text className="font-bold text-card-fg dark:text-dark-card-fg text-sm">
-                    Upload Photos
+                  <Text className="font-bold text-foreground dark:text-dark-fg text-sm">
+                    Upload Cover Photo
                   </Text>
-                  <Text className="text-[10px] text-muted-fg dark:text-dark-muted-fg font-bold tracking-widest mt-1 uppercase">
-                    PNG, JPG, OR SVG UP TO 10MB
+                  <Text className="text-[10px] text-muted-fg dark:text-dark-muted-fg mt-1 uppercase tracking-wider">
+                    PNG, JPG UP TO 10MB
                   </Text>
                 </>
               )}
             </TouchableOpacity>
 
-            <View className="space-y-6">
-              <View>
+            {/* Title */}
+            <View className="mb-4">
+              <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
+                Event Title
+              </Text>
+              <TextInput
+                value={title}
+                onChangeText={setTitle}
+                placeholder="e.g. Computer Science Seminar"
+                placeholderTextColor="#9ca3af"
+                className="w-full px-4 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg"
+              />
+            </View>
+
+            {/* Date + Time row */}
+            <View className="flex-row gap-3 mb-4">
+              {/* Date Picker */}
+              <View className="flex-1">
                 <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
-                  Event Title
+                  Date
                 </Text>
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(true)}
+                  className="flex-row items-center justify-between bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl px-4 py-4"
+                >
+                  <Text
+                    className="text-foreground dark:text-dark-fg text-sm flex-1"
+                    numberOfLines={1}
+                  >
+                    {dateObj.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </Text>
+                  <Ionicons name="calendar-outline" size={16} color="#9ca3af" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Time Picker */}
+              <View className="flex-1">
+                <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
+                  Time
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowTimePicker(true)}
+                  className="flex-row items-center justify-between bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl px-4 py-4"
+                >
+                  <Text className="text-foreground dark:text-dark-fg text-sm">
+                    {formatTime(timeObj)}
+                  </Text>
+                  <Ionicons name="time-outline" size={16} color="#9ca3af" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Date Picker Modal */}
+            {showDatePicker && (
+              <DateTimePicker
+                value={dateObj}
+                mode="date"
+                display={Platform.OS === "ios" ? "inline" : "calendar"}
+                onChange={(_, d) => {
+                  setShowDatePicker(false);
+                  if (d) setDateObj(d);
+                }}
+              />
+            )}
+
+            {/* Time Picker Modal */}
+            {showTimePicker && (
+              <DateTimePicker
+                value={timeObj}
+                mode="time"
+                display={Platform.OS === "ios" ? "spinner" : "clock"}
+                onChange={(_, t) => {
+                  setShowTimePicker(false);
+                  if (t) setTimeObj(t);
+                }}
+              />
+            )}
+
+            {/* Venue */}
+            <View className="mb-4">
+              <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
+                Venue
+              </Text>
+              <View className="relative">
                 <TextInput
-                  value={title}
-                  onChangeText={setTitle}
-                  placeholder="e.g. Computer Science Seminar"
+                  value={venue}
+                  onChangeText={setVenue}
+                  placeholder="Room 402, Science Building"
                   placeholderTextColor="#9ca3af"
-                  className="w-full px-4 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg"
+                  className="w-full pl-12 pr-4 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg"
                 />
-              </View>
-
-              <View className="flex-row gap-4">
-                <View className="flex-1">
-                  <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
-                    Date
-                  </Text>
-                  <View className="relative">
-                    <TextInput
-                      value={date}
-                      onChangeText={setDate}
-                      placeholder="mm/dd/yyyy"
-                      placeholderTextColor="#9ca3af"
-                      className="w-full pl-4 pr-10 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg"
-                    />
-                    <Ionicons
-                      name="calendar-outline"
-                      size={18}
-                      color="#9ca3af"
-                      style={{ position: "absolute", right: 14, top: 18 }}
-                    />
-                  </View>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
-                    Time
-                  </Text>
-                  <View className="relative">
-                    <TextInput
-                      value={time}
-                      onChangeText={setTime}
-                      placeholder="-- : -- --"
-                      placeholderTextColor="#9ca3af"
-                      className="w-full pl-4 pr-10 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg"
-                    />
-                    <Ionicons
-                      name="time-outline"
-                      size={18}
-                      color="#9ca3af"
-                      style={{ position: "absolute", right: 14, top: 18 }}
-                    />
-                  </View>
-                </View>
-              </View>
-
-              <View>
-                <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
-                  Venue
-                </Text>
-                <View className="relative">
-                  <TextInput
-                    value={venue}
-                    onChangeText={setVenue}
-                    placeholder="Room 402, Science Building"
-                    placeholderTextColor="#9ca3af"
-                    className="w-full pl-12 pr-4 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg"
-                  />
-                  <Ionicons
-                    name="location-outline"
-                    size={18}
-                    color="#9ca3af"
-                    style={{ position: "absolute", left: 16, top: 18 }}
-                  />
-                </View>
-              </View>
-
-              <View className="mb-32">
-                <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
-                  Description
-                </Text>
-                <TextInput
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder="What is this event about?"
-                  placeholderTextColor="#9ca3af"
-                  multiline
-                  numberOfLines={4}
-                  textAlignVertical="top"
-                  className="w-full px-4 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg h-32"
+                <Ionicons
+                  name="location-outline"
+                  size={18}
+                  color="#9ca3af"
+                  style={{ position: "absolute", left: 16, top: 18 }}
                 />
               </View>
             </View>
+
+            {/* Description */}
+            <View className="mb-8">
+              <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
+                Description
+              </Text>
+              <TextInput
+                value={description}
+                onChangeText={setDescription}
+                placeholder="What is this event about?"
+                placeholderTextColor="#9ca3af"
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                className="w-full px-4 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg h-28"
+              />
+            </View>
           </ScrollView>
 
-          <View className="p-8 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border">
+          {/* Footer */}
+          <View className="px-6 pb-10 pt-4 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border">
             <TouchableOpacity
               onPress={handleCreate}
               disabled={!isFormValid || isCreating}
-              className={`w-full py-4 rounded-2xl items-center shadow-sm ${
-                !isFormValid || isCreating
-                  ? "bg-primary dark:bg-dark-primary"
-                  : "bg-primary dark:bg-dark-primary"
-              }`}
+              className={`w-full py-4 rounded-2xl items-center ${!isFormValid || isCreating ? "opacity-60" : "opacity-100"} bg-primary dark:bg-dark-primary`}
             >
               {isCreating ? (
                 <ActivityIndicator color="white" />
