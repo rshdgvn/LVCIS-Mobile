@@ -15,17 +15,12 @@ export default function EventsRoute() {
     router.push(`/events/${eventId}` as Href);
   };
 
-  const handleCreateEvent = () => {
-    router.push("/events/create" as Href);
-  };
-
   return (
     <View className="flex-1">
       <EventsScreen
         events={events}
         isLoading={isLoading}
         onAccessEvent={handleAccessEvent}
-        onCreateEvent={handleCreateEvent}
       />
     </View>
   );

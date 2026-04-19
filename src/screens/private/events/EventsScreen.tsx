@@ -12,7 +12,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -20,7 +20,6 @@ interface Props {
   events: Event[] | undefined;
   isLoading: boolean;
   onAccessEvent: (eventId: number) => void;
-  onCreateEvent?: () => void;
 }
 
 export default function EventsScreen({
