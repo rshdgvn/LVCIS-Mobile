@@ -238,7 +238,7 @@ export default function AttendanceScreen({
         {/* Search + Filter */}
         {activeClubId && (
           <View className="flex-row items-center gap-2">
-            <View className="flex-1 flex-row items-center bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 h-12">
+            <View className="flex-1 flex-row items-center bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-xl px-4 h-12">
               <Ionicons name="search-outline" size={20} color="#9ca3af" />
               <TextInput
                 placeholder="Search events"
@@ -248,7 +248,7 @@ export default function AttendanceScreen({
                 className="flex-1 ml-2 text-base text-foreground dark:text-dark-fg"
               />
             </View>
-            <TouchableOpacity className="w-12 h-12 bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl items-center justify-center">
+            <TouchableOpacity className="w-12 h-12 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-xl items-center justify-center">
               <Ionicons name="filter-outline" size={20} color="#6b7280" />
             </TouchableOpacity>
           </View>

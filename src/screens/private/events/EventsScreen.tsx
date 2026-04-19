@@ -1,5 +1,6 @@
 import { EventCard } from "@/src/components/events/EventCard";
 import { CreateEventModal } from "@/src/components/modals/CreateEventModal";
+import { useClub } from "@/src/contexts/ClubContext";
 import { useIsAdmin } from "@/src/hooks/useIsAdmin";
 import { useTheme } from "@/src/hooks/useTheme";
 import { Event } from "@/src/types/event";
@@ -11,7 +12,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -28,9 +29,11 @@ export default function EventsScreen({
   onAccessEvent,
 }: Props) {
   const [search, setSearch] = useState("");
-  const [isModalVisible, setIsModalVisible] = useState(false); // Local visibility state
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const { primaryColor } = useTheme();
   const isAdmin = useIsAdmin();
+  const { clubs, activeClubId } = useClub();
+  const activeClub = clubs.find((c) => c.id === activeClubId);
 
   const filteredEvents = events?.filter((e) =>
     e.title.toLowerCase().includes(search.toLowerCase()),
@@ -39,20 +42,22 @@ export default function EventsScreen({
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       {/* Header */}
-      <View className="px-4 mt-4 flex-row justify-between items-start">
-        <View>
-          <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
-            Welcome to,
-          </Text>
-          <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
-            Events
-          </Text>
+      <View className="px-4 mt-4">
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
+              Welcome to,
+            </Text>
+            <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
+              Events
+            </Text>
+          </View>
         </View>
       </View>
 
       {/* Search & Add Section */}
       <View className="px-4 mt-8 flex-row gap-4">
-        <View className="flex-1 bg-card dark:bg-dark-card rounded-2xl flex-row items-center px-4 h-14 border border-border dark:border-dark-border">
+        <View className="flex-1 bg-background dark:bg-dark-bg rounded-2xl flex-row items-center px-4 h-14 border border-border dark:border-dark-border">
           <Ionicons name="search" size={20} color="#9ca3af" />
           <TextInput
             placeholder="Search events"

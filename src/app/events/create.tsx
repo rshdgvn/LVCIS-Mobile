@@ -1,8 +1,8 @@
-import React from "react";
-import { Alert } from "react-native";
-import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import { useEventMutations } from "@/src/hooks/useEvents";
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 import EventCreateScreen from "@/src/screens/private/events/EventCreateScreen";
+import React from "react";
+import Toast from "react-native-toast-message";
 
 export default function CreateEventRoute() {
   const router = useThrottledRouter();
@@ -11,11 +11,13 @@ export default function CreateEventRoute() {
   const handleCreate = async (formData: FormData) => {
     try {
       await createEvent(formData);
-      Alert.alert("Success", "Event created successfully!");
+      Toast.show({ type: "success", text1: "Event created successfully!" });
       router.back();
     } catch (error: any) {
-      console.error(error);
-      Alert.alert("Error", error.response?.data?.message || "Failed to create event. Please check inputs.");
+      const msg =
+        error.response?.data?.message ||
+        "Failed to create event. Please check inputs.";
+      Toast.show({ type: "error", text1: "Action Failed", text2: msg });
     }
   };
 

@@ -1,47 +1,31 @@
-import React from "react";
-import { View, Alert } from "react-native"; 
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEventDetails, useEventMutations } from "@/src/hooks/useEvents"; 
-import { Href } from "expo-router";
+import { useEventDetails, useEventMutations } from "@/src/hooks/useEvents";
 import EventDetailsScreen from "@/src/screens/private/events/EventDetailsScreen";
+import { Href, useLocalSearchParams, useRouter } from "expo-router";
+import React from "react";
+import { View } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function EventDetailsRoute() {
   const { eventId } = useLocalSearchParams();
   const router = useRouter();
-  
+
   const id = Number(eventId);
   const { data: event, isLoading } = useEventDetails(id);
-
   const { deleteEvent, isDeleting } = useEventMutations();
 
-  const handleBack = () => {
-    router.back();
-  };
+  const handleBack = () => router.back();
 
-  const handleEdit = (eventId: number) => {
-    router.push(`/events/edit/${eventId}` as Href);
-  };
-  const handleDelete = () => {
-    Alert.alert(
-      "Delete Event",
-      "Are you sure you want to delete this event? This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteEvent(id);
-              Alert.alert("Success", "Event has been deleted.");
-              router.replace("/events" as Href); 
-            } catch (error) {
-              Alert.alert("Error", "Failed to delete event. Please try again.");
-            }
-          }
-        }
-      ]
-    );
+  const handleDelete = async () => {
+    try {
+      await deleteEvent(id);
+      Toast.show({ type: "success", text1: "Event deleted successfully!" });
+      router.replace("/events" as Href);
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Failed to delete event. Please try again.",
+      });
+    }
   };
 
   return (
@@ -49,10 +33,9 @@ export default function EventDetailsRoute() {
       <EventDetailsScreen
         event={event}
         isLoading={isLoading}
-        isDeleting={isDeleting} 
+        isDeleting={isDeleting}
         onBack={handleBack}
-        onEdit={handleEdit}
-        onDelete={handleDelete} 
+        onDelete={handleDelete}
       />
     </View>
   );
