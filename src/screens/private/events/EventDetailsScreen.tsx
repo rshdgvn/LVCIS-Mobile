@@ -1,6 +1,7 @@
 import { BackButton } from "@/src/components/common/BackButton";
 import { EditEventModal } from "@/src/components/modals/EditEventModal";
 import { useTheme } from "@/src/hooks/useTheme";
+import { useCanManageClub } from "@/src/hooks/useCanManageClub";
 import { Event } from "@/src/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -68,6 +69,9 @@ export default function EventDetailsScreen({
       tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
     );
   };
+  
+  const { canManageClub } = useCanManageClub();
+  const hasPermission = event ? canManageClub(event.club_id) : false;
 
   if (isLoading) {
     return (
@@ -124,14 +128,16 @@ export default function EventDetailsScreen({
             </View>
           )}
         </View>
-        <TouchableOpacity
-          onPress={() => setIsEditModalVisible(true)}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-        >
-          <Text className="text-primary dark:text-dark-primary font-medium">
-            Edit
-          </Text>
-        </TouchableOpacity>
+        {hasPermission ? (
+          <TouchableOpacity 
+            onPress={() => setIsEditModalVisible(true)}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <Text className="text-blue-600 font-medium">Edit</Text>
+          </TouchableOpacity>
+        ) : (
+          <View className="w-10" /> // Spacer to keep title centered
+        )}
       </View>
 
       <View className="px-6 mt-4">

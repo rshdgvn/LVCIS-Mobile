@@ -26,18 +26,32 @@ interface Props {
 }
 
 // Parse "YYYY-MM-DD" safely into a Date
-const parseDateStr = (str: string): Date => {
+const parseDateStr = (str?: string | null): Date => {
   if (!str) return new Date();
-  const [y, m, d] = str.split("-").map(Number);
+
+  const parts = str.split("-").map(Number);
+  
+  if (parts.length !== 3 || parts.some(isNaN)) {
+    return new Date(); 
+  }
+
+  const [y, m, d] = parts;
   const date = new Date();
   date.setFullYear(y, m - 1, d);
   return date;
 };
 
 // Parse "HH:MM" or "HH:MM:SS" into a Date
-const parseTimeStr = (str: string): Date => {
+const parseTimeStr = (str?: string | null): Date => {
   if (!str) return new Date();
-  const [h, m] = str.split(":").map(Number);
+
+  const parts = str.split(":").map(Number);
+  
+  if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) {
+    return new Date();
+  }
+
+  const [h, m] = parts;
   const date = new Date();
   date.setHours(h, m, 0, 0);
   return date;
