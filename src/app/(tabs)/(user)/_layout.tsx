@@ -98,7 +98,7 @@ export default function TabsLayout() {
       {isReady && (
         <View
           style={{
-            // paddingBottom: insets.bottom,
+            paddingBottom: insets.bottom,
             backgroundColor: "transparent",
           }}
         >
