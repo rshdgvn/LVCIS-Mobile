@@ -1,7 +1,7 @@
 import { EventCard } from "@/src/components/events/EventCard";
 import { CreateEventModal } from "@/src/components/modals/CreateEventModal";
 import { useClub } from "@/src/contexts/ClubContext";
-import { useIsAdmin } from "@/src/hooks/useIsAdmin";
+import { useCanManageClub } from "@/src/hooks/useCanManageClub";
 import { useTheme } from "@/src/hooks/useTheme";
 import { Event } from "@/src/types/event";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,10 +30,9 @@ export default function EventsScreen({
   const [search, setSearch] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { primaryColor } = useTheme();
-  const isAdmin = useIsAdmin();
   const { clubs, activeClubId } = useClub();
-  const activeClub = clubs.find((c) => c.id === activeClubId);
-
+  const { canManageClub } = useCanManageClub();
+  const hasPermission = activeClubId ? canManageClub(activeClubId) : canManageClub('admin_fallback');
   const filteredEvents = events?.filter((e) =>
     e.title.toLowerCase().includes(search.toLowerCase()),
   );
@@ -67,9 +66,9 @@ export default function EventsScreen({
           />
         </View>
 
-        {isAdmin && (
+        {hasPermission && (
           <TouchableOpacity
-            onPress={() => setIsModalVisible(true)} // Toggle Modal
+            onPress={() => setIsModalVisible(true)}
             className="w-14 h-14 bg-primary dark:bg-dark-primary rounded-2xl items-center justify-center shadow-lg shadow-primary/30"
           >
             <Ionicons name="add" size={28} color="white" />
