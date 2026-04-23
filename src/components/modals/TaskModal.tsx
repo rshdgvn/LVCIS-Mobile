@@ -103,7 +103,7 @@ export const TaskModal = ({
           <TextInput
             value={title}
             onChangeText={setTitle}
-            placeholder="e.g. Annual Gala Planning"
+            placeholder="e.g. Setup tech"
             placeholderTextColor="#9ca3af"
             className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-foreground dark:text-dark-fg bg-background dark:bg-dark-bg mb-5"
           />

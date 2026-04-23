@@ -55,7 +55,6 @@ export default function EventDetailsScreen({
   const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<EventTask | null>(null);
 
-  // AlertDialog states
   const [isEventDeleteDialogOpen, setIsEventDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<number | null>(null);
 
@@ -171,7 +170,10 @@ export default function EventDetailsScreen({
     : "TBA";
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
+    <SafeAreaView
+      className="flex-1 bg-background dark:bg-dark-bg"
+      edges={["top", "left", "right"]}
+    >
       <View className="flex-row items-center justify-between px-6 py-4 bg-background dark:bg-dark-bg z-50">
         <BackButton onPress={onBack} />
         <View className="items-center">
@@ -200,7 +202,7 @@ export default function EventDetailsScreen({
         </TouchableOpacity>
       </View>
 
-      <View className="px-6 mt-4">
+      <View className="mt-4 px-4">
         <View className="relative h-56 rounded-3xl overflow-hidden bg-border dark:bg-dark-border mb-6">
           <Image
             source={{
@@ -247,31 +249,18 @@ export default function EventDetailsScreen({
         </View>
       </View>
 
-      <View className="flex-row items-center justify-between px-6 mb-4">
+      <View className="flex-row items-center justify-between mb-4 px-4">
         <View className="flex-row items-center gap-2">
           <View className="p-1.5 bg-primary/10 dark:bg-dark-primary/10 rounded-lg">
             <Ionicons name="clipboard" size={20} color={primaryColor} />
           </View>
           <Text className="font-bold text-foreground dark:text-dark-fg text-lg">
-            Assign Tasks
+            Assigned Tasks
           </Text>
         </View>
-        {canManage && (
-          <TouchableOpacity
-            onPress={() => {
-              setEditingTask(null);
-              setIsTaskModalVisible(true);
-            }}
-          >
-            <Text className="text-primary dark:text-dark-primary text-sm font-semibold">
-              + Add Task
-            </Text>
-          </TouchableOpacity>
-        )}
       </View>
-
       <ScrollView
-        className="flex-1 px-6"
+        className="flex-1 px-4"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
@@ -389,38 +378,36 @@ export default function EventDetailsScreen({
             </View>
           ))
         )}
+      </ScrollView>
 
-        {canManage && tasks.length > 0 && (
+      {/* Fixed Bottom Action Buttons */}
+      <View className="px-6 py-4 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border">
+        {canManage && (
           <TouchableOpacity
             onPress={() => {
               setEditingTask(null);
               setIsTaskModalVisible(true);
             }}
-            className="w-full py-4 rounded-2xl border-2 border-dashed border-border dark:border-dark-border flex-row items-center justify-center gap-2 mt-2 mb-4"
+            className="w-full py-4 rounded-2xl border-2 border-dashed border-border dark:border-dark-border flex-row items-center justify-center gap-2 mb-3"
           >
             <Ionicons name="add" size={20} color="#9ca3af" />
             <Text className="text-muted-fg font-medium">Add Task</Text>
           </TouchableOpacity>
         )}
 
-        <View className="border-t border-border dark:border-dark-border pt-4 mt-2">
-          <TouchableOpacity
-            onPress={() => setIsEventDeleteDialogOpen(true)}
-            disabled={isDeleting}
-            className={`w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 mb-3 ${
-              isDeleting ? "opacity-50" : "opacity-100"
-            }`}
-          >
-            <Ionicons name="trash" size={20} color="#ef4444" />
-            <Text className="text-red-500 font-bold text-base">
-              {isDeleting ? "Deleting..." : "Delete Event"}
-            </Text>
-          </TouchableOpacity>
-          <Text className="text-center text-[10px] text-muted-fg uppercase tracking-widest font-bold mb-4">
-            This action cannot be undone
+        <TouchableOpacity
+          onPress={() => setIsEventDeleteDialogOpen(true)}
+          disabled={isDeleting}
+          className={`w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 mb-2 ${
+            isDeleting ? "opacity-50" : "opacity-100"
+          }`}
+        >
+          <Ionicons name="trash" size={20} color="#ef4444" />
+          <Text className="text-red-500 font-bold text-base">
+            {isDeleting ? "Deleting..." : "Delete Event"}
           </Text>
-        </View>
-      </ScrollView>
+        </TouchableOpacity>
+      </View>
 
       <EditEventModal
         isVisible={isEditModalVisible}
