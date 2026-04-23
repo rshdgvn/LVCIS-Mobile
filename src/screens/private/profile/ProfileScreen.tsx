@@ -76,10 +76,11 @@ const ProfileScreen = ({
           Preferences
         </Text>
         <ToggleTheme />
+
         <TouchableOpacity
           onPress={() => setSignOutVisible(true)}
           activeOpacity={0.8}
-          className="w-full py-4 rounded-2xl border mt-20 border-red-200 bg-red-50 dark:bg-red-900/50 dark:border-red-800 flex-row items-center justify-center gap-2 mb-3"
+          className="w-full py-4 rounded-2xl border mt-auto border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 mb-3"
         >
           <LogOut size={20} color="#EF4444" className="mr-2" />
           <Text className="text-red-500 font-bold dark:text-200 text-base">

@@ -71,13 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
 
-      // Use the exact same clean wipe logic here!
       queryClient.setQueryData(["user"], null);
       queryClient.removeQueries({
         predicate: (query) => query.queryKey[0] !== "user",
       });
-
-      // Note: No router.replace here! The _layout.tsx will see user is null,
     }
   };
 
