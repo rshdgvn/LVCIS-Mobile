@@ -17,7 +17,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 interface Props {
@@ -48,6 +51,7 @@ export default function EventDetailsScreen({
   onDelete,
 }: Props) {
   const { primaryColor } = useTheme();
+  const insets = useSafeAreaInsets();
   const { canManageClub } = useCanManageClub();
   const canManage = event?.club_id ? canManageClub(event.club_id) : false;
 
@@ -259,6 +263,7 @@ export default function EventDetailsScreen({
           </Text>
         </View>
       </View>
+
       <ScrollView
         className="flex-1 px-4"
         showsVerticalScrollIndicator={false}
@@ -380,8 +385,10 @@ export default function EventDetailsScreen({
         )}
       </ScrollView>
 
-      {/* Fixed Bottom Action Buttons */}
-      <View className="px-6 py-4 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border">
+      <View
+        className="px-6 pt-4 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border"
+        style={{ paddingBottom: Math.max(insets.bottom, 24) }}
+      >
         {canManage && (
           <TouchableOpacity
             onPress={() => {
@@ -398,7 +405,7 @@ export default function EventDetailsScreen({
         <TouchableOpacity
           onPress={() => setIsEventDeleteDialogOpen(true)}
           disabled={isDeleting}
-          className={`w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 mb-2 ${
+          className={`w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 ${
             isDeleting ? "opacity-50" : "opacity-100"
           }`}
         >

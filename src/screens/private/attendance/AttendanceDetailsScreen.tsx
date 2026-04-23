@@ -18,7 +18,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 interface MemberData {
@@ -77,12 +80,12 @@ export default function AttendanceDetailsScreen({
   const { primaryColor } = useTheme();
   const { activeClubId, isOfficer } = useClub();
   const { isAdmin } = useRole();
+  const insets = useSafeAreaInsets();
 
   const canManage = isAdmin || (activeClubId && isOfficer(activeClubId));
 
   const membersArray: MemberData[] = session?.members || [];
 
-  // Local pending changes: userId -> status
   const [pendingChanges, setPendingChanges] = useState<
     Record<number, AttendanceStatus>
   >({});
@@ -91,7 +94,6 @@ export default function AttendanceDetailsScreen({
 
   const hasChanges = Object.keys(pendingChanges).length > 0;
 
-  // Effective status = pending override or server value
   const getStatus = (member: MemberData): AttendanceStatus | null =>
     pendingChanges[member.user_id] !== undefined
       ? pendingChanges[member.user_id]
@@ -99,11 +101,9 @@ export default function AttendanceDetailsScreen({
 
   const handleStatusChange = (userId: number, status: AttendanceStatus) => {
     if (!canManage) return;
-    // Find original status
     const original = membersArray.find((m) => m.user_id === userId)?.status;
     setPendingChanges((prev) => {
       const next = { ...prev };
-      // If reverting to original, remove from pending
       if (status === original) {
         delete next[userId];
       } else {
@@ -122,7 +122,6 @@ export default function AttendanceDetailsScreen({
     setPendingChanges(next);
   };
 
-  // Track session id in a ref so we can invalidate on back without causing re-render
   const sessionIdRef = useRef<number | null>(session?.id ?? null);
   if (session?.id) sessionIdRef.current = session.id;
 
@@ -130,7 +129,6 @@ export default function AttendanceDetailsScreen({
     if (!hasChanges || isSubmitting || !session?.id) return;
     setIsSubmitting(true);
 
-    // Snapshot the changes we're about to submit
     const changesToSubmit = { ...pendingChanges };
 
     try {
@@ -144,8 +142,6 @@ export default function AttendanceDetailsScreen({
         ),
       );
 
-      // Immediately patch the query cache so the UI never flickers back
-      // to old values when the query eventually refetches
       queryClient.setQueryData(["session", session.id], (oldData: any) => {
         if (!oldData?.members) return oldData;
         return {
@@ -176,8 +172,6 @@ export default function AttendanceDetailsScreen({
   };
 
   const handleBack = () => {
-    // Invalidate AFTER navigating back so the list screen gets fresh data
-    // without causing this screen to re-render/reset
     router.back();
     if (sessionIdRef.current) {
       queryClient.invalidateQueries({
@@ -208,7 +202,6 @@ export default function AttendanceDetailsScreen({
 
     return (
       <View className="bg-card dark:bg-dark-card p-4 rounded-2xl mb-3 border border-border dark:border-dark-border">
-        {/* Avatar + Name */}
         <View className="flex-row items-center mb-3">
           <Image
             source={{
@@ -228,7 +221,6 @@ export default function AttendanceDetailsScreen({
           </View>
         </View>
 
-        {/* Status Pills */}
         <View className="flex-row justify-between gap-2">
           {STATUS_OPTIONS.map((st) => {
             const isSelected = currentStatus === st.value;
@@ -262,7 +254,6 @@ export default function AttendanceDetailsScreen({
 
   const renderHeader = () => (
     <View className="mb-2">
-      {/* Analytics Cards - horizontal scroll */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -326,7 +317,6 @@ export default function AttendanceDetailsScreen({
         </View>
       </ScrollView>
 
-      {/* Search + Filter */}
       <View className="flex-row items-center mb-5 gap-2">
         <View className="flex-1 flex-row items-center bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 h-12">
           <Ionicons name="search-outline" size={20} color="#9ca3af" />
@@ -343,7 +333,6 @@ export default function AttendanceDetailsScreen({
         </TouchableOpacity>
       </View>
 
-      {/* Members count + Mark All Present */}
       <View className="flex-row items-center justify-between mb-4">
         <Text className="text-base font-bold text-foreground dark:text-dark-fg">
           Members ({membersArray.length})
@@ -361,7 +350,6 @@ export default function AttendanceDetailsScreen({
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-4">
-      {/* Header: back + title + date */}
       <View className="flex-row items-center mt-2 mb-6">
         <BackButton onPress={handleBack} />
         <View className="flex-1 items-center mr-8">
@@ -392,7 +380,11 @@ export default function AttendanceDetailsScreen({
           data={filteredMembers}
           keyExtractor={(item) => item.user_id.toString()}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: hasChanges ? 100 : 40 }}
+          contentContainerStyle={{
+            paddingBottom: hasChanges
+              ? Math.max(insets.bottom + 80, 100)
+              : Math.max(insets.bottom + 40, 40),
+          }}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={
             <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
@@ -403,9 +395,11 @@ export default function AttendanceDetailsScreen({
         />
       )}
 
-      {/* Submit Attendance button — only visible when there are pending changes */}
       {hasChanges && canManage && (
-        <View className="absolute bottom-6 left-4 right-4">
+        <View
+          className="absolute left-4 right-4"
+          style={{ bottom: Math.max(insets.bottom + 16, 24) }}
+        >
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={isSubmitting}
