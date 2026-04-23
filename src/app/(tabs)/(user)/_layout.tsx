@@ -60,12 +60,6 @@ export default function TabsLayout() {
           <Tabs.Screen name="attendance" />
           <Tabs.Screen name="clubs" />
           <Tabs.Screen name="events" />
-          <Tabs.Screen
-            name="create-event"
-            options={{
-              href: null,
-            }}
-          />
         </Tabs>
       </View>
 

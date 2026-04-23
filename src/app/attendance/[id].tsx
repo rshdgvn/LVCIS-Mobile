@@ -13,9 +13,6 @@ export default function AttendanceDetailsRoute() {
   const sessionId = rawId ? Number(rawId) : null;
 
   const { data: session, isLoading } = useSession(sessionId);
-  useEffect(() => {
-    console.log("Fetched session details:", session);
-  }, [session]);
   const updateStatus = useUpdateAttendanceStatus(sessionId);
 
   return (

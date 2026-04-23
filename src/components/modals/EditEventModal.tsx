@@ -25,22 +25,36 @@ interface Props {
   event: Event;
 }
 
-// Parse "YYYY-MM-DD" safely into a Date
+// Parse date — handles ISO strings like "2026-01-15T00:00:00.000000Z" and "YYYY-MM-DD"
 const parseDateStr = (str: string): Date => {
   if (!str) return new Date();
-  const [y, m, d] = str.split("-").map(Number);
-  const date = new Date();
-  date.setFullYear(y, m - 1, d);
-  return date;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) return d;
+  // fallback: manual YYYY-MM-DD parse (avoids timezone shift)
+  const parts = str.substring(0, 10).split("-").map(Number);
+  const result = new Date();
+  result.setFullYear(parts[0], parts[1] - 1, parts[2]);
+  result.setHours(0, 0, 0, 0);
+  return result;
 };
 
-// Parse "HH:MM" or "HH:MM:SS" into a Date
+// Parse time — handles ISO strings like "1970-01-01T14:30:00.000000Z" and "HH:MM"
 const parseTimeStr = (str: string): Date => {
   if (!str) return new Date();
+  // ISO string — extract HH:MM from the time portion
+  if (str.includes("T")) {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      const result = new Date();
+      result.setHours(d.getUTCHours(), d.getUTCMinutes(), 0, 0);
+      return result;
+    }
+  }
+  // "HH:MM" or "HH:MM:SS"
   const [h, m] = str.split(":").map(Number);
-  const date = new Date();
-  date.setHours(h, m, 0, 0);
-  return date;
+  const result = new Date();
+  result.setHours(h, m, 0, 0);
+  return result;
 };
 
 export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
@@ -105,6 +119,25 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
   };
 
   const handleUpdate = async () => {
+    if (!event?.id) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Event ID is missing.",
+      });
+      return;
+    }
+
+    const clubId = activeClubId ?? event.club_id;
+    if (!clubId) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Club ID is missing.",
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("title", title);
     formData.append("event_date", dateObj.toISOString().split("T")[0]);
@@ -114,21 +147,7 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     );
     formData.append("venue", venue);
     formData.append("description", description || "N/A");
-
-    if (coverImage && !coverImage.startsWith("http")) {
-      const uriParts = coverImage.split(".");
-      const fileType = uriParts[uriParts.length - 1];
-      formData.append("cover_image", {
-        uri: coverImage,
-        name: `cover.${fileType}`,
-        type: `image/${fileType}`,
-      } as any);
-    }
-
-    formData.append(
-      "club_id",
-      activeClubId ? activeClubId.toString() : event.club_id?.toString() || "",
-    );
+    formData.append("club_id", clubId.toString());
     formData.append("purpose", event.purpose || "General Event");
     formData.append("status", event.status || "upcoming");
     formData.append("organizer", event.detail?.organizer || "Admin");
@@ -140,15 +159,25 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     formData.append("event_mode", event.detail?.event_mode || "face_to_face");
     formData.append("duration", event.detail?.duration || "2 hours");
 
+    if (coverImage && !coverImage.startsWith("http")) {
+      const uriParts = coverImage.split(".");
+      const fileType = uriParts[uriParts.length - 1];
+      formData.append("cover_image", {
+        uri: coverImage,
+        name: `cover.${fileType}`,
+        type: `image/${fileType}`,
+      } as any);
+    }
+
     try {
       await updateEvent({ id: event.id, data: formData });
       Toast.show({ type: "success", text1: "Event updated successfully!" });
       handleClose();
-    } catch (error) {
+    } catch (error: any) {
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Failed to update event.",
+        text1: "Update Failed",
+        text2: error?.response?.data?.message ?? "Something went wrong.",
       });
     }
   };

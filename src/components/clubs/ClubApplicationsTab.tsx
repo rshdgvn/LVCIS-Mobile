@@ -54,7 +54,6 @@ export const ClubApplicationsTab = ({ clubId }: Props) => {
       });
     },
     onError: (error) => {
-      console.error(error);
       setIsDialogVisible(false);
       Toast.show({
         type: "error",

@@ -1,6 +1,7 @@
 import { EventCard } from "@/src/components/events/EventCard";
 import { CreateEventModal } from "@/src/components/modals/CreateEventModal";
 import { useClub } from "@/src/contexts/ClubContext";
+import { useCanManageClub } from "@/src/hooks/useCanManageClub";
 import { useIsAdmin } from "@/src/hooks/useIsAdmin";
 import { useTheme } from "@/src/hooks/useTheme";
 import { Event } from "@/src/types/event";
@@ -30,8 +31,11 @@ export default function EventsScreen({
   const [search, setSearch] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { primaryColor } = useTheme();
-  const isAdmin = useIsAdmin();
+  const { canManageClub } = useCanManageClub();
+
+  const isAdmin = useIsAdmin(); 
   const { clubs, activeClubId } = useClub();
+  const canManage = activeClubId && canManageClub(activeClubId);
   const activeClub = clubs.find((c) => c.id === activeClubId);
 
   const filteredEvents = events?.filter((e) =>
