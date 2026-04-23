@@ -5,7 +5,10 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export default function TabsLayout() {
   const router = useRouter();
@@ -90,14 +93,12 @@ export default function TabsLayout() {
       )}
 
       {isReady && (
-        <View
-          style={{
-            paddingBottom: insets.bottom,
-            backgroundColor: "transparent",
-          }}
+        <SafeAreaView
+          edges={["bottom"]}
+          style={{ backgroundColor: "transparent" }}
         >
           <BottomNav activeTab={getActiveTab()} onTabPress={handleTabPress} />
-        </View>
+        </SafeAreaView>
       )}
     </View>
   );
