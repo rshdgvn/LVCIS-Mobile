@@ -97,8 +97,11 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
     if (!form.first_name.trim())
       newErrors.first_name = "First name is required";
     if (!form.last_name.trim()) newErrors.last_name = "Last name is required";
-    if (!form.course) newErrors.course = "Course is required";
-    if (!form.year_level) newErrors.year_level = "Year level is required";
+    
+    if (user?.role !== "admin") {
+      if (!form.course) newErrors.course = "Course is required";
+      if (!form.year_level) newErrors.year_level = "Year level is required";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -113,8 +116,11 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
     const formData = new FormData();
     formData.append("first_name", form.first_name);
     formData.append("last_name", form.last_name);
-    formData.append("course", form.course);
-    formData.append("year_level", form.year_level);
+    
+    if (user?.role !== "admin") {
+      formData.append("course", form.course);
+      formData.append("year_level", form.year_level);
+    }
 
     if (selectedImage) {
       const uriParts = selectedImage.split(".");
@@ -218,34 +224,40 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
             />
           </View>
 
-          <CustomDropdown
-            label="Course"
-            options={COURSE_OPTIONS}
-            value={form.course}
-            onSelect={handleCourseSelect}
-            error={errors.course}
-            placeholder="Select your course"
-          />
+          {user?.role !== "admin" ? (
+            <>
+              <CustomDropdown
+                label="Course"
+                options={COURSE_OPTIONS}
+                value={form.course}
+                onSelect={handleCourseSelect}
+                error={errors.course}
+                placeholder="Select your course"
+              />
 
-          <CustomDropdown
-            label="Year Level"
-            options={form.course ? YEAR_OPTIONS[form.course as CourseType] : []}
-            value={form.year_level}
-            onSelect={(val: string) => {
-              setForm({ ...form, year_level: val });
-              if (errors.year_level)
-                setErrors({ ...errors, year_level: undefined });
-            }}
-            error={errors.year_level}
-            placeholder={
-              form.course ? "Select year level" : "Choose course first"
-            }
-            emptyMessage={
-              form.course
-                ? "No options available"
-                : "Please select a course to see year levels."
-            }
-          />
+              <CustomDropdown
+                label="Year Level"
+                options={form.course ? YEAR_OPTIONS[form.course as CourseType] : []}
+                value={form.year_level}
+                onSelect={(val: string) => {
+                  setForm({ ...form, year_level: val });
+                  if (errors.year_level)
+                    setErrors({ ...errors, year_level: undefined });
+                }}
+                error={errors.year_level}
+                placeholder={
+                  form.course ? "Select year level" : "Choose course first"
+                }
+                emptyMessage={
+                  form.course
+                    ? "No options available"
+                    : "Please select a course to see year levels."
+                }
+              />
+            </>
+          ) : (
+            <View className="h-48" />
+          )}
         </View>
 
         <View className="mt-10 w-full">
