@@ -134,6 +134,9 @@ export default function EventDetailsScreen({
       Toast.show({ type: "error", text1: "Failed to update status." });
     }
   };
+  
+  const { canManageClub } = useCanManageClub();
+  const hasPermission = event ? canManageClub(event.club_id) : false;
 
   if (isLoading) {
     return (
@@ -192,14 +195,16 @@ export default function EventDetailsScreen({
             </View>
           )}
         </View>
-        <TouchableOpacity
-          onPress={() => setIsEditModalVisible(true)}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-        >
-          <Text className="text-primary dark:text-dark-primary font-medium">
-            Edit
-          </Text>
-        </TouchableOpacity>
+        {hasPermission ? (
+          <TouchableOpacity 
+            onPress={() => setIsEditModalVisible(true)}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <Text className="text-blue-600 font-medium">Edit</Text>
+          </TouchableOpacity>
+        ) : (
+          <View className="w-10" /> // Spacer to keep title centered
+        )}
       </View>
 
       <View className="mt-4 px-4">

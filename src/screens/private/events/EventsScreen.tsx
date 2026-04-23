@@ -71,9 +71,9 @@ export default function EventsScreen({
           />
         </View>
 
-        {isAdmin && (
+        {hasPermission && (
           <TouchableOpacity
-            onPress={() => setIsModalVisible(true)} // Toggle Modal
+            onPress={() => setIsModalVisible(true)}
             className="w-14 h-14 bg-primary dark:bg-dark-primary rounded-2xl items-center justify-center shadow-lg shadow-primary/30"
           >
             <Ionicons name="add" size={28} color="white" />
