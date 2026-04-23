@@ -12,6 +12,8 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Modal,
+  Pressable,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -61,6 +63,8 @@ export default function EventDetailsScreen({
 
   const [isEventDeleteDialogOpen, setIsEventDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<number | null>(null);
+
+  const [statusMenuTask, setStatusMenuTask] = useState<EventTask | null>(null);
 
   const { data: taskData, isLoading: isLoadingTasks } = useEventTasks(
     event?.id ?? null,
@@ -121,21 +125,6 @@ export default function EventDetailsScreen({
       Toast.show({ type: "error", text1: "Failed to delete task." });
     } finally {
       setTaskToDelete(null);
-    }
-  };
-
-  const handleStatusCycle = async (task: EventTask) => {
-    const cycle: Array<"pending" | "in_progress" | "completed"> = [
-      "pending",
-      "in_progress",
-      "completed",
-    ];
-    const currentIndex = cycle.indexOf(task.status as any);
-    const nextStatus = cycle[(currentIndex + 1) % cycle.length];
-    try {
-      await updateTaskStatus({ id: task.id, status: nextStatus });
-    } catch {
-      Toast.show({ type: "error", text1: "Failed to update status." });
     }
   };
 
@@ -286,7 +275,7 @@ export default function EventDetailsScreen({
             >
               <View className="flex-row items-center gap-3 flex-1">
                 <TouchableOpacity
-                  onPress={() => handleStatusCycle(task)}
+                  onPress={() => setStatusMenuTask(task)}
                   disabled={!canManage}
                 >
                   <Ionicons
@@ -415,6 +404,73 @@ export default function EventDetailsScreen({
           </Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={!!statusMenuTask}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setStatusMenuTask(null)}
+      >
+        <Pressable
+          className="flex-1 bg-black/40 justify-center items-center px-6"
+          onPress={() => setStatusMenuTask(null)}
+        >
+          <Pressable className="bg-background dark:bg-dark-bg w-full max-w-sm rounded-3xl overflow-hidden p-2">
+            <View className="p-4 pb-2">
+              <Text className="text-lg font-bold text-foreground dark:text-dark-fg text-center">
+                Update Status
+              </Text>
+            </View>
+            {Object.keys(STATUS_LABELS).map((statusOption) => (
+              <TouchableOpacity
+                key={statusOption}
+                className="py-4 px-5 border-b border-border dark:border-dark-border flex-row items-center justify-between"
+                onPress={async () => {
+                  if (statusMenuTask) {
+                    try {
+                      await updateTaskStatus({
+                        id: statusMenuTask.id,
+                        status: statusOption as any,
+                      });
+                    } catch {
+                      Toast.show({
+                        type: "error",
+                        text1: "Failed to update status.",
+                      });
+                    }
+                  }
+                  setStatusMenuTask(null);
+                }}
+              >
+                <View className="flex-row items-center gap-3">
+                  <View
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: STATUS_COLORS[statusOption],
+                    }}
+                  />
+                  <Text className="text-base font-medium text-foreground dark:text-dark-fg">
+                    {STATUS_LABELS[statusOption]}
+                  </Text>
+                </View>
+                {statusMenuTask?.status === statusOption && (
+                  <Ionicons name="checkmark" size={20} color={primaryColor} />
+                )}
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              className="py-4 items-center"
+              onPress={() => setStatusMenuTask(null)}
+            >
+              <Text className="text-base font-medium text-muted-fg dark:text-dark-muted-fg">
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <EditEventModal
         isVisible={isEditModalVisible}
