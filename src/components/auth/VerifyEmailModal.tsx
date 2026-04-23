@@ -3,13 +3,13 @@ import { authService } from "@/src/services/authService";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
 import {
-  Alert,
   Image,
   Modal,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 
 interface Props {
   email: string | null;
@@ -24,23 +24,32 @@ export default function VerifyEmailModal({ email, visible, onClose }: Props) {
       return authService.resendUnauthenticatedVerification(email);
     },
     onSuccess: (data) => {
-      Alert.alert(
-        "Email Sent!",
-        data.message ||
-          "A fresh verification link has been sent. Please check your inbox and spam folder.",
-      );
+      Toast.show({
+        type: "success",
+        text1: "Email Sent!",
+        text2: data.message || "A fresh verification link has been sent to your inbox.",
+      });
       onClose();
     },
     onError: (error: any) => {
       if (error.response?.status === 429) {
-        Alert.alert("Please Wait", error.response.data.message);
+        Toast.show({
+          type: "error",
+          text1: "Please Wait",
+          text2: error.response.data.message || "Too many requests. Please try again later.",
+        });
         return;
       }
 
       const message =
         error.response?.data?.message ||
         "Failed to send email. Please try again.";
-      Alert.alert("Error", message);
+        
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: message,
+      });
     },
   });
 

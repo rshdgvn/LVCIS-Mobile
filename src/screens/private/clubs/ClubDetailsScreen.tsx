@@ -13,7 +13,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   ScrollView,
   Text,
@@ -21,6 +20,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 interface Props {
   club: Club | undefined;
@@ -59,13 +59,16 @@ export default function ClubDetailsScreen({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clubMembers", club!.id] });
       setIsAddModalVisible(false);
-      Alert.alert("Success", "User added successfully.");
+      Toast.show({
+        type: "success",
+        text1: "User added successfully.",
+      });
     },
     onError: (error: any) => {
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "Failed to add user.",
-      );
+      Toast.show({
+        type: "error",
+        text1: error?.response?.data?.message || "Failed to add user.",
+      });
     },
   });
 
