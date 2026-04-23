@@ -61,6 +61,17 @@ export const useUpdateAttendanceStatus = (sessionId: number | null) => {
   });
 };
 
+export const useMemberAttendance = (
+  userId: number | null,
+  clubId: number | null,
+) => {
+  return useQuery({
+    queryKey: ["memberAttendance", userId, clubId],
+    queryFn: () => attendanceService.getMemberAttendance(userId!, clubId!),
+    enabled: !!userId && !!clubId,
+  });
+};
+
 export const useAttendanceMutations = () => {
   const queryClient = useQueryClient();
 

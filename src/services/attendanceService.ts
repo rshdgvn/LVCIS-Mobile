@@ -72,7 +72,7 @@ export const attendanceService = {
       attendances: Attendance[];
       stats: AttendanceStats;
       user: any;
-    }>(`/users/${userId}/clubs/${clubId}/attendances`);
+    }>(`/members/${userId}/club/${clubId}/attendances`);
     return response.data;
   },
 };

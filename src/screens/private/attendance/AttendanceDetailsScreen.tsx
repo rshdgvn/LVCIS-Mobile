@@ -6,7 +6,7 @@ import { attendanceService } from "@/src/services/attendanceService";
 import { AttendanceStatus } from "@/src/types/attendance";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -36,6 +36,7 @@ interface Props {
   session: any;
   isLoading: boolean;
   updateStatus: any;
+  onMemberPress?: (userId: number) => void;
 }
 
 const STATUS_OPTIONS: {
@@ -74,6 +75,7 @@ export default function AttendanceDetailsScreen({
   session,
   isLoading,
   updateStatus,
+  onMemberPress,
 }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -172,7 +174,7 @@ export default function AttendanceDetailsScreen({
   };
 
   const handleBack = () => {
-    router.back();
+    router.navigate("/attendance" as Href);
     if (sessionIdRef.current) {
       queryClient.invalidateQueries({
         queryKey: ["session", sessionIdRef.current],
@@ -201,17 +203,23 @@ export default function AttendanceDetailsScreen({
     const currentStatus = getStatus(item);
 
     return (
-      <View className="bg-card dark:bg-dark-card p-4 rounded-2xl mb-3 border border-border dark:border-dark-border">
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => onMemberPress?.(item.user_id)}
+        className="bg-card dark:bg-dark-card p-4 rounded-2xl mb-3 border border-border dark:border-dark-border"
+      >
         <View className="flex-row items-center mb-3">
           <Image
             source={{
               uri:
                 item.avatar ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random`,
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  item.name,
+                )}&background=random`,
             }}
             className="w-12 h-12 rounded-full mr-3 bg-muted dark:bg-dark-muted"
           />
-          <View>
+          <View className="flex-1">
             <Text className="text-base font-bold text-foreground dark:text-dark-fg">
               {item.name}
             </Text>
@@ -219,6 +227,7 @@ export default function AttendanceDetailsScreen({
               {item.course || "No Course Info"}
             </Text>
           </View>
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </View>
 
         <View className="flex-row justify-between gap-2">
@@ -248,7 +257,7 @@ export default function AttendanceDetailsScreen({
             );
           })}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 

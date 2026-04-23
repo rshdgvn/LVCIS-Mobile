@@ -15,6 +15,7 @@ export default function AttendanceRoute() {
   const analytics = data?.analytics || null;
 
   const handleAccessSession = (sessionId: number) => {
+    console.log("Accessing session with ID:", sessionId);
     router.push(`/attendance/${sessionId}` as Href);
   };
 
