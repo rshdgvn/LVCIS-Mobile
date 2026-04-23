@@ -19,13 +19,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 interface Props {
   clubs: Club[] | undefined;
@@ -91,10 +91,11 @@ export default function ClubsScreen({
     },
     onError: (_err, _clubId, context) => {
       queryClient.setQueryData(["userMemberships"], context?.previousStatuses);
-      Alert.alert(
-        "Error",
-        "Failed to apply to club. Check if your profile is complete.",
-      );
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to apply to club. Check if your profile is complete.",
+      });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["userMemberships"] });

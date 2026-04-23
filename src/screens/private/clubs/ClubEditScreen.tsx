@@ -12,7 +12,6 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -22,6 +21,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 interface Props {
   club: Club;
@@ -50,7 +50,11 @@ export default function ClubEditScreen({
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (permissionResult.granted === false) {
-      Alert.alert("Permission to access camera roll is required!");
+      Toast.show({
+        type: "error",
+        text1: "Permission required",
+        text2: "Permission to access camera roll is required!",
+      });
       return;
     }
 
@@ -68,7 +72,11 @@ export default function ClubEditScreen({
 
   const handleSave = async () => {
     if (!name.trim() || !category || !description.trim()) {
-      Alert.alert("Missing Info", "Please fill out all fields.");
+      Toast.show({
+        type: "error",
+        text1: "Missing Info",
+        text2: "Please fill out all fields.",
+      });
       return;
     }
     await onSubmit({

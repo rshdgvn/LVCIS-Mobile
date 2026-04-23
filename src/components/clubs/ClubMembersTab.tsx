@@ -4,7 +4,8 @@ import { useTheme } from "@/src/hooks/useTheme";
 import { membershipService } from "@/src/services/membershipService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
+import Toast from "react-native-toast-message";
 import { EditRoleModal } from "../modals/EditRoleModal";
 import { MemberListItem } from "./MemberListItem";
 
@@ -43,13 +44,18 @@ export const ClubMembersTab = ({ clubId }: Props) => {
       queryClient.invalidateQueries({ queryKey: ["clubMembers", clubId] });
       setIsEditModalVisible(false);
       setSelectedMember(null);
-      Alert.alert("Success", "Member role updated.");
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: "Member role updated.",
+      });
     },
     onError: (error: any) => {
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "Failed to update role.",
-      );
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: error?.response?.data?.message || "Failed to update role.",
+      });
     },
   });
 
@@ -60,15 +66,20 @@ export const ClubMembersTab = ({ clubId }: Props) => {
       queryClient.invalidateQueries({ queryKey: ["clubMembers", clubId] });
       setIsRemoveDialogVisible(false);
       setMemberToRemove(null);
-      Alert.alert("Success", "Member removed.");
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: "Member removed.",
+      });
     },
     onError: (error: any) => {
       setIsRemoveDialogVisible(false);
       setMemberToRemove(null);
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "Failed to remove member.",
-      );
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: error?.response?.data?.message || "Failed to remove member.",
+      });
     },
   });
 
