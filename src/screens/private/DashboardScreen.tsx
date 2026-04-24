@@ -1,3 +1,6 @@
+import { ClubManagerDashboard } from "@/src/components/dashboard/ClubManagerDashboard";
+import { ClubMemberDashboard } from "@/src/components/dashboard/ClubMemberDashboard";
+import { SystemOverviewDashboard } from "@/src/components/dashboard/SystemOverviewDashboard";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useClub } from "@/src/contexts/ClubContext";
 import { useCanManageClub } from "@/src/hooks/useCanManageClub"; // Adjust path if needed
@@ -18,9 +21,6 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { ClubManagerDashboard } from "@/src/components/dashboard/ClubManagerDashboard";
-import { ClubMemberDashboard } from "@/src/components/dashboard/ClubMemberDashboard";
-import { SystemOverviewDashboard } from "@/src/components/dashboard/SystemOverviewDashboard";
 
 interface Props {
   onProfile: () => void;
@@ -54,7 +54,7 @@ export const DashboardScreen = ({ onProfile }: Props) => {
 
   const renderDashboardContent = () => {
     if (isGeneralView && isAdmin) {
-      return <SystemOverviewDashboard clubsCount={clubs.length} />;
+      return <SystemOverviewDashboard />;
     }
 
     if (isGeneralView && !isAdmin) {
