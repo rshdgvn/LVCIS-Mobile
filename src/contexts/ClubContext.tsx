@@ -9,6 +9,7 @@ import React, {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 import { Club } from "../types/club";
 import { useAuth } from "./AuthContext";
@@ -26,8 +27,10 @@ type ClubContextType = {
 const ClubContext = createContext<ClubContextType>({} as ClubContextType);
 
 export function ClubProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth(); 
   const [activeClubId, setActiveClubId] = useState<number | null>(null);
+  
+  const isInitialized = useRef(false);
 
   const { data: clubs = [], isLoading } = useQuery<Club[]>({
     queryKey: ["userClubs"],
@@ -40,10 +43,18 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    if (clubs.length > 0 && !activeClubId) {
-      setActiveClubId(clubs[0].id);
+    if (clubs.length > 0 && !isInitialized.current) {
+      const isAdmin = user?.role === "admin";
+
+      if (isAdmin) {
+        setActiveClubId(null); 
+      } else {
+        setActiveClubId(clubs[0].id);
+      }
+      
+      isInitialized.current = true;
     }
-  }, [clubs, activeClubId]);
+  }, [clubs, user]);
 
   const getUserRole = useCallback(
     (clubId: number | string) => {

@@ -261,102 +261,6 @@ export default function AttendanceDetailsScreen({
     );
   };
 
-  const renderHeader = () => (
-    <View className="mb-2">
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="mb-5"
-        contentContainerStyle={{ paddingRight: 20, gap: 12 }}
-      >
-        <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-          <View className="flex-row items-center mb-4">
-            <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center mr-3">
-              <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
-            </View>
-            <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-              Total Present
-            </Text>
-          </View>
-          <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-            {stats.present}
-          </Text>
-        </View>
-
-        <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-          <View className="flex-row items-center mb-4">
-            <View className="w-10 h-10 rounded-full bg-yellow-400/10 items-center justify-center mr-3">
-              <Ionicons name="time" size={24} color="#facc15" />
-            </View>
-            <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-              Total Late
-            </Text>
-          </View>
-          <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-            {stats.late}
-          </Text>
-        </View>
-
-        <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-          <View className="flex-row items-center mb-4">
-            <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center mr-3">
-              <Ionicons name="close-circle" size={24} color="#ef4444" />
-            </View>
-            <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-              Total Absent
-            </Text>
-          </View>
-          <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-            {stats.absent}
-          </Text>
-        </View>
-
-        <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-          <View className="flex-row items-center mb-4">
-            <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center mr-3">
-              <Ionicons name="shield-checkmark" size={24} color="#3b82f6" />
-            </View>
-            <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-              Total Excused
-            </Text>
-          </View>
-          <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-            {stats.excuse}
-          </Text>
-        </View>
-      </ScrollView>
-
-      <View className="flex-row items-center mb-5 gap-2">
-        <View className="flex-1 flex-row items-center bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 h-12">
-          <Ionicons name="search-outline" size={20} color="#9ca3af" />
-          <TextInput
-            placeholder="Search members"
-            placeholderTextColor="#9ca3af"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            className="flex-1 ml-2 text-base text-foreground dark:text-dark-fg"
-          />
-        </View>
-        <TouchableOpacity className="w-12 h-12 bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl items-center justify-center">
-          <Ionicons name="filter-outline" size={20} color="#6b7280" />
-        </TouchableOpacity>
-      </View>
-
-      <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-base font-bold text-foreground dark:text-dark-fg">
-          Members ({membersArray.length})
-        </Text>
-        {canManage && (
-          <TouchableOpacity onPress={handleMarkAllPresent}>
-            <Text className="text-sm font-semibold text-primary dark:text-dark-primary">
-              Mark All Present
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
-
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-4">
       <View className="flex-row items-center mt-2 mb-6">
@@ -378,6 +282,102 @@ export default function AttendanceDetailsScreen({
         </View>
       </View>
 
+      {/* --- MOVED OUTSIDE OF FLATLIST TO FIX KEYBOARD BUG --- */}
+      <View className="mb-2">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="mb-5"
+          contentContainerStyle={{ paddingRight: 20, gap: 12 }}
+        >
+          <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+            <View className="flex-row items-center mb-4">
+              <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center mr-3">
+                <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
+              </View>
+              <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                Total Present
+              </Text>
+            </View>
+            <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+              {stats.present}
+            </Text>
+          </View>
+
+          <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+            <View className="flex-row items-center mb-4">
+              <View className="w-10 h-10 rounded-full bg-yellow-400/10 items-center justify-center mr-3">
+                <Ionicons name="time" size={24} color="#facc15" />
+              </View>
+              <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                Total Late
+              </Text>
+            </View>
+            <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+              {stats.late}
+            </Text>
+          </View>
+
+          <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+            <View className="flex-row items-center mb-4">
+              <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center mr-3">
+                <Ionicons name="close-circle" size={24} color="#ef4444" />
+              </View>
+              <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                Total Absent
+              </Text>
+            </View>
+            <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+              {stats.absent}
+            </Text>
+          </View>
+
+          <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+            <View className="flex-row items-center mb-4">
+              <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center mr-3">
+                <Ionicons name="shield-checkmark" size={24} color="#3b82f6" />
+              </View>
+              <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                Total Excused
+              </Text>
+            </View>
+            <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+              {stats.excuse}
+            </Text>
+          </View>
+        </ScrollView>
+
+        <View className="flex-row items-center mb-5 gap-2">
+          <View className="flex-1 flex-row items-center bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-xl px-4 h-12">
+            <Ionicons name="search-outline" size={20} color="#9ca3af" />
+            <TextInput
+              placeholder="Search members"
+              placeholderTextColor="#9ca3af"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              className="flex-1 ml-2 text-base text-foreground dark:text-dark-fg"
+            />
+          </View>
+          <TouchableOpacity className="w-12 h-12 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-xl items-center justify-center">
+            <Ionicons name="filter-outline" size={20} color="#6b7280" />
+          </TouchableOpacity>
+        </View>
+
+        <View className="flex-row items-center justify-between mb-4">
+          <Text className="text-base font-bold text-foreground dark:text-dark-fg">
+            Members ({membersArray.length})
+          </Text>
+          {canManage && (
+            <TouchableOpacity onPress={handleMarkAllPresent}>
+              <Text className="text-sm font-semibold text-primary dark:text-dark-primary">
+                Mark All Present
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+      {/* ---------------------------------------------------- */}
+
       {isLoading ? (
         <ActivityIndicator
           size="large"
@@ -394,7 +394,6 @@ export default function AttendanceDetailsScreen({
               ? Math.max(insets.bottom + 80, 100)
               : Math.max(insets.bottom + 40, 40),
           }}
-          ListHeaderComponent={renderHeader}
           ListEmptyComponent={
             <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
               No members found for this session.

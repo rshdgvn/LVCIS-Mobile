@@ -32,18 +32,20 @@ export default function TabsLayout() {
   };
 
   const handleTabPress = (tab: Tab) => {
+    // CHANGED TO router.navigate() TO FIX THE MASSIVE DELAY!
+    // navigate instantly jumps to the tab instead of re-loading it.
     switch (tab) {
       case "Home":
-        router.push("/dashboard");
+        router.navigate("/dashboard");
         break;
       case "Attendance":
-        router.push("/attendance");
+        router.navigate("/attendance");
         break;
       case "Clubs":
-        router.push("/clubs");
+        router.navigate("/clubs");
         break;
       case "Events":
-        router.push("/events");
+        router.navigate("/events");
         break;
     }
   };
@@ -57,6 +59,7 @@ export default function TabsLayout() {
           screenOptions={{
             headerShown: false,
             tabBarStyle: { display: "none" },
+            animation: "shift",
           }}
         >
           <Tabs.Screen name="dashboard" />
