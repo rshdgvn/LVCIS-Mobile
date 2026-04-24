@@ -9,20 +9,19 @@ import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect } from "react";
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+const USER_CACHE_KEY = "USER_CACHE";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    setUnauthorizedCallback(() => {
-      // 1. Instantly set user to null (isAuthenticated becomes false, isLoading stays false)
+    setUnauthorizedCallback(async () => {
       queryClient.setQueryData(["user"], null);
-
-      // 2. Wipe all other queries (clubs, members) to protect sensitive data,
-      // but leave the "user" query alone so it doesn't trigger a hard layout-freezing re-fetch.
       queryClient.removeQueries({
         predicate: (query) => query.queryKey[0] !== "user",
       });
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(USER_CACHE_KEY);
     });
   }, [queryClient]);
 
@@ -30,16 +29,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryKey: ["user"],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync(TOKEN_KEY);
-      if (!token) return null;
+
+      if (!token) {
+        return null;
+      }
+
       try {
         const response = await userService.getUserProfile();
+        console.log(JSON.stringify(response, null, 2));
 
-        return {
-          ...response.user,
-          member: response.member,
-        } as User;
-      } catch (error) {
+        const fullUser = response as User;
+        await SecureStore.setItemAsync(
+          USER_CACHE_KEY,
+          JSON.stringify(fullUser),
+        );
+
+        return fullUser;
+      } catch (error: any) {
+        console.log(
+          "⚠️ [Auth Debug] API Fetch Failed. Error status:",
+          error?.response?.status,
+        );
+
+        const cachedUser = await SecureStore.getItemAsync(USER_CACHE_KEY);
+
+        if (cachedUser && error?.response?.status !== 401) {
+          return JSON.parse(cachedUser) as User;
+        }
+
         await SecureStore.deleteItemAsync(TOKEN_KEY);
+        await SecureStore.deleteItemAsync(USER_CACHE_KEY);
         return null;
       }
     },
@@ -52,12 +71,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (token: string, newUser: User) => {
     await SecureStore.setItemAsync(TOKEN_KEY, token);
+    await SecureStore.setItemAsync(USER_CACHE_KEY, JSON.stringify(newUser));
+
     try {
       const response = await userService.getUserProfile();
-      queryClient.setQueryData(["user"], {
-        ...response,
-        member: response.member,
-      } as User);
+      queryClient.setQueryData(["user"], response as User);
     } catch {
       queryClient.setQueryData(["user"], newUser);
     }
@@ -70,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("Logout error", e);
     } finally {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(USER_CACHE_KEY);
 
       queryClient.setQueryData(["user"], null);
       queryClient.removeQueries({

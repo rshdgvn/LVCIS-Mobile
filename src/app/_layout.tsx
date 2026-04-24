@@ -2,32 +2,38 @@ import "@/global.css";
 import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
 import { ClubProvider } from "@/src/contexts/ClubContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack, useRootNavigationState, useSegments } from "expo-router";
+import {
+  Stack,
+  useRootNavigationState,
+  useRouter,
+  useSegments,
+} from "expo-router";
 import React, { useEffect } from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "../components/common/ToastConfig";
-import { useThrottledRouter } from "../hooks/useThrottledRouter";
 
 const queryClient = new QueryClient();
 
 function InitialLayout() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const segments = useSegments();
-  const router = useThrottledRouter();
 
+  const router = useRouter();
   const rootNavigationState = useRootNavigationState();
 
   useEffect(() => {
     if (!rootNavigationState?.key || isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
-    const isIndexRoute = (segments as string[]).length === 0;
+    const isIndexRoute = segments.length === 0;
 
-    if (!isAuthenticated && !inAuthGroup && !isIndexRoute) {
-      router.replace("/(auth)/login");
+    if (!isAuthenticated) {
+      if (!inAuthGroup && !isIndexRoute) {
+        router.replace("/(auth)/login");
+      }
     } else if (isAuthenticated && user) {
-      if (inAuthGroup) {
+      if (inAuthGroup || isIndexRoute) {
         if (user.role === "admin") {
           router.replace("/(tabs)/(admin)/dashboard");
         } else {
@@ -42,6 +48,14 @@ function InitialLayout() {
       }
     }
   }, [isAuthenticated, user, isLoading, segments, router, rootNavigationState]);
+
+  if (isLoading || !rootNavigationState?.key) {
+    return (
+      <View className="flex-1 bg-background dark:bg-dark-bg items-center justify-center">
+        <ActivityIndicator size="large" color="#3b82f6" />
+      </View>
+    );
+  }
 
   return (
     <Stack

@@ -8,8 +8,8 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from "react";
 import { Club } from "../types/club";
 import { useAuth } from "./AuthContext";
@@ -27,9 +27,9 @@ type ClubContextType = {
 const ClubContext = createContext<ClubContextType>({} as ClubContextType);
 
 export function ClubProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user } = useAuth(); 
+  const { isAuthenticated, user } = useAuth();
   const [activeClubId, setActiveClubId] = useState<number | null>(null);
-  
+
   const isInitialized = useRef(false);
 
   const { data: clubs = [], isLoading } = useQuery<Club[]>({
@@ -43,18 +43,27 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    if (clubs.length > 0 && !isInitialized.current) {
-      const isAdmin = user?.role === "admin";
+    if (!isInitialized.current && user) {
+      const isAdmin = user.role === "admin";
 
       if (isAdmin) {
-        setActiveClubId(null); 
-      } else {
+        setActiveClubId(null);
+        isInitialized.current = true;
+      } else if (clubs.length > 0) {
         setActiveClubId(clubs[0].id);
+        isInitialized.current = true;
+      } else if (!isLoading) {
+        isInitialized.current = true;
       }
-      
-      isInitialized.current = true;
     }
-  }, [clubs, user]);
+  }, [clubs, user, isLoading]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setActiveClubId(null);
+      isInitialized.current = false;
+    }
+  }, [isAuthenticated]);
 
   const getUserRole = useCallback(
     (clubId: number | string) => {
