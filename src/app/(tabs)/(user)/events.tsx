@@ -1,3 +1,4 @@
+import { useAuth } from "@/src/contexts/AuthContext";
 import { useClub } from "@/src/contexts/ClubContext";
 import { useAllEvents } from "@/src/hooks/useEvents";
 import EventsScreen from "@/src/screens/private/events/EventsScreen";
@@ -7,9 +8,16 @@ import { View } from "react-native";
 
 export default function EventsRoute() {
   const router = useRouter();
-  const { activeClubId } = useClub();
+  const { activeClubId, isLoading: isClubLoading } = useClub();
+  const { user, isLoading: isAuthLoading } = useAuth();
 
-  const { data: events, isLoading } = useAllEvents(activeClubId);
+  const isAdmin = user?.role === "admin";
+  const isContextLoading = isAuthLoading || isClubLoading;
+
+  const { data: events, isLoading: isEventsLoading } = useAllEvents(
+    activeClubId,
+    isAdmin,
+  );
 
   const handleAccessEvent = (eventId: number) => {
     router.push(`/events/${eventId}` as Href);
@@ -19,8 +27,10 @@ export default function EventsRoute() {
     <View className="flex-1">
       <EventsScreen
         events={events}
-        isLoading={isLoading}
+        isLoading={isEventsLoading || isContextLoading}
         onAccessEvent={handleAccessEvent}
+        isAdmin={isAdmin}
+        isContextLoading={isContextLoading}
       />
     </View>
   );

@@ -19,7 +19,7 @@ import Toast from "react-native-toast-message";
 interface Props {
   isVisible: boolean;
   onClose: () => void;
-  clubId: number;
+  clubId: number | null;
 }
 
 export const CreateSessionModal = ({ isVisible, onClose, clubId }: Props) => {
@@ -54,7 +54,7 @@ export const CreateSessionModal = ({ isVisible, onClose, clubId }: Props) => {
 
     createSession.mutate(
       {
-        club_id: clubId,
+        club_id: clubId || undefined,
         title,
         venue,
         date: dateStr,

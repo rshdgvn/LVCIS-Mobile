@@ -2,10 +2,9 @@ import { EventCard } from "@/src/components/events/EventCard";
 import { CreateEventModal } from "@/src/components/modals/CreateEventModal";
 import { useClub } from "@/src/contexts/ClubContext";
 import { useCanManageClub } from "@/src/hooks/useCanManageClub";
-import { useIsAdmin } from "@/src/hooks/useIsAdmin";
 import { useTheme } from "@/src/hooks/useTheme";
 import { Event } from "@/src/types/event";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -20,68 +19,125 @@ import { SafeAreaView } from "react-native-safe-area-context";
 interface Props {
   events: Event[] | undefined;
   isLoading: boolean;
+  isContextLoading: boolean;
   onAccessEvent: (eventId: number) => void;
+  isAdmin: boolean;
 }
 
 export default function EventsScreen({
   events,
   isLoading,
+  isContextLoading,
   onAccessEvent,
+  isAdmin,
 }: Props) {
   const [search, setSearch] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { primaryColor } = useTheme();
   const { canManageClub } = useCanManageClub();
 
-  const isAdmin = useIsAdmin(); 
   const { clubs, activeClubId } = useClub();
-  const canManage = activeClubId && canManageClub(activeClubId);
-  const activeClub = clubs.find((c) => c.id === activeClubId);
 
-  const filteredEvents = events?.filter((e) =>
-    e.title.toLowerCase().includes(search.toLowerCase()),
-  );
+  const canManage = (activeClubId && canManageClub(activeClubId)) || isAdmin;
+
+  if (isContextLoading) {
+    return (
+      <SafeAreaView
+        className="flex-1 bg-background dark:bg-dark-bg"
+        edges={["top"]}
+      >
+        <View className="px-4 mt-4 pb-3">
+          <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
+            Welcome to,
+          </Text>
+          <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
+            Events
+          </Text>
+        </View>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={primaryColor} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!activeClubId && !isAdmin) {
+    return (
+      <SafeAreaView
+        className="flex-1 bg-background dark:bg-dark-bg"
+        edges={["top"]}
+      >
+        <View className="px-4 mt-4 pb-3">
+          <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
+            Welcome to,
+          </Text>
+          <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
+            Events
+          </Text>
+        </View>
+        <View className="flex-1 items-center justify-center p-6">
+          <View className="w-20 h-20 bg-primary/10 dark:bg-dark-primary/10 rounded-full items-center justify-center mb-4">
+            <MaterialCommunityIcons
+              name="calendar-blank-outline"
+              size={36}
+              color={primaryColor}
+            />
+          </View>
+          <Text className="text-xl font-bold text-foreground dark:text-dark-fg mb-2">
+            No Club Selected
+          </Text>
+          <Text className="text-sm text-center text-muted-fg dark:text-dark-muted-fg">
+            {clubs.length === 0
+              ? "You are not part of any clubs yet."
+              : "You need to join a club to access events."}
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const filteredEvents =
+    events?.filter((event) =>
+      event.title.toLowerCase().includes(search.toLowerCase()),
+    ) || [];
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
-      {/* Header */}
-      <View className="px-4 mt-4">
-        <View className="flex-row items-center justify-between">
+      <View className="px-4 mt-4 pb-3">
+        <View className="flex-row justify-between mb-8 items-start">
           <View>
             <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
               Welcome to,
             </Text>
             <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
-              Events
+              {!activeClubId && isAdmin ? "General Events" : "Events"}
             </Text>
           </View>
         </View>
-      </View>
 
-      {/* Search & Add Section */}
-      <View className="px-4 mt-8 flex-row gap-4">
-        <View className="flex-1 bg-background dark:bg-dark-bg rounded-2xl flex-row items-center px-4 h-14 border border-border dark:border-dark-border">
-          <Ionicons name="search" size={20} color="#9ca3af" />
-          <TextInput
-            placeholder="Search events"
-            placeholderTextColor="#9ca3af"
-            className="flex-1 ml-3 text-base text-foreground dark:text-dark-fg"
-            value={search}
-            onChangeText={setSearch}
-          />
+        <View className="flex-row items-center justify-between gap-4">
+          <View className="flex-1 flex-row items-center bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-2xl px-4 h-14">
+            <MaterialCommunityIcons name="magnify" size={20} color="#9ca3af" />
+            <TextInput
+              placeholder="Search events..."
+              placeholderTextColor="#9ca3af"
+              className="flex-1 ml-3 text-base text-foreground dark:text-dark-fg"
+              value={search}
+              onChangeText={setSearch}
+            />
+          </View>
+
+          {canManage && (
+            <TouchableOpacity
+              onPress={() => setIsModalVisible(true)}
+              className="w-14 h-14 bg-primary dark:bg-dark-primary rounded-2xl items-center justify-center shadow-lg shadow-primary/30"
+            >
+              <MaterialCommunityIcons name="plus" size={28} color="white" />
+            </TouchableOpacity>
+          )}
         </View>
-
-        {isAdmin && (
-          <TouchableOpacity
-            onPress={() => setIsModalVisible(true)} // Toggle Modal
-            className="w-14 h-14 bg-primary dark:bg-dark-primary rounded-2xl items-center justify-center shadow-lg shadow-primary/30"
-          >
-            <Ionicons name="add" size={28} color="white" />
-          </TouchableOpacity>
-        )}
       </View>
 
-      {/* Events List */}
       <View className="flex-1 px-4 mt-8">
         {isLoading ? (
           <ActivityIndicator
@@ -106,10 +162,14 @@ export default function EventsScreen({
           />
         )}
       </View>
-      <CreateEventModal
-        isVisible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-      />
+
+      {(activeClubId || isAdmin) && (
+        <CreateEventModal
+          isVisible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          clubId={activeClubId}
+        />
+      )}
     </SafeAreaView>
   );
 }

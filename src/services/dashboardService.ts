@@ -1,92 +1,113 @@
 import { api } from "@/src/api/api";
-import {
-  AdditionalStatsData,
-  AttendanceTrendData,
-  ClubsOverviewData,
-  EngagementOverviewData,
-} from "../types/dashboard";
+import * as T from "@/src/types/dashboard";
 
 export const dashboardService = {
   getClubsOverview: async () => {
     try {
-      console.log("📡 [API] Fetching Clubs Overview...");
-      const response = await api.get<ClubsOverviewData>(
+      const response = await api.get<T.ClubsOverviewData>(
         "/dashboard/admin/clubs-overview",
       );
-      console.log(
-        "🟢 [API] Clubs Overview Response:",
-        JSON.stringify(response.data, null, 2),
-      );
       return response.data;
-    } catch (error: any) {
-      console.error(
-        "🔴 [API] Clubs Overview Failed:",
-        error?.response?.status,
-        error?.response?.data || error.message,
-      );
+    } catch (error) {
       throw error;
     }
   },
 
   getEngagementOverview: async () => {
     try {
-      console.log("📡 [API] Fetching Engagement Overview...");
-      const response = await api.get<EngagementOverviewData>(
+      const response = await api.get<T.EngagementOverviewData>(
         "/dashboard/admin/engagement",
       );
-      console.log(
-        "🟢 [API] Engagement Overview Response:",
-        JSON.stringify(response.data, null, 2),
-      );
       return response.data;
-    } catch (error: any) {
-      console.error(
-        "🔴 [API] Engagement Overview Failed:",
-        error?.response?.status,
-        error?.response?.data || error.message,
-      );
+    } catch (error) {
       throw error;
     }
   },
 
   getAttendanceTrend: async () => {
     try {
-      console.log("📡 [API] Fetching Attendance Trend...");
-      const response = await api.get<AttendanceTrendData[]>(
+      const response = await api.get<T.AttendanceTrendData[]>(
         "/dashboard/admin/attendance-trend",
       );
-      console.log(
-        "🟢 [API] Attendance Trend Response:",
-        JSON.stringify(response.data, null, 2),
-      );
       return response.data;
-    } catch (error: any) {
-      console.error(
-        "🔴 [API] Attendance Trend Failed:",
-        error?.response?.status,
-        error?.response?.data || error.message,
-      );
+    } catch (error) {
       throw error;
     }
   },
 
   getAdditionalStats: async () => {
     try {
-      console.log("📡 [API] Fetching Additional Stats...");
-      const response = await api.get<AdditionalStatsData>(
+      const response = await api.get<T.AdditionalStatsData>(
         "/dashboard/admin/additional-stats",
       );
-      console.log(
-        "🟢 [API] Additional Stats Response:",
-        JSON.stringify(response.data, null, 2),
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getManagerStats: async (clubId: number) => {
+    try {
+      const response = await api.get<T.ManagerStats>(
+        `/clubs/${clubId}/manager/stats`,
       );
       return response.data;
-    } catch (error: any) {
-      console.error(
-        "🔴 [API] Additional Stats Failed:",
-        error?.response?.status,
-        error?.response?.data || error.message,
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getManagerInsights: async (clubId: number) => {
+    try {
+      const response = await api.get<T.ManagerInsights>(
+        `/clubs/${clubId}/manager/insights`,
       );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getManagerTrend: async (clubId: number) => {
+    try {
+      const response = await api.get<T.AttendanceTrendItem[]>(
+        `/clubs/${clubId}/manager/attendance-trend`,
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getMemberOverview: async (clubId: number) => {
+    try {
+      const response = await api.get<T.MemberOverview>(
+        `/clubs/${clubId}/member/overview`,
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getMemberTasks: async (clubId: number) => {
+    try {
+      const response = await api.get<T.MemberTask[]>(
+        `/clubs/${clubId}/member/tasks`,
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getMemberEvents: async (clubId: number) => {
+    try {
+      const response = await api.get<T.UpcomingEvent[]>(
+        `/clubs/${clubId}/member/upcoming-events`,
+      );
+      return response.data;
+    } catch (error) {
       throw error;
     }
   },

@@ -1,22 +1,22 @@
 import { eventService } from "@/src/services/eventService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-// Fetch all events then filter by active club on the frontend
-export const useAllEvents = (clubId: number | null) => {
+export const useAllEvents = (
+  clubId: number | null,
+  isAdmin: boolean = false,
+) => {
   return useQuery({
-    queryKey: ["events"],
-    queryFn: () => eventService.getAllEvents(),
-    select: (data) =>
-      clubId ? data.filter((e) => e.club_id === clubId) : data,
-    enabled: true,
+    queryKey: ["events", clubId],
+    queryFn: () => eventService.getAllEvents(clubId),
+    enabled: isAdmin ? true : !!clubId,
   });
 };
 
-export const useEventDetails = (id: number) => {
+export const useEventDetails = (id: number | null) => {
   return useQuery({
     queryKey: ["event", id],
-    queryFn: () => eventService.getEventById(id),
-    enabled: !!id,
+    queryFn: () => eventService.getEventById(id!),
+    enabled: !!id,  
   });
 };
 
@@ -26,7 +26,6 @@ export const useEventMutations = () => {
   const createMutation = useMutation({
     mutationFn: (data: FormData) => eventService.addEvent(data),
     onSuccess: () => {
-      // Invalidate all event queries regardless of club
       queryClient.invalidateQueries({ queryKey: ["events"] });
     },
   });
@@ -48,11 +47,11 @@ export const useEventMutations = () => {
   });
 
   return {
-    createEvent: createMutation.mutateAsync,
+    createEvent: createMutation,
+    updateEvent: updateMutation,
+    deleteEvent: deleteMutation,
     isCreating: createMutation.isPending,
-    updateEvent: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
-    deleteEvent: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
   };
 };

@@ -6,7 +6,7 @@ import { useAttendanceMutations } from "@/src/hooks/useAttendance";
 import { useCanManageClub } from "@/src/hooks/useCanManageClub";
 import { useTheme } from "@/src/hooks/useTheme";
 import { AttendanceSession } from "@/src/types/attendance";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import React, { useState } from "react";
@@ -33,6 +33,7 @@ interface Props {
   } | null;
   isLoading: boolean;
   onAccessSession: (sessionId: number) => void;
+  isAdmin: boolean;
 }
 
 export default function AttendanceScreen({
@@ -40,6 +41,7 @@ export default function AttendanceScreen({
   analytics,
   isLoading,
   onAccessSession,
+  isAdmin,
 }: Props) {
   const { primaryColor } = useTheme();
   const { clubs, activeClubId } = useClub();
@@ -63,7 +65,7 @@ export default function AttendanceScreen({
   );
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const canManage = activeClubId && canManageClub(activeClubId);
+  const canManage = (activeClubId && canManageClub(activeClubId)) || isAdmin;
 
   const filteredSessions = sessions.filter((s) =>
     s.title.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -135,7 +137,11 @@ export default function AttendanceScreen({
         </Text>
         {item.venue && (
           <View className="flex-row items-center">
-            <Ionicons name="location-sharp" size={14} color="#6b7280" />
+            <MaterialCommunityIcons
+              name="map-marker"
+              size={14}
+              color="#6b7280"
+            />
             <Text className="text-sm text-muted-fg dark:text-dark-muted-fg ml-1">
               {item.venue}
             </Text>
@@ -149,11 +155,19 @@ export default function AttendanceScreen({
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           className="pr-4 pl-2 py-5"
         >
-          <Ionicons name="ellipsis-vertical" size={20} color="#6b7280" />
+          <MaterialCommunityIcons
+            name="dots-vertical"
+            size={20}
+            color="#6b7280"
+          />
         </TouchableOpacity>
       ) : (
         <View className="pr-4">
-          <Ionicons name="chevron-forward" size={20} color="#6b7280" />
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={20}
+            color="#6b7280"
+          />
         </View>
       )}
     </TouchableOpacity>
@@ -167,24 +181,53 @@ export default function AttendanceScreen({
     </View>
   );
 
+  if (!activeClubId && !isAdmin) {
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
+        <View className="px-4 mt-4 pb-3">
+          <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
+            Welcome to,
+          </Text>
+          <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
+            Attendance
+          </Text>
+        </View>
+        <View className="flex-1 items-center justify-center p-6">
+          <View className="w-20 h-20 bg-primary/10 dark:bg-dark-primary/10 rounded-full items-center justify-center mb-4">
+            <MaterialCommunityIcons
+              name="clipboard-check-outline"
+              size={36}
+              color={primaryColor}
+            />
+          </View>
+          <Text className="text-xl font-bold text-foreground dark:text-dark-fg mb-2">
+            No Club Selected
+          </Text>
+          <Text className="text-sm text-center text-muted-fg dark:text-dark-muted-fg">
+            {clubs.length === 0
+              ? "You are not part of any clubs yet."
+              : "You need to join a club to access attendance."}
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
-      {/* ── Fixed top section ── */}
       <View className="px-4 mt-4 pb-3">
-        {/* Page title */}
         <View className="flex-row justify-between mb-8 items-start">
           <View>
             <Text className="text-muted-fg dark:text-dark-muted-fg text-2xl font-medium">
               Welcome to,
             </Text>
             <Text className="text-foreground dark:text-dark-fg text-3xl font-bold">
-              Attendance
+              {!activeClubId && isAdmin ? "General Attendance" : "Attendance"}
             </Text>
           </View>
         </View>
 
-        {/* Analytics Cards */}
-        {activeClubId && (
+        {(activeClubId || isAdmin) && analytics && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -194,7 +237,11 @@ export default function AttendanceScreen({
             <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
               <View className="flex-row items-center mb-4">
                 <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center mr-3">
-                  <Ionicons name="people" size={24} color="#3b82f6" />
+                  <MaterialCommunityIcons
+                    name="account-group"
+                    size={24}
+                    color="#3b82f6"
+                  />
                 </View>
                 <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
                   Total Members
@@ -208,7 +255,11 @@ export default function AttendanceScreen({
             <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
               <View className="flex-row items-center mb-4">
                 <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center mr-3">
-                  <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
+                  <MaterialCommunityIcons
+                    name="check-circle"
+                    size={24}
+                    color="#22c55e"
+                  />
                 </View>
                 <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
                   Active Members
@@ -222,7 +273,11 @@ export default function AttendanceScreen({
             <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
               <View className="flex-row items-center mb-4">
                 <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center mr-3">
-                  <Ionicons name="close-circle" size={24} color="#ef4444" />
+                  <MaterialCommunityIcons
+                    name="close-circle"
+                    size={24}
+                    color="#ef4444"
+                  />
                 </View>
                 <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
                   Inactive Members
@@ -235,11 +290,14 @@ export default function AttendanceScreen({
           </ScrollView>
         )}
 
-        {/* Search + Filter */}
-        {activeClubId && (
+        {(activeClubId || isAdmin) && (
           <View className="flex-row items-center gap-2">
             <View className="flex-1 flex-row items-center bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-xl px-4 h-12">
-              <Ionicons name="search-outline" size={20} color="#9ca3af" />
+              <MaterialCommunityIcons
+                name="magnify"
+                size={20}
+                color="#9ca3af"
+              />
               <TextInput
                 placeholder="Search events"
                 placeholderTextColor="#9ca3af"
@@ -249,21 +307,16 @@ export default function AttendanceScreen({
               />
             </View>
             <TouchableOpacity className="w-12 h-12 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-xl items-center justify-center">
-              <Ionicons name="filter-outline" size={20} color="#6b7280" />
+              <MaterialCommunityIcons
+                name="filter-outline"
+                size={20}
+                color="#6b7280"
+              />
             </TouchableOpacity>
           </View>
         )}
-
-        {!activeClubId && (
-          <Text className="text-muted-fg dark:text-dark-muted-fg text-sm mt-2">
-            {clubs.length === 0
-              ? "You are not part of any clubs yet."
-              : "Select a club from the Home tab to get started."}
-          </Text>
-        )}
       </View>
 
-      {/* ── Scrollable sessions list ── */}
       {isLoading ? (
         <ActivityIndicator
           size="large"
@@ -280,11 +333,12 @@ export default function AttendanceScreen({
             paddingBottom: 80,
             paddingTop: 16,
           }}
-          ListHeaderComponent={activeClubId ? renderHeader : null}
+          ListHeaderComponent={activeClubId || isAdmin ? renderHeader : null}
           ListEmptyComponent={
-            activeClubId ? (
+            activeClubId || isAdmin ? (
               <Text className="text-center text-muted-fg dark:text-dark-muted-fg mt-10">
-                No attendance sessions found for this club.
+                No attendance sessions found
+                {activeClubId ? " for this club." : "."}
               </Text>
             ) : null
           }
@@ -292,18 +346,16 @@ export default function AttendanceScreen({
         />
       )}
 
-      {/* FAB */}
       {canManage && (
         <TouchableOpacity
           onPress={() => setIsCreateModalVisible(true)}
           className="absolute bottom-6 right-5 w-14 h-14 bg-primary dark:bg-dark-primary rounded-full items-center justify-center shadow-lg shadow-primary/30 elevation-5"
         >
-          <Ionicons name="add" size={30} color="#ffffff" />
+          <MaterialCommunityIcons name="plus" size={30} color="#ffffff" />
         </TouchableOpacity>
       )}
 
-      {/* Create Modal */}
-      {activeClubId && (
+      {(activeClubId || isAdmin) && (
         <CreateSessionModal
           isVisible={isCreateModalVisible}
           onClose={() => setIsCreateModalVisible(false)}
@@ -311,14 +363,12 @@ export default function AttendanceScreen({
         />
       )}
 
-      {/* Edit Modal */}
       <EditSessionModal
         isVisible={!!editSession}
         onClose={() => setEditSession(null)}
         session={editSession}
       />
 
-      {/* Three-dots bottom sheet */}
       <Modal
         visible={isMenuVisible}
         transparent
@@ -342,7 +392,11 @@ export default function AttendanceScreen({
                 className="flex-row items-center py-4 border-b border-border dark:border-dark-border"
               >
                 <View className="w-9 h-9 rounded-full bg-blue-500/10 items-center justify-center mr-3">
-                  <Ionicons name="pencil" size={18} color="#3b82f6" />
+                  <MaterialCommunityIcons
+                    name="pencil"
+                    size={18}
+                    color="#3b82f6"
+                  />
                 </View>
                 <Text className="text-base font-medium text-foreground dark:text-dark-fg">
                   Edit Session
@@ -354,7 +408,11 @@ export default function AttendanceScreen({
                 className="flex-row items-center py-4"
               >
                 <View className="w-9 h-9 rounded-full bg-red-500/10 items-center justify-center mr-3">
-                  <Ionicons name="trash" size={18} color="#ef4444" />
+                  <MaterialCommunityIcons
+                    name="trash-can"
+                    size={18}
+                    color="#ef4444"
+                  />
                 </View>
                 <Text className="text-base font-medium text-red-500">
                   Delete Session

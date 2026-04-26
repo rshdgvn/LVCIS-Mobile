@@ -56,6 +56,7 @@ export default function EventDetailsScreen({
   const insets = useSafeAreaInsets();
   const { canManageClub } = useCanManageClub();
   const canManage = event?.club_id ? canManageClub(event.club_id) : false;
+  const isGeneralEvent = !event?.club_id;
 
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
@@ -67,7 +68,7 @@ export default function EventDetailsScreen({
   const [statusMenuTask, setStatusMenuTask] = useState<EventTask | null>(null);
 
   const { data: taskData, isLoading: isLoadingTasks } = useEventTasks(
-    event?.id ?? null,
+    isGeneralEvent ? null : (event?.id ?? null),
   );
 
   const tasks = taskData?.tasks ?? [];
@@ -80,7 +81,7 @@ export default function EventDetailsScreen({
     isUpdating,
     updateTaskStatus,
     deleteTask,
-  } = useTaskMutations(event?.id ?? null);
+  } = useTaskMutations(isGeneralEvent ? null : (event?.id ?? null));
 
   const handleCreateTask = async (data: {
     title: string;
@@ -242,143 +243,146 @@ export default function EventDetailsScreen({
         </View>
       </View>
 
-      <View className="flex-row items-center justify-between mb-4 px-4">
-        <View className="flex-row items-center gap-2">
-          <View className="p-1.5 bg-primary/10 dark:bg-dark-primary/10 rounded-lg">
-            <Ionicons name="clipboard" size={20} color={primaryColor} />
+      {!isGeneralEvent && (
+        <View className="flex-row items-center justify-between mb-4 px-4">
+          <View className="flex-row items-center gap-2">
+            <View className="p-1.5 bg-primary/10 dark:bg-dark-primary/10 rounded-lg">
+              <Ionicons name="clipboard" size={20} color={primaryColor} />
+            </View>
+            <Text className="font-bold text-foreground dark:text-dark-fg text-lg">
+              Assigned Tasks
+            </Text>
           </View>
-          <Text className="font-bold text-foreground dark:text-dark-fg text-lg">
-            Assigned Tasks
-          </Text>
         </View>
-      </View>
+      )}
 
       <ScrollView
         className="flex-1 px-4"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
-        {isLoadingTasks ? (
-          <ActivityIndicator color={primaryColor} className="mt-4" />
-        ) : tasks.length === 0 ? (
-          <View className="items-center py-8">
-            <Ionicons name="clipboard-outline" size={36} color="#9ca3af" />
-            <Text className="text-muted-fg dark:text-dark-muted-fg text-sm mt-2">
-              No tasks yet
-            </Text>
-          </View>
-        ) : (
-          tasks.map((task) => (
-            <View
-              key={task.id}
-              className="flex-row items-center justify-between p-4 rounded-2xl border mb-3 bg-card dark:bg-dark-card border-border dark:border-dark-border"
-            >
-              <View className="flex-row items-center gap-3 flex-1">
-                <TouchableOpacity
-                  onPress={() => setStatusMenuTask(task)}
-                  disabled={!canManage}
-                >
-                  <Ionicons
-                    name={
-                      task.status === "completed"
-                        ? "checkmark-circle"
-                        : "ellipse-outline"
-                    }
-                    size={24}
-                    color={
-                      task.status === "completed" ? primaryColor : "#d1d5db"
-                    }
-                  />
-                </TouchableOpacity>
-
-                <View className="flex-1">
-                  <Text
-                    className={`font-medium ${
-                      task.status === "completed"
-                        ? "text-muted-fg line-through dark:text-dark-muted-fg"
-                        : "text-foreground dark:text-dark-fg"
-                    }`}
-                    numberOfLines={1}
+        {!isGeneralEvent &&
+          (isLoadingTasks ? (
+            <ActivityIndicator color={primaryColor} className="mt-4" />
+          ) : tasks.length === 0 ? (
+            <View className="items-center py-8">
+              <Ionicons name="clipboard-outline" size={36} color="#9ca3af" />
+              <Text className="text-muted-fg dark:text-dark-muted-fg text-sm mt-2">
+                No tasks yet
+              </Text>
+            </View>
+          ) : (
+            tasks.map((task) => (
+              <View
+                key={task.id}
+                className="flex-row items-center justify-between p-4 rounded-2xl border mb-3 bg-card dark:bg-dark-card border-border dark:border-dark-border"
+              >
+                <View className="flex-row items-center gap-3 flex-1">
+                  <TouchableOpacity
+                    onPress={() => setStatusMenuTask(task)}
+                    disabled={!canManage}
                   >
-                    {task.title}
-                  </Text>
-                  <View className="flex-row items-center gap-1 mt-0.5">
-                    <View
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor:
-                          STATUS_COLORS[task.status] ?? "#9ca3af",
-                      }}
+                    <Ionicons
+                      name={
+                        task.status === "completed"
+                          ? "checkmark-circle"
+                          : "ellipse-outline"
+                      }
+                      size={24}
+                      color={
+                        task.status === "completed" ? primaryColor : "#d1d5db"
+                      }
                     />
-                    <Text className="text-xs text-muted-fg dark:text-dark-muted-fg">
-                      {STATUS_LABELS[task.status] ?? task.status}
-                    </Text>
-                  </View>
-                </View>
-              </View>
+                  </TouchableOpacity>
 
-              <View className="flex-row items-center gap-2">
-                {task.assigned_by.slice(0, 2).map((u, i) =>
-                  u.avatar ? (
-                    <Image
-                      key={i}
-                      source={{ uri: u.avatar }}
-                      className="w-7 h-7 rounded-full border border-background dark:border-dark-bg"
-                      style={{ marginLeft: i > 0 ? -10 : 0 }}
-                    />
-                  ) : (
-                    <View
-                      key={i}
-                      className="w-7 h-7 rounded-full bg-primary/20 items-center justify-center border border-background dark:border-dark-bg"
-                      style={{ marginLeft: i > 0 ? -10 : 0 }}
+                  <View className="flex-1">
+                    <Text
+                      className={`font-medium ${
+                        task.status === "completed"
+                          ? "text-muted-fg line-through dark:text-dark-muted-fg"
+                          : "text-foreground dark:text-dark-fg"
+                      }`}
+                      numberOfLines={1}
                     >
-                      <Text className="text-[10px] font-bold text-primary dark:text-dark-primary">
-                        {u.name[0]}
+                      {task.title}
+                    </Text>
+                    <View className="flex-row items-center gap-1 mt-0.5">
+                      <View
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: 3,
+                          backgroundColor:
+                            STATUS_COLORS[task.status] ?? "#9ca3af",
+                        }}
+                      />
+                      <Text className="text-xs text-muted-fg dark:text-dark-muted-fg">
+                        {STATUS_LABELS[task.status] ?? task.status}
                       </Text>
                     </View>
-                  ),
-                )}
+                  </View>
+                </View>
 
-                {canManage && (
-                  <>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setEditingTask(task);
-                        setIsTaskModalVisible(true);
-                      }}
-                      className="p-1"
-                    >
-                      <Ionicons
-                        name="pencil-outline"
-                        size={15}
-                        color="#9ca3af"
+                <View className="flex-row items-center gap-2">
+                  {task.assigned_by.slice(0, 2).map((u, i) =>
+                    u.avatar ? (
+                      <Image
+                        key={i}
+                        source={{ uri: u.avatar }}
+                        className="w-7 h-7 rounded-full border border-background dark:border-dark-bg"
+                        style={{ marginLeft: i > 0 ? -10 : 0 }}
                       />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => setTaskToDelete(task.id)}
-                      className="p-1"
-                    >
-                      <Ionicons
-                        name="trash-outline"
-                        size={15}
-                        color="#ef4444"
-                      />
-                    </TouchableOpacity>
-                  </>
-                )}
+                    ) : (
+                      <View
+                        key={i}
+                        className="w-7 h-7 rounded-full bg-primary/20 items-center justify-center border border-background dark:border-dark-bg"
+                        style={{ marginLeft: i > 0 ? -10 : 0 }}
+                      >
+                        <Text className="text-[10px] font-bold text-primary dark:text-dark-primary">
+                          {u.name[0]}
+                        </Text>
+                      </View>
+                    ),
+                  )}
+
+                  {canManage && (
+                    <>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setEditingTask(task);
+                          setIsTaskModalVisible(true);
+                        }}
+                        className="p-1"
+                      >
+                        <Ionicons
+                          name="pencil-outline"
+                          size={15}
+                          color="#9ca3af"
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setTaskToDelete(task.id)}
+                        className="p-1"
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={15}
+                          color="#ef4444"
+                        />
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
               </View>
-            </View>
-          ))
-        )}
+            ))
+          ))}
       </ScrollView>
 
       <View
         className="px-6 pt-4 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border"
         style={{ paddingBottom: Math.max(insets.bottom, 24) }}
       >
-        {canManage && (
+        {canManage && !isGeneralEvent && (
           <TouchableOpacity
             onPress={() => {
               setEditingTask(null);

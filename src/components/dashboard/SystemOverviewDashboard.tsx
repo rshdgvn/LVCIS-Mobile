@@ -1,33 +1,24 @@
 import { useAdminDashboard } from "@/src/hooks/useDashboard";
+import { useTheme } from "@/src/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Dimensions, Text, View } from "react-native";
 import { LineChart, PieChart } from "react-native-gifted-charts";
 
 const screenWidth = Dimensions.get("window").width;
 
 export const SystemOverviewDashboard = () => {
-  // 1. Fetch real data from ALL FOUR backend endpoints
   const { clubs, engagement, trend, stats, isLoading } = useAdminDashboard();
+  const { primaryColor, mutedFgColor, isDark } = useTheme();
 
   if (isLoading) {
     return (
       <View className="py-20 items-center justify-center">
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="text-muted-fg dark:text-dark-muted-fg mt-4 font-medium">
-          Loading comprehensive system metrics...
-        </Text>
+        <ActivityIndicator size="large" color={primaryColor} />
       </View>
     );
   }
 
-  // 2. Format Data for the Charts
   const engagePercent = engagement?.percentage || 0;
 
   const lineChartData =
@@ -37,117 +28,157 @@ export const SystemOverviewDashboard = () => {
       dataPointText: item.value.toString(),
     })) || [];
 
+  const roleColors: Record<string, string> = {
+    Members: "#60a5fa",
+    Officers: primaryColor,
+  };
+
+  const activityColors: Record<string, string> = {
+    Active: primaryColor,
+    Inactive: isDark ? "#ff5252" : "#df2a1a",
+  };
+
+  const rolesPieData =
+    stats?.roles_pie_chart.data.map((item) => ({
+      value: item.value,
+      color: roleColors[item.text] || mutedFgColor,
+      text: item.text,
+    })) || [];
+
+  const activityPieData =
+    stats?.activity_pie_chart.data.map((item) => ({
+      value: item.value,
+      color: activityColors[item.text] || mutedFgColor,
+      text: item.text,
+    })) || [];
+
   return (
     <View className="gap-6 mb-10">
-      {/* 1. HORIZONTAL QUICK STATS CARDS */}
-      <View>
-        <Text className="px-6 text-sm font-bold text-muted-fg dark:text-dark-muted-fg uppercase tracking-wider mb-3">
-          Quick System Stats
-        </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="px-6"
-          contentContainerStyle={{ paddingRight: 48 }} // Leaves space at the end of the scroll
-        >
-          {/* Card 1: Clubs */}
-          <View className="bg-white dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border shadow-sm w-44 mr-4">
-            <View className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 items-center justify-center mb-3">
-              <Ionicons name="grid" size={20} color="#3b82f6" />
-            </View>
-            <Text className="text-3xl font-black text-foreground dark:text-dark-fg mb-1">
-              {clubs?.total || 0}
-            </Text>
-            <Text className="text-sm font-semibold text-muted-fg dark:text-dark-muted-fg mb-2">
-              Total Active Clubs
-            </Text>
-            <View className="flex-row items-center mt-auto">
-              <Ionicons name="trending-up" size={14} color="#10b981" />
-              <Text className="text-xs font-bold text-emerald-500 ml-1">
-                {clubs?.trend_text || "+0"}
-              </Text>
-            </View>
+      <View className="px-6 flex-row gap-4">
+        <View className="flex-1 bg-card dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border shadow-sm">
+          <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mb-3">
+            <Ionicons name="school" size={20} color={primaryColor} />
           </View>
-
-          {/* Card 2: Students */}
-          <View className="bg-white dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border shadow-sm w-44 mr-4">
-            <View className="w-10 h-10 rounded-full bg-purple-50 dark:bg-purple-500/10 items-center justify-center mb-3">
-              <Ionicons name="people" size={20} color="#a855f7" />
-            </View>
-            <Text className="text-3xl font-black text-foreground dark:text-dark-fg mb-1">
-              {stats?.total_students || 0}
-            </Text>
-            <Text className="text-sm font-semibold text-muted-fg dark:text-dark-muted-fg mb-2">
-              Registered Students
+          <Text className="text-3xl font-black text-foreground dark:text-dark-fg mb-1">
+            {clubs?.total || 0}
+          </Text>
+          <Text className="text-[11px] font-bold text-muted-fg dark:text-dark-muted-fg uppercase tracking-wider mb-2">
+            Total Clubs
+          </Text>
+          <View className="flex-row items-center">
+            <Ionicons name="trending-up" size={14} color={primaryColor} />
+            <Text className="text-primary text-xs font-semibold ml-1">
+              {clubs?.trend_text || "Stable"}
             </Text>
           </View>
+        </View>
 
-          {/* Card 3: Events */}
-          <View className="bg-white dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border shadow-sm w-44">
-            <View className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-500/10 items-center justify-center mb-3">
-              <Ionicons name="calendar" size={20} color="#f97316" />
-            </View>
-            <Text className="text-3xl font-black text-foreground dark:text-dark-fg mb-1">
-              {stats?.active_events || 0}
-            </Text>
-            <Text className="text-sm font-semibold text-muted-fg dark:text-dark-muted-fg mb-2">
-              Active Events
-            </Text>
+        <View className="flex-1 bg-card dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border shadow-sm">
+          <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mb-3">
+            <Ionicons name="pulse" size={20} color={primaryColor} />
           </View>
-        </ScrollView>
-      </View>
-
-      {/* 2. OVERALL ENGAGEMENT PIE CHART */}
-      <View className="px-6">
-        <View className="bg-white dark:bg-dark-card rounded-3xl p-6 border border-border dark:border-dark-border shadow-sm">
-          <View className="flex-row justify-between items-center mb-6">
-            <View>
-              <Text className="text-lg font-bold text-foreground dark:text-dark-fg">
-                Overall Engagement
-              </Text>
-              <Text className="text-sm text-muted-fg dark:text-dark-muted-fg mt-0.5">
-                System-wide attendance rate
-              </Text>
-            </View>
-            <View className="bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-full">
-              <Text className="text-xs font-bold text-emerald-600">
-                {engagement?.trend_text || "No Data"}
-              </Text>
-            </View>
-          </View>
-
-          <View className="items-center justify-center py-2">
-            <PieChart
-              data={[
-                { value: engagePercent, color: "#3b82f6", focused: true }, // The active percentage
-                { value: 100 - engagePercent, color: "#e2e8f0" }, // The missing percentage
-              ]}
-              donut
-              radius={80}
-              innerRadius={60}
-              centerLabelComponent={() => (
-                <View className="items-center justify-center">
-                  <Text className="text-3xl font-black text-foreground dark:text-dark-fg">
-                    {engagePercent}%
-                  </Text>
-                  <Text className="text-xs font-medium text-muted-fg mt-1">
-                    Target: {engagement?.target || 85}%
-                  </Text>
-                </View>
-              )}
-            />
+          <Text className="text-3xl font-black text-foreground dark:text-dark-fg mb-1">
+            {engagePercent}%
+          </Text>
+          <Text className="text-[11px] font-bold text-muted-fg dark:text-dark-muted-fg uppercase tracking-wider mb-2">
+            Engagement
+          </Text>
+          <View className="flex-row items-center">
+            <Ionicons name="analytics" size={14} color={primaryColor} />
+            <Text className="text-primary text-xs font-semibold ml-1">
+              {engagement?.trend_text || "Stable"}
+            </Text>
           </View>
         </View>
       </View>
 
-      {/* 3. MONTHLY ATTENDANCE TREND LINE CHART */}
       <View className="px-6">
-        <View className="bg-white dark:bg-dark-card rounded-3xl p-6 border border-border dark:border-dark-border shadow-sm">
+        <View className="bg-primary dark:bg-dark-primary rounded-3xl p-6 shadow-lg shadow-primary/30 flex-row items-center justify-between">
+          <View>
+            <Text className="text-primary-fg/80 dark:text-dark-primary-fg/80 font-bold uppercase text-[10px] tracking-widest mb-1">
+              Network Overview
+            </Text>
+            <Text className="text-primary-fg dark:text-dark-primary-fg text-3xl font-black">
+              {stats?.overview.total_real_students || 0}
+            </Text>
+            <Text className="text-primary-fg/90 dark:text-dark-primary-fg/90 text-xs font-medium">
+              Registered Students
+            </Text>
+          </View>
+          <View className="h-12 w-px bg-primary-fg/30 mx-4" />
+          <View>
+            <Text className="text-primary-fg/80 dark:text-dark-primary-fg/80 font-bold uppercase text-[10px] tracking-widest mb-1">
+              Active Pipeline
+            </Text>
+            <Text className="text-primary-fg dark:text-dark-primary-fg text-3xl font-black">
+              {stats?.overview.active_events || 0}
+            </Text>
+            <Text className="text-primary-fg/90 dark:text-dark-primary-fg/90 text-xs font-medium">
+              Upcoming Events
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View className="px-6 flex-row gap-4">
+        <View className="flex-1 bg-card dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border shadow-sm items-center">
+          <Text className="text-sm font-bold text-foreground dark:text-dark-fg mb-4">
+            Demographics
+          </Text>
+          <PieChart
+            donut
+            innerRadius={25}
+            radius={40}
+            data={
+              rolesPieData.length > 0
+                ? rolesPieData
+                : [{ value: 1, color: isDark ? "#33394b" : "#e9eaec" }]
+            }
+          />
+          <View className="mt-4 w-full gap-2">
+            {rolesPieData.map((item, idx) => (
+              <LegendItem
+                key={idx}
+                color={item.color}
+                label={`${item.text} (${item.value})`}
+              />
+            ))}
+          </View>
+        </View>
+
+        <View className="flex-1 bg-card dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border shadow-sm items-center">
+          <Text className="text-sm font-bold text-foreground dark:text-dark-fg mb-4">
+            Activity Status
+          </Text>
+          <PieChart
+            donut
+            innerRadius={25}
+            radius={40}
+            data={
+              activityPieData.length > 0
+                ? activityPieData
+                : [{ value: 1, color: isDark ? "#33394b" : "#e9eaec" }]
+            }
+          />
+          <View className="mt-4 w-full gap-2">
+            {activityPieData.map((item, idx) => (
+              <LegendItem
+                key={idx}
+                color={item.color}
+                label={`${item.text} (${item.value})`}
+              />
+            ))}
+          </View>
+        </View>
+      </View>
+
+      <View className="px-6">
+        <View className="bg-card dark:bg-dark-card rounded-3xl p-6 border border-border dark:border-dark-border shadow-sm">
           <Text className="text-lg font-bold text-foreground dark:text-dark-fg mb-1">
-            Attendance Trend
+            Global Attendance Trend
           </Text>
           <Text className="text-sm text-muted-fg dark:text-dark-muted-fg mb-8">
-            Total present/late members over last 6 months
+            Total presence over last 6 months
           </Text>
 
           <View style={{ marginLeft: -10 }}>
@@ -157,13 +188,13 @@ export const SystemOverviewDashboard = () => {
                 width={screenWidth - 110}
                 height={180}
                 thickness={3}
-                color="#3b82f6"
+                color={primaryColor}
                 hideRules
                 hideYAxisText
                 yAxisColor="transparent"
-                xAxisColor="#e2e8f0"
-                textColor="#64748b"
-                dataPointsColor="#3b82f6"
+                xAxisColor={isDark ? "rgba(255, 255, 255, 0.1)" : "#e9eaec"}
+                textColor={mutedFgColor}
+                dataPointsColor={primaryColor}
                 dataPointsRadius={4}
                 textFontSize={10}
                 initialSpacing={20}
@@ -175,7 +206,7 @@ export const SystemOverviewDashboard = () => {
               />
             ) : (
               <View className="h-[180px] items-center justify-center">
-                <Text className="text-muted-fg font-medium">
+                <Text className="text-muted-fg dark:text-dark-muted-fg font-medium">
                   No attendance data available yet.
                 </Text>
               </View>
@@ -183,6 +214,21 @@ export const SystemOverviewDashboard = () => {
           </View>
         </View>
       </View>
+    </View>
+  );
+};
+
+const LegendItem = ({ color, label }: { color: string; label: string }) => {
+  const { isDark } = useTheme();
+  return (
+    <View className="flex-row items-center gap-2">
+      <View
+        style={{ backgroundColor: color }}
+        className="w-3 h-3 rounded-full"
+      />
+      <Text className="text-xs font-medium text-foreground dark:text-dark-fg opacity-80">
+        {label}
+      </Text>
     </View>
   );
 };

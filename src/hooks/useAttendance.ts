@@ -2,11 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { attendanceService } from "../services/attendanceService";
 import { AttendanceStatus, SessionPayload } from "../types/attendance";
 
-export const useSessions = (clubId: number | null) => {
+export const useSessions = (
+  clubId: number | null,
+  isAdmin: boolean = false,
+) => {
   return useQuery({
     queryKey: ["attendanceSessions", clubId],
-    queryFn: () => attendanceService.getSessions(clubId!),
-    enabled: !!clubId,
+    queryFn: () => attendanceService.getSessions(clubId),
+    enabled: isAdmin ? true : !!clubId,
   });
 };
 
@@ -36,17 +39,15 @@ export const useUpdateAttendanceStatus = (sessionId: number | null) => {
 
       queryClient.setQueryData(["session", sessionId], (oldData: any) => {
         if (!oldData || !oldData.members) return oldData;
-        return {
-          ...oldData,
-          members: oldData.members.map((member: any) =>
-            member.user_id === userId ? { ...member, status: status } : member,
-          ),
-        };
+        const newMembers = oldData.members.map((m: any) =>
+          m.user_id === userId ? { ...m, status } : m,
+        );
+        return { ...oldData, members: newMembers };
       });
 
       return { previousSession };
     },
-    onError: (err, variables, context) => {
+    onError: (err, newStatus, context) => {
       if (context?.previousSession) {
         queryClient.setQueryData(
           ["session", sessionId],
@@ -76,7 +77,8 @@ export const useAttendanceMutations = () => {
   const queryClient = useQueryClient();
 
   const createSession = useMutation({
-    mutationFn: (data: SessionPayload) => attendanceService.createSession(data),
+    mutationFn: (data: SessionPayload & { club_id?: number | null }) =>
+      attendanceService.createSession(data),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["attendanceSessions"] }),
   });

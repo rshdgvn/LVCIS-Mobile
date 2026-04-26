@@ -3,9 +3,9 @@ import { ClubMemberDashboard } from "@/src/components/dashboard/ClubMemberDashbo
 import { SystemOverviewDashboard } from "@/src/components/dashboard/SystemOverviewDashboard";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useClub } from "@/src/contexts/ClubContext";
-import { useCanManageClub } from "@/src/hooks/useCanManageClub"; // Adjust path if needed
+import { useCanManageClub } from "@/src/hooks/useCanManageClub";
 import { useIsAdmin } from "@/src/hooks/useIsAdmin";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -59,27 +59,35 @@ export const DashboardScreen = ({ onProfile }: Props) => {
 
     if (isGeneralView && !isAdmin) {
       return (
-        <View className="px-6 py-12 items-center">
-          <View className="w-20 h-20 rounded-full bg-slate-100 dark:bg-dark-card items-center justify-center mb-4 border border-slate-200 dark:border-dark-border">
-            <Ionicons name="folder-open-outline" size={36} color="#94a3b8" />
+        <View className="flex-1 items-center justify-center px-6 py-16">
+          <View className="w-20 h-20 bg-primary/10 dark:bg-dark-primary/10 rounded-full items-center justify-center mb-4">
+            <MaterialCommunityIcons
+              name="home-outline"
+              size={36}
+              color="#2563EB"
+            />
           </View>
-          <Text className="text-slate-500 dark:text-dark-muted-fg text-base text-center font-medium">
-            You are not assigned to any clubs yet.
+          <Text className="text-xl font-bold text-foreground dark:text-dark-fg mb-2">
+            No Club Selected
+          </Text>
+          <Text className="text-sm text-center text-muted-fg dark:text-dark-muted-fg">
+            {clubs.length === 0
+              ? "You are not part of any clubs yet."
+              : "You need to join a club to access your dashboard."}
           </Text>
         </View>
       );
     }
 
     if (activeClubId && canManageClub(activeClubId)) {
-      return (
-        <ClubManagerDashboard
-          role={displayRole}
-          clubName={activeClub?.name || "Club"}
-        />
-      );
+      return <ClubManagerDashboard clubId={activeClubId} />;
     }
 
-    return <ClubMemberDashboard clubName={activeClub?.name || "Club"} />;
+    if (activeClubId) {
+      return <ClubMemberDashboard clubId={activeClubId} />;
+    }
+
+    return null;
   };
 
   return (
@@ -100,7 +108,11 @@ export const DashboardScreen = ({ onProfile }: Props) => {
                 style={{ width: "100%", height: "100%" }}
               />
             ) : (
-              <Ionicons name="person" size={20} color="#3b82f6" />
+              <MaterialCommunityIcons
+                name="account"
+                size={20}
+                color="#3b82f6"
+              />
             )}
           </TouchableOpacity>
           <View>
@@ -121,7 +133,7 @@ export const DashboardScreen = ({ onProfile }: Props) => {
           >
             <View className="w-14 h-14 rounded-2xl bg-primary/10 items-center justify-center mr-4 overflow-hidden">
               {isGeneralView ? (
-                <Ionicons
+                <MaterialCommunityIcons
                   name={isAdmin ? "grid" : "alert-circle"}
                   size={26}
                   color="#3b82f6"
@@ -132,7 +144,11 @@ export const DashboardScreen = ({ onProfile }: Props) => {
                   style={{ width: "100%", height: "100%" }}
                 />
               ) : (
-                <Ionicons name="people" size={26} color="#3b82f6" />
+                <MaterialCommunityIcons
+                  name="account-group"
+                  size={26}
+                  color="#3b82f6"
+                />
               )}
             </View>
             <View className="flex-1 justify-center">
@@ -149,7 +165,11 @@ export const DashboardScreen = ({ onProfile }: Props) => {
               </Text>
             </View>
             <View className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 items-center justify-center border border-slate-100 dark:border-slate-700">
-              <Ionicons name="swap-vertical" size={20} color="#64748b" />
+              <MaterialCommunityIcons
+                name="swap-vertical"
+                size={20}
+                color="#64748b"
+              />
             </View>
           </TouchableOpacity>
         </View>
@@ -206,7 +226,7 @@ export const DashboardScreen = ({ onProfile }: Props) => {
                     <View
                       className={`w-12 h-12 rounded-xl items-center justify-center mr-4 ${isGeneralView ? "bg-blue-100" : "bg-white border border-slate-200"}`}
                     >
-                      <Ionicons
+                      <MaterialCommunityIcons
                         name="grid"
                         size={22}
                         color={isGeneralView ? "#2563EB" : "#64748b"}
@@ -223,21 +243,14 @@ export const DashboardScreen = ({ onProfile }: Props) => {
                       </Text>
                     </View>
                     {isGeneralView && (
-                      <Ionicons
-                        name="checkmark-circle"
+                      <MaterialCommunityIcons
+                        name="check-circle"
                         size={26}
                         color="#3b82f6"
                       />
                     )}
                   </TouchableOpacity>
                 ) : null
-              }
-              ListEmptyComponent={
-                <View className="py-8 items-center">
-                  <Text className="text-slate-500 dark:text-dark-muted-fg text-sm text-center font-medium">
-                    You don't have any clubs to switch to.
-                  </Text>
-                </View>
               }
               renderItem={({ item }) => {
                 const isSelected = item.id === activeClubId;
@@ -264,7 +277,11 @@ export const DashboardScreen = ({ onProfile }: Props) => {
                           style={{ width: "100%", height: "100%" }}
                         />
                       ) : (
-                        <Ionicons name="people" size={22} color="#64748b" />
+                        <MaterialCommunityIcons
+                          name="account-group"
+                          size={22}
+                          color="#64748b"
+                        />
                       )}
                     </View>
                     <View className="flex-1 pr-2">
@@ -279,8 +296,8 @@ export const DashboardScreen = ({ onProfile }: Props) => {
                       </Text>
                     </View>
                     {isSelected && (
-                      <Ionicons
-                        name="checkmark-circle"
+                      <MaterialCommunityIcons
+                        name="check-circle"
                         size={26}
                         color="#3b82f6"
                       />

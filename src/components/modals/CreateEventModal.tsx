@@ -1,4 +1,3 @@
-import { useClub } from "@/src/contexts/ClubContext";
 import { useEventMutations } from "@/src/hooks/useEvents";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -21,11 +20,11 @@ import Toast from "react-native-toast-message";
 interface Props {
   isVisible: boolean;
   onClose: () => void;
+  clubId: number | null; // Added clubId prop to handle general vs specific
 }
 
-export const CreateEventModal = ({ isVisible, onClose }: Props) => {
+export const CreateEventModal = ({ isVisible, onClose, clubId }: Props) => {
   const { createEvent, isCreating } = useEventMutations();
-  const { activeClubId } = useClub();
 
   const [title, setTitle] = useState("");
   const [venue, setVenue] = useState("");
@@ -100,7 +99,11 @@ export const CreateEventModal = ({ isVisible, onClose }: Props) => {
       } as any);
     }
 
-    formData.append("club_id", activeClubId ? activeClubId.toString() : "");
+    // Only append club_id if it exists (allows General Events to be null)
+    if (clubId) {
+      formData.append("club_id", clubId.toString());
+    }
+
     formData.append("purpose", "General Event");
     formData.append("status", "upcoming");
     formData.append("organizer", "Admin");
@@ -110,7 +113,7 @@ export const CreateEventModal = ({ isVisible, onClose }: Props) => {
     formData.append("duration", "2 hours");
 
     try {
-      await createEvent(formData);
+      await createEvent.mutateAsync(formData); // Using mutateAsync properly here
       Toast.show({ type: "success", text1: "Event created successfully!" });
       handleClose();
     } catch (error) {

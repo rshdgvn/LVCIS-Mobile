@@ -8,17 +8,18 @@ import {
 } from "../types/attendance";
 
 export const attendanceService = {
-  getSessions: async (clubId: number) => {
-    const response = await api.get<any>("/attendance-sessions", {
-      params: { club_id: clubId },
-    });
+  getSessions: async (clubId: number | null) => {
+    const params: any = {};
+    if (clubId) params.club_id = clubId;
+
+    const response = await api.get<any>("/attendance-sessions", { params });
     return {
       sessions: response.data?.sessions || [],
       analytics: response.data?.analytics || null,
     };
   },
 
-  createSession: async (data: SessionPayload) => {
+  createSession: async (data: SessionPayload & { club_id?: number | null }) => {
     const response = await api.post<{
       message: string;
       session: AttendanceSession;
@@ -71,8 +72,7 @@ export const attendanceService = {
     const response = await api.get<{
       attendances: Attendance[];
       stats: AttendanceStats;
-      user: any;
-    }>(`/members/${userId}/club/${clubId}/attendances`);
+    }>(`/users/${userId}/clubs/${clubId}/attendance`);
     return response.data;
   },
 };

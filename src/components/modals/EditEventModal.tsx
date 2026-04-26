@@ -108,7 +108,6 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     });
 
   const handleClose = () => {
-    // Reset to original event values
     setTitle(event.title);
     setVenue(event.detail?.venue || "");
     setDescription(event.description || "");
@@ -117,23 +116,12 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     setTimeObj(parseTimeStr(event.detail?.event_time?.substring(0, 5) || ""));
     onClose();
   };
-
   const handleUpdate = async () => {
     if (!event?.id) {
       Toast.show({
         type: "error",
         text1: "Error",
         text2: "Event ID is missing.",
-      });
-      return;
-    }
-
-    const clubId = activeClubId ?? event.club_id;
-    if (!clubId) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Club ID is missing.",
       });
       return;
     }
@@ -147,7 +135,6 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     );
     formData.append("venue", venue);
     formData.append("description", description || "N/A");
-    formData.append("club_id", clubId.toString());
     formData.append("purpose", event.purpose || "General Event");
     formData.append("status", event.status || "upcoming");
     formData.append("organizer", event.detail?.organizer || "Admin");
@@ -158,6 +145,10 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     );
     formData.append("event_mode", event.detail?.event_mode || "face_to_face");
     formData.append("duration", event.detail?.duration || "2 hours");
+
+    if (event.club_id) {
+      formData.append("club_id", event.club_id.toString());
+    }
 
     if (coverImage && !coverImage.startsWith("http")) {
       const uriParts = coverImage.split(".");
@@ -170,7 +161,7 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     }
 
     try {
-      await updateEvent({ id: event.id, data: formData });
+      await updateEvent.mutateAsync({ id: event.id, data: formData });
       Toast.show({ type: "success", text1: "Event updated successfully!" });
       handleClose();
     } catch (error: any) {
