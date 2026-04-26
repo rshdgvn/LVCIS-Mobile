@@ -108,7 +108,7 @@ export default function TabsLayout() {
           screenOptions={{
             headerShown: false,
             tabBarStyle: { display: "none" },
-            animation: "shift",
+            animation: "none",
           }}
         >
           <Tabs.Screen name="dashboard" />

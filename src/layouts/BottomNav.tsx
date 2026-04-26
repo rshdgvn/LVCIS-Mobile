@@ -1,5 +1,5 @@
 import { Tab } from "@/src/types/tab";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { CalendarDays, CheckSquare, Home, Users } from "lucide-react-native";
 import React from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 
@@ -8,60 +8,50 @@ interface BottomNavProps {
   onTabPress: (tab: Tab) => void;
 }
 
+const ACTIVE_COLOR = "#3b82f6";
+const INACTIVE_COLOR = "#64748b";
+
 export const BottomNav: React.FC<BottomNavProps> = ({
   activeTab,
   onTabPress,
 }) => {
-  const tabs: { name: Tab; icon: any; activeIcon: any }[] = [
-    { name: "Home", icon: "home-outline", activeIcon: "home" },
-    {
-      name: "Attendance",
-      icon: "clipboard-check-outline",
-      activeIcon: "clipboard-check",
-    },
-    {
-      name: "Clubs",
-      icon: "account-group-outline",
-      activeIcon: "account-group",
-    },
-    {
-      name: "Events",
-      icon: "calendar-blank-outline",
-      activeIcon: "calendar-blank",
-    },
+  const tabs: { name: Tab; Icon: any; ActiveIcon?: any }[] = [
+    { name: "Home", Icon: Home, ActiveIcon: Home },
+    { name: "Attendance", Icon: CheckSquare },
+    { name: "Clubs", Icon: Users },
+    { name: "Events", Icon: CalendarDays },
   ];
 
-  // Removed pt-4 from the container so the active line sits flush against the top border
   const containerPadding = Platform.OS === "ios" ? "pb-8" : "pb-2";
 
   return (
     <View
-      className={`flex-row bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border px-4 justify-between items-center ${containerPadding}`}
+      className={`flex-row bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border px-2 justify-between items-center ${containerPadding}`}
     >
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.name;
-
-        const iconColor = isActive ? "#2563EB" : "#9CA3AF";
-        const textClass = isActive
-          ? "text-[#2563EB] dark:text-blue-400 font-bold"
-          : "text-[#9CA3AF] dark:text-dark-muted-fg font-medium";
+      {tabs.map(({ name, Icon }) => {
+        const isActive = activeTab === name;
+        const color = isActive ? ACTIVE_COLOR : INACTIVE_COLOR;
 
         return (
           <Pressable
-            key={tab.name}
+            key={name}
             className="flex-1 items-center justify-center pt-2 relative"
-            onPress={() => onTabPress(tab.name)}
+            onPress={() => onTabPress(name)}
           >
             {isActive && (
-              <View className="absolute top-0 left-[20%] right-[20%] h-[2px] bg-primary rounded-b-md" />
+              <View className="absolute top-0 left-[20%] right-[20%] h-[2px] bg-blue-500 rounded-b-md" />
             )}
+            <Icon size={22} color={color} strokeWidth={isActive ? 2.5 : 1.75} />
 
-            <MaterialCommunityIcons
-              name={isActive ? tab.activeIcon : tab.icon}
-              size={30}
-              color={iconColor}
-            />
-            <Text className={`text-xs ${textClass}`}>{tab.name}</Text>
+            <Text
+              className={`text-[10px] mt-1 ${
+                isActive
+                  ? "text-blue-500 dark:text-blue-400 font-bold"
+                  : "text-slate-500 dark:text-dark-muted-fg font-medium"
+              }`}
+            >
+              {name}
+            </Text>
           </Pressable>
         );
       })}

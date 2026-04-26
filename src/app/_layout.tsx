@@ -1,7 +1,10 @@
 import "@/global.css";
+import { api } from "@/src/api/api";
 import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
 import { ClubProvider } from "@/src/contexts/ClubContext";
+import { registerForPushNotificationsAsync } from "@/src/helpers/pushNotifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as Notifications from "expo-notifications";
 import {
   Stack,
   useRootNavigationState,
@@ -15,13 +18,80 @@ import { toastConfig } from "../components/common/ToastConfig";
 
 const queryClient = new QueryClient();
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
 function InitialLayout() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const segments = useSegments();
-
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
 
+  // 1. Fetch and send the push token to Laravel when the user is logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log("User is authenticated. Attempting to get push token...");
+      registerForPushNotificationsAsync().then((token) => {
+        if (token) {
+          console.log("🚀 Sending Push Token to Backend API...");
+
+          api
+            .post("/user/push-token", { push_token: token })
+            .then((response) => {
+              console.log(
+                "✅ Backend successfully saved the push token!",
+                response.data,
+              );
+            })
+            .catch((err) => {
+              console.error(
+                "❌ Backend rejected the push token!",
+                err?.response?.data || err.message,
+              );
+            });
+        } else {
+          console.log("⚠️ No token returned from helper function.");
+        }
+      });
+    }
+  }, [isAuthenticated, user]);
+
+  // 2. Handle incoming notifications and screen routing
+  useEffect(() => {
+    const foregroundSubscription =
+      Notifications.addNotificationReceivedListener((notification) => {
+        console.log(
+          "🔔 [FOREGROUND] Notification received while app is open:",
+          notification.request.content,
+        );
+      });
+
+    const responseSubscription =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("👉 [TAPPED] User tapped the notification!");
+        const data = response.notification.request.content.data;
+        console.log("Payload data attached to notification:", data);
+
+        if (data?.url) {
+          console.log("Navigating to URL:", data.url);
+          router.push(data.url as any);
+        } else {
+          console.log("No URL found in the payload data.");
+        }
+      });
+
+    return () => {
+      foregroundSubscription.remove();
+      responseSubscription.remove();
+    };
+  }, [router]);
+
+  // 3. Handle Authentication Routing rules
   useEffect(() => {
     if (!rootNavigationState?.key || isLoading) return;
 

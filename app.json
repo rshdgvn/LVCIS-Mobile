@@ -5,6 +5,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
+    "notification": {
+      "icon": "./assets/lvcc-logo.png",
+      "color": "#3E74FF"
+    },
     "name": "LVCIS-Mobile",
     "slug": "LVCIS-Mobile",
     "version": "1.0.0",
