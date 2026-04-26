@@ -62,7 +62,7 @@ function InitialLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "transparent" },
-        animation: "none",
+        animation: "simple_push",
       }}
     />
   );

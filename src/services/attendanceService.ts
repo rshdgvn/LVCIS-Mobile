@@ -72,7 +72,7 @@ export const attendanceService = {
     const response = await api.get<{
       attendances: Attendance[];
       stats: AttendanceStats;
-    }>(`/users/${userId}/clubs/${clubId}/attendance`);
+    }>(`/members/${userId}/club/${clubId}/attendances`);
     return response.data;
   },
 };
