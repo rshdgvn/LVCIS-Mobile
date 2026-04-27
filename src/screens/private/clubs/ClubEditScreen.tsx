@@ -17,6 +17,7 @@ import {
   Platform,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -101,8 +102,10 @@ export default function ClubEditScreen({
         </View>
 
         <ScrollView
+          className="flex-1"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
         >
           <View className="items-center mt-6 mb-8">
             <View className="relative">
@@ -143,20 +146,25 @@ export default function ClubEditScreen({
               placeholder="Select club category"
             />
 
-            <InputField
-              label="Club Description"
-              placeholder="Tell us about the club..."
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              numberOfLines={5}
-              containerStyles="h-32"
-              textAlignVertical="top"
-            />
+            <View className="mb-8">
+              <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
+                Club Description
+              </Text>
+              <TextInput
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Describe the mission, vision, and core activities of the club..."
+                placeholderTextColor="#9ca3af"
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg min-h-[100px]"
+              />
+            </View>
           </View>
         </ScrollView>
 
-        <View className="px-5 py-4 border-t border-border dark:border-dark-border">
+        <View className="px-5 py-4 border-t border-border dark:border-dark-border bg-background dark:bg-dark-bg">
           <TouchableOpacity
             onPress={handleSave}
             disabled={isUpdating}

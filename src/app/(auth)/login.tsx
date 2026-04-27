@@ -8,9 +8,10 @@ import { authService } from "@/src/services/authService";
 import { LoginPayload } from "@/src/types/auth";
 import { AuthScreen } from "@/src/types/navigation";
 import { useMutation } from "@tanstack/react-query";
-import React, { useState } from "react";
+import * as Linking from "expo-linking";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
-import Toast from "react-native-toast-message"; // <-- Import Toast
+import Toast from "react-native-toast-message";
 
 const Login = () => {
   const router = useThrottledRouter();
@@ -20,11 +21,31 @@ const Login = () => {
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [errors, setErrors] = useState<LoginErrors>({});
 
+  useEffect(() => {
+    const handleUrl = ({ url }: { url: string }) => {
+      const parsed = Linking.parse(url);
+      if (parsed.queryParams?.verified === "true") {
+        Toast.show({
+          type: "success",
+          text1: "Email verified! You can now log in.",
+        });
+      }
+    };
+
+    const sub = Linking.addEventListener("url", handleUrl);
+
+    Linking.getInitialURL().then((url) => {
+      if (url) handleUrl({ url });
+    });
+
+    return () => sub.remove();
+  }, []);
+
   const mutation = useMutation({
     mutationFn: (data: LoginPayload) => authService.login(data),
     onSuccess: async (data) => {
       setErrors({});
-      
+
       Toast.show({
         type: "success",
         text1: "Successfully logged in!",
@@ -75,7 +96,7 @@ const Login = () => {
       try {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         const user = await authService.getUser();
-        
+
         Toast.show({
           type: "success",
           text1: "Successfully logged in with Google!",
