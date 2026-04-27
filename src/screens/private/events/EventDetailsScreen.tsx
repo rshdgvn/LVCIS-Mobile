@@ -186,14 +186,19 @@ export default function EventDetailsScreen({
             </View>
           )}
         </View>
-        <TouchableOpacity
-          onPress={() => setIsEditModalVisible(true)}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-        >
-          <Text className="text-primary dark:text-dark-primary font-medium">
-            Edit
-          </Text>
-        </TouchableOpacity>
+
+        {canManage ? (
+          <TouchableOpacity
+            onPress={() => setIsEditModalVisible(true)}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <Text className="text-primary dark:text-dark-primary font-medium">
+              Edit
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 40 }} /> /* Placeholder to keep header centered */
+        )}
       </View>
 
       <View className="mt-4 px-4">
@@ -378,36 +383,38 @@ export default function EventDetailsScreen({
           ))}
       </ScrollView>
 
-      <View
-        className="px-6 pt-4 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border"
-        style={{ paddingBottom: Math.max(insets.bottom, 24) }}
-      >
-        {canManage && !isGeneralEvent && (
-          <TouchableOpacity
-            onPress={() => {
-              setEditingTask(null);
-              setIsTaskModalVisible(true);
-            }}
-            className="w-full py-4 rounded-2xl border-2 border-dashed border-border dark:border-dark-border flex-row items-center justify-center gap-2 mb-3"
-          >
-            <Ionicons name="add" size={20} color="#9ca3af" />
-            <Text className="text-muted-fg font-medium">Add Task</Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          onPress={() => setIsEventDeleteDialogOpen(true)}
-          disabled={isDeleting}
-          className={`w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 ${
-            isDeleting ? "opacity-50" : "opacity-100"
-          }`}
+      {canManage && (
+        <View
+          className="px-6 pt-4 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border"
+          style={{ paddingBottom: Math.max(insets.bottom, 24) }}
         >
-          <Ionicons name="trash" size={20} color="#ef4444" />
-          <Text className="text-red-500 font-bold text-base">
-            {isDeleting ? "Deleting..." : "Delete Event"}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {!isGeneralEvent && (
+            <TouchableOpacity
+              onPress={() => {
+                setEditingTask(null);
+                setIsTaskModalVisible(true);
+              }}
+              className="w-full py-4 rounded-2xl border-2 border-dashed border-border dark:border-dark-border flex-row items-center justify-center gap-2 mb-3"
+            >
+              <Ionicons name="add" size={20} color="#9ca3af" />
+              <Text className="text-muted-fg font-medium">Add Task</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            onPress={() => setIsEventDeleteDialogOpen(true)}
+            disabled={isDeleting}
+            className={`w-full py-4 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 flex-row items-center justify-center gap-2 ${
+              isDeleting ? "opacity-50" : "opacity-100"
+            }`}
+          >
+            <Ionicons name="trash" size={20} color="#ef4444" />
+            <Text className="text-red-500 font-bold text-base">
+              {isDeleting ? "Deleting..." : "Delete Event"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <Modal
         visible={!!statusMenuTask}
