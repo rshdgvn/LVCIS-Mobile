@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { User } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 
 type ProfileErrors = {
@@ -168,15 +169,16 @@ const EditProfileScreen = ({ onSave }: { onSave?: () => void }) => {
       >
         <View className="items-center mb-6">
           <View className="relative">
+            {user?.avatar ? (
             <Image
-              source={{
-                uri:
-                  selectedImage ||
-                  user?.avatar ||
-                  "https://via.placeholder.com/150",
-              }}
+              source={{ uri: user.avatar }}
               className="w-32 h-32 rounded-full"
             />
+          ) : (
+            <View className="w-32 h-32 rounded-full bg-secondary dark:bg-dark-secondary items-center justify-center">
+              <User size={64} color="#9CA3AF" />
+            </View>
+          )}
             <TouchableOpacity
               onPress={pickImage}
               className="absolute bottom-0 right-0 bg-foreground dark:bg-dark-fg w-8 h-8 rounded-full items-center justify-center border-2 border-background dark:border-dark-bg z-10"

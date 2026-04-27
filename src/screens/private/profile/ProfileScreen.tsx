@@ -43,10 +43,17 @@ const ProfileScreen = ({
       >
         <View className="items-center mt-4 mb-8">
           <View className="relative">
-            <Image
-              source={{ uri: user?.avatar }}
-              className="w-32 h-32 rounded-full"
-            />
+            {/* Fallback Image Handler */}
+            {user?.avatar ? (
+              <Image
+                source={{ uri: user.avatar }}
+                className="w-32 h-32 rounded-full"
+              />
+            ) : (
+              <View className="w-32 h-32 rounded-full bg-secondary dark:bg-dark-secondary items-center justify-center">
+                <User size={64} color="#9CA3AF" />
+              </View>
+            )}
           </View>
           <Text className="text-2xl font-bold text-foreground dark:text-dark-fg mt-4">
             {user?.first_name} {user?.last_name}
