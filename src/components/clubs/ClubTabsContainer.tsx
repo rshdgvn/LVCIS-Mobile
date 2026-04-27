@@ -2,19 +2,18 @@ import React, { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { ClubDetailsTab } from "./ClubDetailsTab";
 import { ClubMembersTab } from "./ClubMembersTab";
-import { ClubOfficersTab } from "./ClubOfficersTab";
 
 interface Props {
   clubId: number;
   clubDescription?: string | null;
 }
 
-type TabType = "Details" | "Members" | "Officer" | "Applications";
+type TabType = "Details" | "Members"  | "Applications";
 
 export const ClubTabsContainer = ({ clubId, clubDescription }: Props) => {
-  const [activeTab, setActiveTab] = useState<TabType>("Officer");
+  const [activeTab, setActiveTab] = useState<TabType>("Members");
 
-  const tabs: TabType[] = ["Details", "Members", "Officer", "Applications"];
+  const tabs: TabType[] = ["Details", "Members",  "Applications"];
 
   return (
     <View className="flex-1 mt-6">
@@ -51,8 +50,6 @@ export const ClubTabsContainer = ({ clubId, clubDescription }: Props) => {
         )}
 
         {activeTab === "Members" && <ClubMembersTab clubId={clubId} />}
-
-        {activeTab === "Officer" && <ClubOfficersTab clubId={clubId} />}
 
         {activeTab === "Applications" && (
           <View className="py-10 items-center border border-dashed border-border dark:border-dark-border rounded-xl mt-2">

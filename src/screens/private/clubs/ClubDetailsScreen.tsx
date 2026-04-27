@@ -1,7 +1,6 @@
 import { ClubApplicationsTab } from "@/src/components/clubs/ClubApplicationsTab";
 import { ClubDetailsTab } from "@/src/components/clubs/ClubDetailsTab";
 import { ClubMembersTab } from "@/src/components/clubs/ClubMembersTab";
-import { ClubOfficersTab } from "@/src/components/clubs/ClubOfficersTab";
 import { BackButton } from "@/src/components/common/BackButton";
 import { AddMemberModal } from "@/src/components/modals/AddMemberModal";
 import { useCanManageClub } from "@/src/hooks/useCanManageClub";
@@ -29,7 +28,7 @@ interface Props {
   onEdit: (clubId: number) => void;
 }
 
-type TabType = "details" | "officer" | "members" | "applications";
+type TabType = "details" | "members" | "applications";
 
 export default function ClubDetailsScreen({
   club,
@@ -146,51 +145,60 @@ export default function ClubDetailsScreen({
           )}
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="flex-row mt-8 px-5 border-b border-border dark:border-dark-border"
-        >
+        <View className="flex-row mt-8 border-b border-border dark:border-dark-border">
           <TouchableOpacity
-            className={`pb-3 mr-6 ${activeTab === "details" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
+            className={`flex-1 pb-3 items-center ${
+              activeTab === "details"
+                ? "border-b-2 border-primary dark:border-dark-primary"
+                : ""
+            }`}
             onPress={() => setActiveTab("details")}
           >
             <Text
-              className={`font-semibold ${activeTab === "details" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
+              className={`font-semibold ${
+                activeTab === "details"
+                  ? "text-foreground dark:text-dark-fg"
+                  : "text-muted-fg dark:text-dark-muted-fg"
+              }`}
             >
               Details
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            className={`pb-3 mr-6 ${activeTab === "members" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
+            className={`flex-1 pb-3 items-center ${
+              activeTab === "members"
+                ? "border-b-2 border-primary dark:border-dark-primary"
+                : ""
+            }`}
             onPress={() => setActiveTab("members")}
           >
             <Text
-              className={`font-semibold ${activeTab === "members" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
+              className={`font-semibold ${
+                activeTab === "members"
+                  ? "text-foreground dark:text-dark-fg"
+                  : "text-muted-fg dark:text-dark-muted-fg"
+              }`}
             >
               Members
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            className={`pb-3 mr-6 ${activeTab === "officer" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
-            onPress={() => setActiveTab("officer")}
-          >
-            <Text
-              className={`font-semibold ${activeTab === "officer" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
-            >
-              Officer
-            </Text>
-          </TouchableOpacity>
-
           {hasManageAccess && (
             <TouchableOpacity
-              className={`pb-3 pr-5 flex-row items-center ${activeTab === "applications" ? "border-b-2 border-primary dark:border-dark-primary" : ""}`}
+              className={`flex-1 pb-3 items-center flex-row justify-center ${
+                activeTab === "applications"
+                  ? "border-b-2 border-primary dark:border-dark-primary"
+                  : ""
+              }`}
               onPress={() => setActiveTab("applications")}
             >
               <Text
-                className={`font-semibold ${activeTab === "applications" ? "text-foreground dark:text-dark-fg" : "text-muted-fg dark:text-dark-muted-fg"}`}
+                className={`font-semibold ${
+                  activeTab === "applications"
+                    ? "text-foreground dark:text-dark-fg"
+                    : "text-muted-fg dark:text-dark-muted-fg"
+                }`}
               >
                 Applications
               </Text>
@@ -200,14 +208,13 @@ export default function ClubDetailsScreen({
               )}
             </TouchableOpacity>
           )}
-        </ScrollView>
+        </View>
 
         <View className="px-5 mt-4 mb-10">
           {activeTab === "details" && (
             <ClubDetailsTab description={club.description} />
           )}
           {activeTab === "members" && <ClubMembersTab clubId={club.id} />}
-          {activeTab === "officer" && <ClubOfficersTab clubId={club.id} />}
           {activeTab === "applications" && hasManageAccess && (
             <ClubApplicationsTab clubId={club.id} />
           )}
