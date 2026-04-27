@@ -65,6 +65,10 @@ export default function AttendanceScreen({
   );
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // New state for the modern scroll indicator
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+
   const canManage = (activeClubId && canManageClub(activeClubId)) || isAdmin;
 
   const filteredSessions = sessions.filter((s) =>
@@ -228,66 +232,88 @@ export default function AttendanceScreen({
         </View>
 
         {(activeClubId || isAdmin) && analytics && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            className="mb-5"
-            contentContainerStyle={{ paddingRight: 20, gap: 12 }}
-          >
-            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-              <View className="flex-row items-center mb-4">
-                <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center mr-3">
-                  <MaterialCommunityIcons
-                    name="account-group"
-                    size={24}
-                    color="#3b82f6"
-                  />
+          <View className="mb-5">
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              onScroll={(e) => {
+                const x = e.nativeEvent.contentOffset.x;
+                setActiveCardIndex(Math.round(x / 192));
+              }}
+              scrollEventThrottle={16}
+              snapToInterval={192}
+              decelerationRate="fast"
+              className="mb-3"
+              contentContainerStyle={{ paddingRight: 20, gap: 12 }}
+            >
+              <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+                <View className="flex-row items-center mb-4">
+                  <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center mr-3">
+                    <MaterialCommunityIcons
+                      name="account-group"
+                      size={24}
+                      color="#3b82f6"
+                    />
+                  </View>
+                  <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                    Total Members
+                  </Text>
                 </View>
-                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-                  Total Members
+                <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                  {analytics?.total_members || 0}
                 </Text>
               </View>
-              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-                {analytics?.total_members || 0}
-              </Text>
-            </View>
 
-            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-              <View className="flex-row items-center mb-4">
-                <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center mr-3">
-                  <MaterialCommunityIcons
-                    name="check-circle"
-                    size={24}
-                    color="#22c55e"
-                  />
+              <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+                <View className="flex-row items-center mb-4">
+                  <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center mr-3">
+                    <MaterialCommunityIcons
+                      name="check-circle"
+                      size={24}
+                      color="#22c55e"
+                    />
+                  </View>
+                  <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                    Active Members
+                  </Text>
                 </View>
-                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-                  Active Members
+                <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                  {analytics?.active_members || 0}
                 </Text>
               </View>
-              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-                {analytics?.active_members || 0}
-              </Text>
-            </View>
 
-            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-              <View className="flex-row items-center mb-4">
-                <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center mr-3">
-                  <MaterialCommunityIcons
-                    name="close-circle"
-                    size={24}
-                    color="#ef4444"
-                  />
+              <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+                <View className="flex-row items-center mb-4">
+                  <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center mr-3">
+                    <MaterialCommunityIcons
+                      name="close-circle"
+                      size={24}
+                      color="#ef4444"
+                    />
+                  </View>
+                  <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                    Inactive Members
+                  </Text>
                 </View>
-                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-                  Inactive Members
+                <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                  {analytics?.inactive_members || 0}
                 </Text>
               </View>
-              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-                {analytics?.inactive_members || 0}
-              </Text>
+            </ScrollView>
+
+            <View className="flex-row justify-center items-center gap-1.5">
+              {[0, 1].map((index) => (
+                <View
+                  key={index}
+                  className={`h-1.5 rounded-full ${
+                    activeCardIndex === index
+                      ? "w-5 bg-primary dark:bg-dark-primary"
+                      : "w-1.5 bg-border dark:bg-dark-border"
+                  }`}
+                />
+              ))}
             </View>
-          </ScrollView>
+          </View>
         )}
 
         {(activeClubId || isAdmin) && (
@@ -306,13 +332,6 @@ export default function AttendanceScreen({
                 className="flex-1 ml-2 text-base text-foreground dark:text-dark-fg"
               />
             </View>
-            <TouchableOpacity className="w-12 h-12 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-xl items-center justify-center">
-              <MaterialCommunityIcons
-                name="filter-outline"
-                size={20}
-                color="#6b7280"
-              />
-            </TouchableOpacity>
           </View>
         )}
       </View>
