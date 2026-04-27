@@ -7,8 +7,6 @@ export const getFilterLabel = (viewFilter: ClubViewFilter): string => {
       return "My Clubs";
     case "pending":
       return "Pending";
-    case "other":
-      return "Other Clubs";
     default:
       return "All Clubs";
   }
@@ -21,7 +19,6 @@ export const showViewFilterAlert = (
     { text: "All Clubs", onPress: () => onSelectViewFilter("all") },
     { text: "My Clubs", onPress: () => onSelectViewFilter("my") },
     { text: "Pending Requests", onPress: () => onSelectViewFilter("pending") },
-    { text: "Other Clubs", onPress: () => onSelectViewFilter("other") },
     { text: "Cancel", style: "cancel" },
   ]);
 };
