@@ -32,57 +32,50 @@ function InitialLayout() {
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
 
-  // 1. Fetch and send the push token to Laravel when the user is logged in
   useEffect(() => {
     if (isAuthenticated && user) {
       console.log("User is authenticated. Attempting to get push token...");
       registerForPushNotificationsAsync().then((token) => {
         if (token) {
-          console.log("🚀 Sending Push Token to Backend API...");
+          console.log("Sending Push Token to Backend API...");
 
           api
             .post("/user/push-token", { push_token: token })
             .then((response) => {
               console.log(
-                "✅ Backend successfully saved the push token!",
+                "Backend successfully saved the push token!",
                 response.data,
               );
             })
             .catch((err) => {
               console.error(
-                "❌ Backend rejected the push token!",
+                "Backend rejected the push token!",
                 err?.response?.data || err.message,
               );
             });
         } else {
-          console.log("⚠️ No token returned from helper function.");
+          console.log("No token returned from helper function.");
         }
       });
     }
   }, [isAuthenticated, user]);
 
-  // 2. Handle incoming notifications and screen routing
   useEffect(() => {
     const foregroundSubscription =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log(
-          "🔔 [FOREGROUND] Notification received while app is open:",
+          "[FOREGROUND] Notification received while app is open:",
           notification.request.content,
         );
       });
 
     const responseSubscription =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("👉 [TAPPED] User tapped the notification!");
+        console.log("[TAPPED] User tapped the notification!");
         const data = response.notification.request.content.data;
         console.log("Payload data attached to notification:", data);
 
-        if (data?.url) {
-          console.log("Navigating to URL:", data.url);
-          router.push(data.url as any);
-        } else {
-          console.log("No URL found in the payload data.");
-        }
+        router.push("/profile/notifications" as any);
       });
 
     return () => {
