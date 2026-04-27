@@ -66,10 +66,8 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
   const { clubs, activeClubId, isOfficer } = useClub();
   const isAdmin = useIsAdmin();
 
-  // Determine allowed clubs based on roles
   const availableClubs = isAdmin ? clubs : clubs.filter((c) => isOfficer(c.id));
 
-  // Determine initial club ID using event data first
   const getInitialClubId = () => {
     if (event.club_id !== undefined && event.club_id !== null)
       return event.club_id;
@@ -88,12 +86,12 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     getInitialClubId(),
   );
 
-  // Main Modal Animation States
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [showModal, setShowModal] = useState(isVisible);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Inner Club Modal Animation States
   const [clubModalTrigger, setClubModalTrigger] = useState(false);
   const [renderClubModal, setRenderClubModal] = useState(false);
   const clubSlideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -108,12 +106,6 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
-  const isFormValid =
-    title.trim() !== "" &&
-    venue.trim() !== "" &&
-    (isAdmin || selectedClubId !== null);
-
-  // --- Main Modal Animations ---
   useEffect(() => {
     if (isVisible) {
       setShowModal(true);
@@ -147,7 +139,6 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     }
   }, [isVisible]);
 
-  // --- Inner Club Modal Animations ---
   useEffect(() => {
     if (clubModalTrigger) {
       setRenderClubModal(true);
@@ -190,8 +181,19 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
       setDateObj(parseDateStr(event.detail?.event_date || ""));
       setTimeObj(parseTimeStr(event.detail?.event_time?.substring(0, 5) || ""));
       setSelectedClubId(getInitialClubId());
+      setErrors({}); 
     }
   }, [event, isVisible, isAdmin]);
+
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -218,10 +220,23 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     setDateObj(parseDateStr(event.detail?.event_date || ""));
     setTimeObj(parseTimeStr(event.detail?.event_time?.substring(0, 5) || ""));
     setSelectedClubId(getInitialClubId());
+    setErrors({});
     onClose();
   };
 
   const handleUpdate = async () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!isAdmin && selectedClubId === null) newErrors.club = "Host club is required.";
+    if (!title.trim()) newErrors.title = "Event title is required.";
+    if (!venue.trim()) newErrors.venue = "Venue is required.";
+    if (!description.trim()) newErrors.description = "Description is required.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     if (!event?.id) {
       Toast.show({
         type: "error",
@@ -239,7 +254,7 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
       `${timeObj.getHours().toString().padStart(2, "0")}:${timeObj.getMinutes().toString().padStart(2, "0")}`,
     );
     formData.append("venue", venue);
-    formData.append("description", description || "N/A");
+    formData.append("description", description);
     formData.append("purpose", event.purpose || "General Event");
     formData.append("status", event.status || "upcoming");
     formData.append("organizer", event.detail?.organizer || "Admin");
@@ -251,7 +266,6 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     formData.append("event_mode", event.detail?.event_mode || "face_to_face");
     formData.append("duration", event.detail?.duration || "2 hours");
 
-    // Include the correctly selected club ID
     if (selectedClubId !== null) {
       formData.append("club_id", selectedClubId.toString());
     }
@@ -279,7 +293,6 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     }
   };
 
-  // --- Main Modal PanResponder ---
   const mainPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -306,7 +319,6 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
     }),
   ).current;
 
-  // --- Inner Club Modal PanResponder ---
   const clubPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -346,7 +358,6 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
       transparent
       onRequestClose={handleClose}
     >
-      {/* Independent Animated Backdrop */}
       <Animated.View
         style={{ opacity: fadeAnim }}
         className="absolute inset-0 bg-black/40"
@@ -364,7 +375,6 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
               className="flex-shrink w-full flex-col"
               onPress={(e) => e.stopPropagation()}
             >
-              {/* Main Modal Drag Handle wrapped in PanResponder */}
               <View
                 {...mainPanResponder.panHandlers}
                 className="w-full pt-4 pb-2 items-center bg-transparent"
@@ -388,7 +398,9 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
                   </Text>
                   <TouchableOpacity
                     onPress={() => setClubModalTrigger(true)}
-                    className="flex-row items-center justify-between bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl px-4 py-4"
+                    className={`flex-row items-center justify-between bg-background dark:bg-dark-bg border rounded-2xl px-4 py-4 ${
+                      errors.club ? "border-red-500" : "border-border dark:border-dark-border"
+                    }`}
                   >
                     <Text className="text-foreground dark:text-dark-fg text-sm">
                       {selectedClubId === null
@@ -398,6 +410,11 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
                     </Text>
                     <Ionicons name="chevron-down" size={16} color="#9ca3af" />
                   </TouchableOpacity>
+                  {errors.club && (
+                    <Text className="text-red-500 text-[13px] mt-1.5 ml-1">
+                      {errors.club}
+                    </Text>
+                  )}
                 </View>
 
                 {/* Cover Image */}
@@ -434,13 +451,30 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
                   <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
                     Event Title
                   </Text>
-                  <TextInput
-                    value={title}
-                    onChangeText={setTitle}
-                    placeholder="e.g. Computer Science Seminar"
-                    placeholderTextColor="#9ca3af"
-                    className="w-full px-4 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg"
-                  />
+                  <View className="relative">
+                    <TextInput
+                      value={title}
+                      onChangeText={(text) => {
+                        setTitle(text);
+                        clearError("title");
+                      }}
+                      placeholder="e.g. Computer Science Seminar"
+                      placeholderTextColor="#9ca3af"
+                      className={`w-full px-4 py-4 bg-background dark:bg-dark-bg border rounded-2xl text-foreground dark:text-dark-fg ${
+                        errors.title ? "border-red-500 pr-10" : "border-border dark:border-dark-border"
+                      }`}
+                    />
+                    {errors.title && (
+                      <View className="absolute right-3 top-4">
+                        <Ionicons name="alert-circle" size={20} color="#ef4444" />
+                      </View>
+                    )}
+                  </View>
+                  {errors.title && (
+                    <Text className="text-red-500 text-[13px] mt-1.5 ml-1">
+                      {errors.title}
+                    </Text>
+                  )}
                 </View>
 
                 {/* Date + Time row */}
@@ -521,10 +555,15 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
                   <View className="relative">
                     <TextInput
                       value={venue}
-                      onChangeText={setVenue}
+                      onChangeText={(text) => {
+                        setVenue(text);
+                        clearError("venue");
+                      }}
                       placeholder="Room 402, Science Building"
                       placeholderTextColor="#9ca3af"
-                      className="w-full pl-12 pr-4 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg"
+                      className={`w-full pl-12 py-4 bg-background dark:bg-dark-bg border rounded-2xl text-foreground dark:text-dark-fg ${
+                        errors.venue ? "border-red-500 pr-10" : "border-border dark:border-dark-border pr-4"
+                      }`}
                     />
                     <Ionicons
                       name="location-outline"
@@ -532,7 +571,17 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
                       color="#9ca3af"
                       style={{ position: "absolute", left: 16, top: 18 }}
                     />
+                    {errors.venue && (
+                      <View className="absolute right-3 top-4">
+                        <Ionicons name="alert-circle" size={20} color="#ef4444" />
+                      </View>
+                    )}
                   </View>
+                  {errors.venue && (
+                    <Text className="text-red-500 text-[13px] mt-1.5 ml-1">
+                      {errors.venue}
+                    </Text>
+                  )}
                 </View>
 
                 {/* Description */}
@@ -540,16 +589,33 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
                   <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg mb-2 ml-1">
                     Description
                   </Text>
-                  <TextInput
-                    value={description}
-                    onChangeText={setDescription}
-                    placeholder="What is this event about?"
-                    placeholderTextColor="#9ca3af"
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical="top"
-                    className="w-full px-4 py-4 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-2xl text-foreground dark:text-dark-fg h-28"
-                  />
+                  <View className="relative">
+                    <TextInput
+                      value={description}
+                      onChangeText={(text) => {
+                        setDescription(text);
+                        clearError("description");
+                      }}
+                      placeholder="What is this event about?"
+                      placeholderTextColor="#9ca3af"
+                      multiline
+                      numberOfLines={4}
+                      textAlignVertical="top"
+                      className={`w-full px-4 py-4 bg-background dark:bg-dark-bg border rounded-2xl text-foreground dark:text-dark-fg h-28 ${
+                        errors.description ? "border-red-500 pr-10" : "border-border dark:border-dark-border"
+                      }`}
+                    />
+                    {errors.description && (
+                      <View className="absolute right-3 top-3">
+                        <Ionicons name="alert-circle" size={20} color="#ef4444" />
+                      </View>
+                    )}
+                  </View>
+                  {errors.description && (
+                    <Text className="text-red-500 text-[13px] mt-1.5 ml-1">
+                      {errors.description}
+                    </Text>
+                  )}
                 </View>
               </ScrollView>
 
@@ -557,8 +623,8 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
               <View className="px-6 pb-10 pt-4 bg-background dark:bg-dark-bg ">
                 <TouchableOpacity
                   onPress={handleUpdate}
-                  disabled={!isFormValid || isUpdating}
-                  className={`w-full py-4 rounded-2xl items-center ${!isFormValid || isUpdating ? "opacity-60" : "opacity-100"} bg-primary dark:bg-dark-primary`}
+                  disabled={isUpdating}
+                  className={`w-full py-4 rounded-2xl items-center ${isUpdating ? "opacity-60" : "opacity-100"} bg-primary dark:bg-dark-primary`}
                 >
                   {isUpdating ? (
                     <ActivityIndicator color="white" />
@@ -630,6 +696,7 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
                         activeOpacity={0.7}
                         onPress={() => {
                           setSelectedClubId(item.id);
+                          clearError("club");
                           setClubModalTrigger(false);
                         }}
                         className={`flex-row items-center p-4 mb-3 rounded-2xl border ${

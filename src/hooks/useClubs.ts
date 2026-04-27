@@ -23,10 +23,6 @@ export const useFilteredClubs = (
         case "pending":
           data = await clubService.getMyPendingClubs();
           break;
-        case "other":
-          data = await clubService.getOtherClubs();
-          break;
-        case "all":
         default:
           data = await clubService.getAllClubs(category);
           return data;
