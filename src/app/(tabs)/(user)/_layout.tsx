@@ -127,7 +127,7 @@ export default function TabsLayout() {
           }}
         >
           <TouchableOpacity
-            className="w-12 h-12 rounded-full bg-card dark:bg-dark-card border border-border dark:border-dark-border shadow-sm elevation-3 justify-center items-center relative"
+            className="w-12 h-12 rounded-full bg-card dark:bg-dark-card border border-border dark:border-dark-border elevation-3 justify-center items-center relative"
             activeOpacity={0.8}
             onPress={handleBellPress}
           >
