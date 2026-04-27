@@ -41,6 +41,8 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
   const [description, setDescription] = useState("");
   const [showModal, setShowModal] = useState(isVisible);
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -62,6 +64,7 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
     setName("");
     setCategoryLabel("");
     setDescription("");
+    setErrors({});
   };
 
   const handleClose = () => {
@@ -105,8 +108,19 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
     },
   });
 
-  const isFormValid =
-    name.trim() !== "" && categoryLabel !== "" && description.trim() !== "";
+  const handleValidateAndSubmit = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!name.trim()) newErrors.name = "Club name is required.";
+    if (!categoryLabel) newErrors.categoryLabel = "Category is required.";
+    if (!description.trim()) newErrors.description = "Description is required.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    createMutation.mutate();
+  };
 
   useEffect(() => {
     if (isVisible) {
@@ -195,7 +209,7 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
               className="flex-shrink flex-col w-full"
               onPress={(e) => e.stopPropagation()}
             >
-              {/* Drag Handle - Full width to easily catch the pan gesture */}
+              {/* Drag Handle */}
               <View
                 {...panResponder.panHandlers}
                 className="w-full pt-4 pb-4 items-center bg-transparent z-10"
@@ -213,6 +227,7 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
                   Create New Club
                 </Text>
 
+                {/* Logo Upload */}
                 <TouchableOpacity
                   onPress={pickImage}
                   className="border-2 border-dashed border-border dark:border-dark-border rounded-2xl h-36 items-center justify-center mb-6 bg-muted/30 dark:bg-dark-muted/10 overflow-hidden"
@@ -241,53 +256,107 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
                   )}
                 </TouchableOpacity>
 
+                {/* Club Name Input */}
                 <View className="mb-4">
                   <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
                     Club Name
                   </Text>
-                  <TextInput
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="e. g Visual Graphic"
-                    placeholderTextColor="#9ca3af"
-                    className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg"
-                  />
+                  <View className="relative justify-center">
+                    <TextInput
+                      value={name}
+                      onChangeText={(text) => {
+                        setName(text);
+                        if (errors.name) setErrors((prev) => ({ ...prev, name: "" }));
+                      }}
+                      placeholder="e.g Visual Graphic"
+                      placeholderTextColor="#9ca3af"
+                      className={`border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg pr-10 ${
+                        errors.name
+                          ? "border-red-500"
+                          : "border-border dark:border-dark-border"
+                      }`}
+                    />
+                    {errors.name && (
+                      <View className="absolute right-3">
+                        <Ionicons name="alert-circle" size={20} color="#ef4444" />
+                      </View>
+                    )}
+                  </View>
+                  {errors.name && (
+                    <Text className="text-red-500 text-[13px] mt-1.5 ml-1">
+                      {errors.name}
+                    </Text>
+                  )}
                 </View>
 
+                {/* Category Dropdown */}
                 <View className="mb-4">
                   <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
                     Category
                   </Text>
-                  <CustomDropdown
-                    label=""
-                    value={categoryLabel}
-                    options={CATEGORY_OPTIONS}
-                    placeholder="Select Category"
-                    onSelect={setCategoryLabel}
-                  />
+                  <View className={errors.categoryLabel ? "border border-red-500 rounded-xl" : ""}>
+                    <CustomDropdown
+                      label=""
+                      value={categoryLabel}
+                      options={CATEGORY_OPTIONS}
+                      placeholder="Select Category"
+                      onSelect={(val) => {
+                        setCategoryLabel(val);
+                        if (errors.categoryLabel)
+                          setErrors((prev) => ({ ...prev, categoryLabel: "" }));
+                      }}
+                    />
+                  </View>
+                  {errors.categoryLabel && (
+                    <Text className="text-red-500 text-[13px] mt-1.5 ml-1">
+                      {errors.categoryLabel}
+                    </Text>
+                  )}
                 </View>
 
+                {/* Description Input */}
                 <View className="mb-8">
                   <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
                     Club Description
                   </Text>
-                  <TextInput
-                    value={description}
-                    onChangeText={setDescription}
-                    placeholder="Describe the mission, vision, and core activities of the club..."
-                    placeholderTextColor="#9ca3af"
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical="top"
-                    className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg min-h-[100px]"
-                  />
+                  <View className="relative">
+                    <TextInput
+                      value={description}
+                      onChangeText={(text) => {
+                        setDescription(text);
+                        if (errors.description)
+                          setErrors((prev) => ({ ...prev, description: "" }));
+                      }}
+                      placeholder="Describe the mission, vision, and core activities of the club..."
+                      placeholderTextColor="#9ca3af"
+                      multiline
+                      numberOfLines={4}
+                      textAlignVertical="top"
+                      className={`border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg min-h-[100px] pr-10 ${
+                        errors.description
+                          ? "border-red-500"
+                          : "border-border dark:border-dark-border"
+                      }`}
+                    />
+                    {errors.description && (
+                      <View className="absolute right-3 top-3">
+                        <Ionicons name="alert-circle" size={20} color="#ef4444" />
+                      </View>
+                    )}
+                  </View>
+                  {errors.description && (
+                    <Text className="text-red-500 text-[13px] mt-1.5 ml-1">
+                      {errors.description}
+                    </Text>
+                  )}
                 </View>
 
+                {/* Submit Button */}
                 <TouchableOpacity
-                  disabled={!isFormValid || createMutation.isPending}
-                  onPress={() => createMutation.mutate()}
+                  disabled={createMutation.isPending}
+                  onPress={handleValidateAndSubmit}
                   className={`py-4 rounded-xl items-center ${
-                    !isFormValid || createMutation.isPending
+                    createMutation.isPending
                       ? "bg-primary/50 dark:bg-dark-primary/50"
                       : "bg-primary dark:bg-dark-primary"
                   }`}

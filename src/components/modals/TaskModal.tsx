@@ -45,6 +45,8 @@ export const TaskModal = ({
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [showModal, setShowModal] = useState(isVisible);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -54,6 +56,7 @@ export const TaskModal = ({
       setShowModal(true);
       setTitle(task?.title || "");
       setSearch("");
+      setErrors({}); 
       if (task && task.assigned_by.length > 0) {
         const matchedIds = members
           .filter((m) =>
@@ -98,10 +101,26 @@ export const TaskModal = ({
     }
   }, [isVisible, task, members]);
 
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const handleClose = () => {
+    setErrors({});
+    onClose();
+  };
+
   const toggleMember = (id: number) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+    clearError("members");
   };
 
   const filteredMembers = members.filter((m) => {
@@ -110,9 +129,17 @@ export const TaskModal = ({
   });
 
   const handleSubmit = async () => {
-    if (!title.trim()) return;
+    const newErrors: Record<string, string> = {};
+    if (!title.trim()) newErrors.title = "Task title is required.";
+    if (selectedIds.length === 0) newErrors.members = "Please select at least one assignee.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     await onSubmit({ title: title.trim(), assigned_members: selectedIds });
-    onClose();
+    handleClose();
   };
 
   if (!showModal) return null;
@@ -122,18 +149,15 @@ export const TaskModal = ({
       visible={showModal}
       transparent
       animationType="none"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
-      {/* Independent Animated Backdrop */}
       <Animated.View
         style={{ opacity: fadeAnim }}
         className="absolute inset-0 bg-black/40"
       />
 
-      <Pressable className="flex-1 justify-end" onPress={onClose}>
-        <KeyboardAvoidingView
-          behavior="padding"
-        >
+      <Pressable className="flex-1 justify-end" onPress={handleClose}>
+        <KeyboardAvoidingView behavior="padding">
           <Animated.View
             style={{ transform: [{ translateY: slideAnim }] }}
             className="bg-background dark:bg-dark-bg rounded-t-3xl pt-3 px-6 max-h-[100%]"
@@ -145,17 +169,38 @@ export const TaskModal = ({
                 {isEditing ? "Edit Task" : "New Task"}
               </Text>
 
-              <Text className="text-sm font-medium text-muted-fg dark:text-dark-muted-fg mb-2">
-                Task Title
-              </Text>
-              <TextInput
-                value={title}
-                onChangeText={setTitle}
-                placeholder="e.g. Setup tech"
-                placeholderTextColor="#9ca3af"
-                className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-foreground dark:text-dark-fg bg-background dark:bg-dark-bg mb-5"
-              />
+              {/* Title */}
+              <View className="mb-5">
+                <Text className="text-sm font-medium text-muted-fg dark:text-dark-muted-fg mb-2">
+                  Task Title
+                </Text>
+                <View className="relative">
+                  <TextInput
+                    value={title}
+                    onChangeText={(text) => {
+                      setTitle(text);
+                      clearError("title");
+                    }}
+                    placeholder="e.g. Setup tech"
+                    placeholderTextColor="#9ca3af"
+                    className={`border rounded-xl px-4 py-3 text-foreground dark:text-dark-fg bg-background dark:bg-dark-bg ${
+                      errors.title ? "border-red-500 pr-10" : "border-border dark:border-dark-border"
+                    }`}
+                  />
+                  {errors.title && (
+                    <View className="absolute right-3 top-3.5">
+                      <Ionicons name="alert-circle" size={20} color="#ef4444" />
+                    </View>
+                  )}
+                </View>
+                {errors.title && (
+                  <Text className="text-red-500 text-[13px] mt-1.5 ml-1">
+                    {errors.title}
+                  </Text>
+                )}
+              </View>
 
+              {/* Assignee */}
               <View className="flex-row items-center mb-3">
                 <Text className="text-sm font-medium text-muted-fg dark:text-dark-muted-fg">
                   Assignee
@@ -182,7 +227,7 @@ export const TaskModal = ({
                 showsVerticalScrollIndicator={false}
                 numColumns={2}
                 columnWrapperStyle={{ gap: 8, marginBottom: 8 }}
-                style={{ maxHeight: 180, marginBottom: 16 }}
+                style={{ maxHeight: 180, marginBottom: 8 }}
                 ListEmptyComponent={
                   <Text className="text-sm text-muted-fg dark:text-dark-muted-fg text-center py-4">
                     No members found
@@ -233,12 +278,17 @@ export const TaskModal = ({
                   );
                 }}
               />
+              {errors.members && (
+                <Text className="text-red-500 text-[13px] mb-4 text-center">
+                  {errors.members}
+                </Text>
+              )}
 
               <TouchableOpacity
                 onPress={handleSubmit}
-                disabled={!title.trim() || isLoading}
+                disabled={isLoading}
                 className={`py-4 rounded-2xl items-center mb-10 ${
-                  !title.trim() || isLoading ? "opacity-60" : "opacity-100"
+                  isLoading ? "opacity-60" : "opacity-100"
                 } bg-primary dark:bg-dark-primary`}
               >
                 {isLoading ? (
