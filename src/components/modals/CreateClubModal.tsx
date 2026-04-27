@@ -10,18 +10,19 @@ import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
+  Dimensions,
   Image,
   KeyboardAvoidingView,
   Modal,
+  PanResponder,
   Platform,
+  Pressable,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Animated,
-  Dimensions,
-  Pressable,
 } from "react-native";
 import Toast from "react-native-toast-message";
 
@@ -39,6 +40,7 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
   const [categoryLabel, setCategoryLabel] = useState("");
   const [description, setDescription] = useState("");
   const [showModal, setShowModal] = useState(isVisible);
+
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -112,7 +114,7 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 200,
+          duration: 250,
           useNativeDriver: true,
         }),
         Animated.spring(slideAnim, {
@@ -139,6 +141,34 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
     }
   }, [isVisible]);
 
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return (
+          Math.abs(gestureState.dy) > 5 &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
+        );
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          slideAnim.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > SCREEN_HEIGHT * 0.25 || gestureState.vy > 0.5) {
+          handleClose();
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            bounciness: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    }),
+  ).current;
+
   if (!showModal) return null;
 
   return (
@@ -148,29 +178,41 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
       transparent={true}
       onRequestClose={handleClose}
     >
-      {/* Independent Animated Backdrop */}
       <Animated.View
         style={{ opacity: fadeAnim }}
         className="absolute inset-0 bg-black/40"
       />
-      <Pressable className="flex-1 justify-end" onPress={handleClose}>
-        <KeyboardAvoidingView
-          behavior="padding"
-        >
-          <Animated.View 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
+        <Pressable className="flex-1 justify-end" onPress={handleClose}>
+          <Animated.View
             style={{ transform: [{ translateY: slideAnim }] }}
-            className="bg-background dark:bg-dark-bg rounded-t-[32px] p-6 max-h-[100%]"
+            className="bg-background dark:bg-dark-bg rounded-t-[32px] max-h-[90%] w-full flex-shrink"
           >
-            <Pressable onPress={(e) => e.stopPropagation()}>
-              
-              <View className="w-12 h-1.5 bg-muted dark:bg-dark-muted rounded-full self-center mb-6" />
+            <Pressable
+              className="flex-shrink flex-col w-full"
+              onPress={(e) => e.stopPropagation()}
+            >
+              {/* Drag Handle - Full width to easily catch the pan gesture */}
+              <View
+                {...panResponder.panHandlers}
+                className="w-full pt-4 pb-4 items-center bg-transparent z-10"
+              >
+                <View className="w-12 h-1.5 bg-muted dark:bg-dark-muted rounded-full" />
+              </View>
 
-              <Text className="text-xl font-bold text-card-fg dark:text-dark-card-fg mb-6">
-                Create New Club
-              </Text>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                className="flex-shrink px-6"
+                contentContainerStyle={{ paddingBottom: 40 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                <Text className="text-xl font-bold text-card-fg dark:text-dark-card-fg mb-6">
+                  Create New Club
+                </Text>
 
-              <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Logo Upload Area */}
                 <TouchableOpacity
                   onPress={pickImage}
                   className="border-2 border-dashed border-border dark:border-dark-border rounded-2xl h-36 items-center justify-center mb-6 bg-muted/30 dark:bg-dark-muted/10 overflow-hidden"
@@ -199,7 +241,6 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
                   )}
                 </TouchableOpacity>
 
-                {/* Inputs */}
                 <View className="mb-4">
                   <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
                     Club Name
@@ -259,17 +300,11 @@ export const CreateClubModal = ({ isVisible, onClose }: Props) => {
                     </Text>
                   )}
                 </TouchableOpacity>
-
-                <Text className="text-center text-[10px] text-muted-fg dark:text-dark-muted-fg uppercase mt-3 tracking-widest">
-                  This action will notify the assigned president
-                </Text>
-
-                <View className="h-8" />
               </ScrollView>
             </Pressable>
           </Animated.View>
-        </KeyboardAvoidingView>
-      </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
