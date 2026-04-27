@@ -47,7 +47,7 @@ export const ClubMembersTab = ({ clubId }: Props) => {
       Toast.show({
         type: "success",
         text1: "Success",
-        text2: "Member role updated.",
+        text2: "Role updated successfully.",
       });
     },
     onError: (error: any) => {
@@ -69,7 +69,7 @@ export const ClubMembersTab = ({ clubId }: Props) => {
       Toast.show({
         type: "success",
         text1: "Success",
-        text2: "Member removed.",
+        text2: "User removed from the club.",
       });
     },
     onError: (error: any) => {
@@ -78,7 +78,7 @@ export const ClubMembersTab = ({ clubId }: Props) => {
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: error?.response?.data?.message || "Failed to remove member.",
+        text2: error?.response?.data?.message || "Failed to remove user.",
       });
     },
   });
@@ -113,47 +113,90 @@ export const ClubMembersTab = ({ clubId }: Props) => {
     ? rawData
     : rawData?.data || rawData?.members || [];
 
+  const officersList = membersList.filter(
+    (member: any) =>
+      member?.role === "officer" ||
+      member?.pivot?.role === "officer" ||
+      member?.role === "admin" ||
+      member?.pivot?.role === "admin"
+  );
+
   const regularMembers = membersList.filter(
     (member: any) =>
-      member?.role === "member" || member?.pivot?.role === "member",
+      member?.role === "member" || member?.pivot?.role === "member"
   );
 
   return (
     <View className="flex-1 mt-2">
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-sm font-semibold text-muted-fg dark:text-dark-muted-fg uppercase tracking-wider">
-          Active Members
+          Club Directory
         </Text>
         <Text className="text-sm text-muted-fg dark:text-dark-muted-fg">
-          {regularMembers.length} Total
+          {officersList.length + regularMembers.length} Total
         </Text>
       </View>
 
-      {regularMembers.length === 0 ? (
+      {officersList.length === 0 && regularMembers.length === 0 ? (
         <View className="py-10 items-center border border-dashed border-border dark:border-dark-border rounded-xl">
           <Text className="text-muted-fg dark:text-dark-muted-fg py-8">
             No active members yet.
           </Text>
         </View>
       ) : (
-        regularMembers.map((member: any, index: number) => (
-          <MemberListItem
-            key={
-              member?.user_id?.toString() ||
-              member?.id?.toString() ||
-              index.toString()
-            }
-            member={member}
-            primaryColor={primaryColor}
-            onEdit={canManage ? handleOpenEdit : undefined}
-            onRemove={canManage ? handleTriggerRemove : undefined}
-            isRemoving={
-              removeMemberMutation.isPending &&
-              (memberToRemove?.user_id === member?.user_id ||
-                memberToRemove?.id === member?.id)
-            }
-          />
-        ))
+        <>
+          {officersList.length > 0 && (
+            <>
+              <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg uppercase tracking-wider mt-2 mb-3">
+                Officers
+              </Text>
+              {officersList.map((member: any, index: number) => (
+                <MemberListItem
+                  key={
+                    member?.user_id?.toString() ||
+                    member?.id?.toString() ||
+                    index.toString()
+                  }
+                  member={member}
+                  primaryColor={primaryColor}
+                  onEdit={canManage ? handleOpenEdit : undefined}
+                  onRemove={canManage ? handleTriggerRemove : undefined}
+                  isRemoving={
+                    removeMemberMutation.isPending &&
+                    (memberToRemove?.user_id === member?.user_id ||
+                      memberToRemove?.id === member?.id)
+                  }
+                />
+              ))}
+            </>
+          )}
+
+          {regularMembers.length > 0 && (
+            <>
+              <Text className="text-xs font-bold text-muted-fg dark:text-dark-muted-fg uppercase tracking-wider mt-4 mb-3">
+                Members
+              </Text>
+              {regularMembers.map((member: any, index: number) => (
+                <MemberListItem
+                  key={
+                    member?.user_id?.toString() ||
+                    member?.id?.toString() ||
+                    index.toString()
+                  }
+                  member={member}
+                  primaryColor={primaryColor}
+                  onEdit={canManage ? handleOpenEdit : undefined}
+                  onRemove={canManage ? handleTriggerRemove : undefined}
+                  isRemoving={
+                    removeMemberMutation.isPending &&
+                    (memberToRemove?.user_id === member?.user_id ||
+                      memberToRemove?.id === member?.id)
+                  }
+                />
+              ))}
+            </>
+          )}
+        </>
       )}
 
       {canManage && (
@@ -170,7 +213,7 @@ export const ClubMembersTab = ({ clubId }: Props) => {
           />
           <CustomAlertDialog
             visible={isRemoveDialogVisible}
-            title="Remove Member"
+            title="Remove User"
             message={`Are you sure you want to remove ${
               memberToRemove?.first_name || "this user"
             } from the club? They will lose access to all club activities.`}
