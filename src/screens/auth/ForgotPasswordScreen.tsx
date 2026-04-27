@@ -5,6 +5,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PrimaryButton from "@/src/components/common/PrimaryButton";
 import { InputField } from "@/src/components/common/InputField";
 import { ForgotPasswordErrors } from "@/src/app/(auth)/forgot-password";
+import { BackButton } from "@/src/components/common/BackButton";
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 
 interface Props {
   onSendCode: (email: string) => void;
@@ -21,6 +23,8 @@ export default function ForgotPasswordScreen({
 }: Props) {
   const [email, setEmail] = useState("");
 
+  const router = useThrottledRouter();
+
   const handleSendLink = () => {
     setErrors({});
     if (!email) {
@@ -35,71 +39,76 @@ export default function ForgotPasswordScreen({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg justify-center px-8 pb-10">
-      <View className="mb-8 items-center justify-center">
-        <View className="bg-blue-100 dark:bg-blue-950 rounded-full p-6">
-          <MaterialCommunityIcons
-            name="shield-lock"
-            size={80}
-            color="#3E74FF"
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg px-8">
+      <View className="pt-4">
+        <BackButton onPress={() => router.back()} />
+      </View>
+      <View className="flex-1 justify-center pb-15">
+        <View className="mb-8 items-center justify-center">
+          <View className="bg-blue-100 dark:bg-blue-950 rounded-full p-6">
+            <MaterialCommunityIcons
+              name="shield-lock"
+              size={80}
+              color="#3E74FF"
+            />
+          </View>
+        </View>
+
+        <View className="items-center mb-8">
+          <Text className="text-2xl font-bold text-foreground dark:text-dark-fg mb-3 text-center">
+            Forgot Password
+          </Text>
+          <Text className="text-muted-fg dark:text-dark-muted-fg text-center px-4 leading-5">
+            Please enter your email address to reset your password
+          </Text>
+        </View>
+
+        {errors.general && (
+          <View className="bg-red-500/10 p-3 rounded-lg mb-6 border border-red-500/50">
+            <Text className="text-red-500 font-medium text-center">
+              {errors.general}
+            </Text>
+          </View>
+        )}  
+
+        <View className="w-full mb-8">
+          <InputField
+            label="Email address"
+            placeholder="Enter your email address"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errors.email) setErrors({ ...errors, email: undefined });
+            }}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            editable={!isLoading}
+            error={errors.email}
           />
         </View>
-      </View>
 
-      <View className="items-center mb-8">
-        <Text className="text-2xl font-bold text-foreground dark:text-dark-fg mb-3 text-center">
-          Forgot Password
-        </Text>
-        <Text className="text-muted-fg dark:text-dark-muted-fg text-center px-4 leading-5">
-          Please enter your email address to reset your password
-        </Text>
-      </View>
-
-      {errors.general && (
-        <View className="bg-red-500/10 p-3 rounded-lg mb-6 border border-red-500/50">
-          <Text className="text-red-500 font-medium text-center">
-            {errors.general}
-          </Text>
+        <View className="w-full mb-8">
+          <PrimaryButton
+            title="Send reset link"
+            isLoading={isLoading}
+            onPress={handleSendLink}
+          />
         </View>
-      )}
 
-      <View className="w-full mb-8">
-        <InputField
-          label="Email address"
-          placeholder="Enter your email address"
-          value={email}
-          onChangeText={(text) => {
-            setEmail(text);
-            if (errors.email) setErrors({ ...errors, email: undefined });
-          }}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          editable={!isLoading}
-          error={errors.email}
-        />
-      </View>
-
-      <View className="w-full mb-8">
-        <PrimaryButton
-          title="Send reset link"
-          isLoading={isLoading}
-          onPress={handleSendLink}
-        />
-      </View>
-
-      <View className="items-center">
-        <Text className="text-muted-fg dark:text-dark-muted-fg text-sm">
-          Don't remember your email?
-        </Text>
-        <View className="flex-row mt-1">
+        <View className="items-center">
           <Text className="text-muted-fg dark:text-dark-muted-fg text-sm">
-            Contact us at{" "}
+            Don't remember your email?
           </Text>
-          <Pressable>
-            <Text className="text-primary dark:text-dark-primary text-sm font-medium">
-              support@laverdad.edu.ph
+          <View className="flex-row mt-1">
+            <Text className="text-muted-fg dark:text-dark-muted-fg text-sm">
+              Contact us at{" "}
             </Text>
-          </Pressable>
+            <Pressable>
+              <Text className="text-primary dark:text-dark-primary text-sm font-medium">
+                support@laverdad.edu.ph
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </SafeAreaView>
