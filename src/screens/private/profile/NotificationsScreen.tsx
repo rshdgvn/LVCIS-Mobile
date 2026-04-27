@@ -18,6 +18,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BackButton } from "@/src/components/common/BackButton";
+import { useThrottledRouter } from "@/src/hooks/useThrottledRouter";
 
 interface NotificationActor {
   id: number | null;
@@ -159,7 +161,7 @@ const NotificationRow = ({
       },
     ]);
   };
-
+  
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
       <TouchableOpacity
@@ -324,84 +326,85 @@ const NotificationsScreen = ({
 
   const FILTERS: FilterType[] = ["All", "Read", "Unread"];
 
+  const router = useThrottledRouter();
+
   return (
     <SafeAreaView
-      className="flex-1 bg-background dark:bg-dark-bg"
+      className="flex-1 bg-white dark:bg-dark-bg"
       edges={["top"]}
     >
-      <View className="flex-row items-center px-4 py-3 bg-background dark:bg-dark-bg">
-        <TouchableOpacity
-          onPress={onBack}
-          className="w-9 h-9 rounded-full bg-muted dark:bg-dark-muted justify-center items-center"
-        >
-          <MaterialCommunityIcons
-            name="chevron-left"
-            size={22}
-            color={isDark ? "#f8f9fa" : "#1c1e26"}
-          />
-        </TouchableOpacity>
-
-        <Text className="flex-1 text-center text-[17px] font-semibold text-muted-fg dark:text-dark-muted-fg">
-          Notifications
-        </Text>
-
-        <View className="w-9" />
+      {/* Header */}
+      <View className="flex-row items-center px-6 py-4">
+        <View className="z-10">
+          <BackButton onPress={() => router.back()} />
+        </View>
+        <View className="absolute left-0 right-0 items-center">
+          <Text className="text-[17px] font-medium text-gray-400 dark:text-dark-muted-fg">
+            Notification
+          </Text>
+        </View>
       </View>
 
-      <View className="px-4 pb-3">
+      {/* Search Bar */}
+      <View className="px-6 mt-2 mb-4">
         <View
-          className={`flex-row items-center bg-input dark:bg-dark-input rounded-xl px-3 gap-2 ${
-            Platform.OS === "ios" ? "py-2.5" : "py-1.5"
+          className={`flex-row items-center bg-white dark:bg-dark-input rounded-[16px] px-4 border border-gray-200 dark:border-dark-border ${
+            Platform.OS === "ios" ? "py-3" : "py-2"
           }`}
         >
           <MaterialCommunityIcons
             name="magnify"
-            size={20}
-            color={isDark ? "#adb2c3" : "#848a9e"}
+            size={22}
+            color={isDark ? "#adb2c3" : "#a1a1aa"}
           />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search notification"
-            placeholderTextColor={isDark ? "#adb2c3" : "#848a9e"}
-            className="flex-1 text-[14px] text-foreground dark:text-dark-fg p-0"
+            placeholderTextColor={isDark ? "#adb2c3" : "#a1a1aa"}
+            className="flex-1 text-[15px] text-foreground dark:text-dark-fg ml-2 p-0"
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery("")}>
               <MaterialCommunityIcons
                 name="close-circle"
                 size={18}
-                color={isDark ? "#adb2c3" : "#848a9e"}
+                color="#a1a1aa"
               />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      <View className="flex-row px-4 gap-2 mb-4">
-        {FILTERS.map((f) => (
-          <TouchableOpacity
-            key={f}
-            onPress={() => setActiveFilter(f)}
-            className={`px-4 py-1.5 rounded-full border ${
-              activeFilter === f
-                ? "bg-primary dark:bg-dark-primary border-primary dark:border-dark-primary"
-                : "bg-card dark:bg-dark-card border-border dark:border-dark-border"
-            }`}
-          >
-            <Text
-              className={`text-[13px] font-semibold ${
-                activeFilter === f
-                  ? "text-primary-fg dark:text-dark-primary-fg"
-                  : "text-muted-fg dark:text-dark-muted-fg"
+      {/* Filter Chips */}
+      <View className="flex-row px-6 gap-2.5 mb-6">
+        {FILTERS.map((f) => {
+          const isActive = activeFilter === f;
+          return (
+            <TouchableOpacity
+              key={f}
+              onPress={() => setActiveFilter(f)}
+              className={`px-5 py-2 rounded-[14px] border ${
+                isActive
+                  ? "bg-[#3b82f6] border-[#3b82f6]"
+                  : "bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border"
               }`}
             >
-              {f}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                className={`text-[13px] font-medium ${
+                  isActive
+                    ? "text-white"
+                    : "text-gray-400 dark:text-dark-muted-fg"
+                }`}
+              >
+                {f}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
+      {/* List Section */}
       {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator color={primaryColor} />
@@ -411,7 +414,7 @@ const NotificationsScreen = ({
           <MaterialCommunityIcons
             name="bell-off-outline"
             size={52}
-            color={isDark ? "#adb2c3" : "#848a9e"}
+            color={isDark ? "#adb2c3" : "#a1a1aa"}
           />
           <Text className="text-foreground dark:text-dark-fg text-[17px] font-bold mt-4">
             No notifications
@@ -437,34 +440,27 @@ const NotificationsScreen = ({
           onEndReachedThreshold={0.3}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 32 }}
-          ListFooterComponent={
-            loadingMore ? (
-              <View className="py-4 items-center">
-                <ActivityIndicator size="small" color={primaryColor} />
-              </View>
-            ) : null
-          }
           renderItem={({ item: group }) => (
-            <View className="mb-2">
-              <View className="flex-row justify-between items-center px-5 py-2">
-                <Text className="text-[13px] font-semibold text-muted-fg dark:text-dark-muted-fg">
+            <View className="mb-4">
+              <View className="flex-row justify-between items-center px-6 py-2">
+                <Text className="text-[14px] font-semibold text-gray-400">
                   {group.label}
                 </Text>
                 <TouchableOpacity
                   onPress={() => handleClearSection(group.label, group.data)}
                 >
-                  <Text className="text-[13px] font-semibold text-primary dark:text-dark-primary">
+                  <Text className="text-[13px] font-medium text-blue-500">
                     Clear
                   </Text>
                 </TouchableOpacity>
               </View>
 
-              <View className="bg-card dark:bg-dark-card rounded-2xl mx-4 overflow-hidden border border-border dark:border-dark-border">
+              <View className="bg-white dark:bg-dark-card rounded-2xl mx-5 overflow-hidden border border-gray-100 dark:border-dark-border">
                 {group.data.map((item, idx) => (
                   <View key={item.id}>
                     <NotificationRow item={item} onDelete={handleDelete} />
                     {idx < group.data.length - 1 && (
-                      <View className="h-[1px] bg-border dark:bg-dark-border ml-20" />
+                      <View className="h-[1px] bg-gray-100 dark:bg-dark-border ml-20" />
                     )}
                   </View>
                 ))}
