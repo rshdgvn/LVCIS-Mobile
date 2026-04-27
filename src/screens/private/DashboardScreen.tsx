@@ -166,7 +166,7 @@ export const DashboardScreen = ({ onProfile }: Props) => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8FAFC] dark:bg-dark-bg">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-bg">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -175,7 +175,7 @@ export const DashboardScreen = ({ onProfile }: Props) => {
           <TouchableOpacity
             onPress={onProfile}
             activeOpacity={0.8}
-            className="w-12 h-12 rounded-full bg-primary/10 mr-4 dark:bg-dark-primary/10 items-center justify-center border border-border dark:border-dark-border overflow-hidden shadow-sm"
+            className="w-12 h-12 rounded-full bg-primary/10 mr-4 dark:bg-dark-primary/10 items-center justify-center border border-border dark:border-dark-border overflow-hidden"
           >
             {user?.avatar ? (
               <Image
@@ -204,7 +204,7 @@ export const DashboardScreen = ({ onProfile }: Props) => {
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => setClubModalVisible(true)}
-            className="bg-white dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border flex-row items-center shadow-sm"
+            className="bg-background dark:bg-dark-bg rounded-3xl p-5 border border-border dark:border-dark-border flex-row items-center"
           >
             <View className="w-14 h-14 rounded-2xl bg-primary/10 items-center justify-center mr-4 overflow-hidden">
               {isGeneralView ? (

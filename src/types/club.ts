@@ -3,7 +3,7 @@ export type ClubCategory =
   | "culture_and_performing_arts"
   | "socio_politics";
 
-export type ClubViewFilter = "all" | "my" | "pending" | "other";
+export type ClubViewFilter = "all" | "my" | "pending";
 
 export interface ClubMembershipPivot {
   club_id: number;

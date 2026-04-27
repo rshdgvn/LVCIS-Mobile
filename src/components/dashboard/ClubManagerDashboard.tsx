@@ -1,8 +1,14 @@
 import { useManagerDashboard } from "@/src/hooks/useDashboard";
 import { useTheme } from "@/src/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { ActivityIndicator, Dimensions, Text, View } from "react-native";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { LineChart, PieChart } from "react-native-gifted-charts";
 
 const screenWidth = Dimensions.get("window").width;
@@ -10,6 +16,10 @@ const screenWidth = Dimensions.get("window").width;
 export const ClubManagerDashboard = ({ clubId }: { clubId: number }) => {
   const { stats, insights, trend, isLoading } = useManagerDashboard(clubId);
   const { primaryColor, mutedFgColor, isDark } = useTheme();
+
+  // --- Added State for Scroll Indicators ---
+  const [topActiveIndex, setTopActiveIndex] = useState(0);
+  const [bottomActiveIndex, setBottomActiveIndex] = useState(0);
 
   if (isLoading) {
     return (
@@ -63,48 +73,92 @@ export const ClubManagerDashboard = ({ clubId }: { clubId: number }) => {
         }))
       : [];
 
+  // --- Scroll Handlers to dynamically update indicators ---
+  const handleTopScroll = (event: any) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    // Card width (140) + gap (16) = 156
+    const index = Math.round(offsetX / 156);
+    setTopActiveIndex(Math.min(Math.max(index, 0), 2));
+  };
+
+  const handleBottomScroll = (event: any) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    // Card width (280) + gap (16) = 296
+    const index = Math.round(offsetX / 296);
+    setBottomActiveIndex(Math.min(Math.max(index, 0), 1));
+  };
+
   return (
     <View className="gap-6 mb-10">
-      <View className="px-6 flex-row gap-4">
-        <View className="flex-1 bg-card dark:bg-dark-card rounded-3xl p-4 border border-border dark:border-dark-border shadow-sm">
-          <View className="w-8 h-8 rounded-full bg-primary/10 items-center justify-center mb-2">
-            <Ionicons name="people" size={18} color={primaryColor} />
+      {/* Top Stats Section */}
+      <View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, gap: 16 }}
+          onScroll={handleTopScroll}
+          scrollEventThrottle={16}
+          snapToInterval={156}
+          decelerationRate="fast"
+        >
+          <View className="w-[140px] bg-card dark:bg-dark-card rounded-3xl p-4 border border-border dark:border-dark-border">
+            <View className="w-8 h-8 rounded-full bg-primary/10 items-center justify-center mb-2">
+              <Ionicons name="people" size={18} color={primaryColor} />
+            </View>
+            <Text className="text-2xl font-black text-foreground dark:text-dark-fg">
+              {stats?.total_members || 0}
+            </Text>
+            <Text className="text-[10px] uppercase font-bold text-muted-fg dark:text-dark-muted-fg tracking-tighter">
+              Total Members
+            </Text>
           </View>
-          <Text className="text-2xl font-black text-foreground dark:text-dark-fg">
-            {stats?.total_members || 0}
-          </Text>
-          <Text className="text-[10px] uppercase font-bold text-muted-fg dark:text-dark-muted-fg tracking-tighter">
-            Total Members
-          </Text>
-        </View>
 
-        <View className="flex-1 bg-card dark:bg-dark-card rounded-3xl p-4 border border-border dark:border-dark-border shadow-sm">
-          <View className="w-8 h-8 rounded-full bg-primary/10 items-center justify-center mb-2">
-            <Ionicons name="notifications" size={18} color={primaryColor} />
+          <View className="w-[140px] bg-card dark:bg-dark-card rounded-3xl p-4 border border-border dark:border-dark-border">
+            <View className="w-8 h-8 rounded-full bg-primary/10 items-center justify-center mb-2">
+              <Ionicons name="notifications" size={18} color={primaryColor} />
+            </View>
+            <Text className="text-2xl font-black text-primary">
+              {stats?.pending_requests || 0}
+            </Text>
+            <Text className="text-[10px] uppercase font-bold text-muted-fg dark:text-dark-muted-fg tracking-tighter">
+              Pending Approval
+            </Text>
           </View>
-          <Text className="text-2xl font-black text-primary">
-            {stats?.pending_requests || 0}
-          </Text>
-          <Text className="text-[10px] uppercase font-bold text-muted-fg dark:text-dark-muted-fg tracking-tighter">
-            Pending Approval
-          </Text>
-        </View>
 
-        <View className="flex-1 bg-card dark:bg-dark-card rounded-3xl p-4 border border-border dark:border-dark-border shadow-sm">
-          <View className="w-8 h-8 rounded-full bg-primary/10 items-center justify-center mb-2">
-            <Ionicons name="trending-up" size={18} color={primaryColor} />
+          <View className="w-[140px] bg-card dark:bg-dark-card rounded-3xl p-4 border border-border dark:border-dark-border">
+            <View className="w-8 h-8 rounded-full bg-primary/10 items-center justify-center mb-2">
+              <Ionicons name="trending-up" size={18} color={primaryColor} />
+            </View>
+            <Text className="text-2xl font-black text-primary">
+              {stats?.engagement_rate}%
+            </Text>
+            <Text className="text-[10px] uppercase font-bold text-muted-fg dark:text-dark-muted-fg tracking-tighter">
+              Engagement
+            </Text>
           </View>
-          <Text className="text-2xl font-black text-primary">
-            {stats?.engagement_rate}%
-          </Text>
-          <Text className="text-[10px] uppercase font-bold text-muted-fg dark:text-dark-muted-fg tracking-tighter">
-            Engagement
-          </Text>
+        </ScrollView>
+
+        {/* Dynamic Top Scroll Indicator */}
+        <View className="flex-row items-center justify-center mt-3">
+          <Ionicons name="chevron-back" size={14} color="#9ca3af" />
+          <View className="flex-row gap-1 mx-2">
+            {[0, 1].map((i) => (
+              <View
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full ${
+                  topActiveIndex === i
+                    ? "bg-primary dark:bg-dark-primary"
+                    : "bg-primary/40 dark:bg-dark-primary/40"
+                }`}
+              />
+            ))}
+          </View>
+          <Ionicons name="chevron-forward" size={14} color="#9ca3af" />
         </View>
       </View>
 
       <View className="px-6">
-        <View className="bg-card dark:bg-dark-card rounded-3xl p-6 border border-border dark:border-dark-border shadow-sm">
+        <View className="bg-card dark:bg-dark-card rounded-3xl p-6 border border-border dark:border-dark-border">
           <Text className="text-sm font-bold text-foreground dark:text-dark-fg mb-4">
             {insights?.pipeline_title || "Event Pipeline"}
           </Text>
@@ -120,7 +174,7 @@ export const ClubManagerDashboard = ({ clubId }: { clubId: number }) => {
               }
               centerLabelComponent={() => (
                 <View className="items-center">
-                  <Text className="text-xl font-bold text-foreground dark:text-dark-fg">
+                  <Text className="text-xl font-bold text-foreground">
                     {insights?.events.total || 0}
                   </Text>
                 </View>
@@ -135,67 +189,95 @@ export const ClubManagerDashboard = ({ clubId }: { clubId: number }) => {
         </View>
       </View>
 
-      <View className="px-6 flex-row gap-4">
-        <View className="flex-1 bg-card dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border shadow-sm">
-          <Text className="text-sm font-bold text-foreground dark:text-dark-fg mb-4">
-            Demographics
-          </Text>
-          {insights?.demographics && insights.demographics.length > 0 ? (
-            <View className="gap-3">
-              {insights.demographics.map((demo, idx) => (
-                <View
+      {/* Demographics & Activity Section */}
+      <View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, gap: 16 }}
+          onScroll={handleBottomScroll}
+          scrollEventThrottle={16}
+          snapToInterval={296}
+          decelerationRate="fast"
+        >
+          <View className="w-[280px] bg-card dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border items-center">
+            <Text className="text-sm font-bold text-foreground dark:text-dark-fg mb-4 w-full text-left">
+              Activity Status
+            </Text>
+            <PieChart
+              donut
+              innerRadius={20}
+              radius={35}
+              data={
+                activityPieData.length > 0
+                  ? activityPieData
+                  : [{ value: 1, color: isDark ? "#e9eaec" : "#e9eaec" }]
+              }
+            />
+            <View className="mt-4 w-full gap-2">
+              {activityPieData.map((item, idx) => (
+                <LegendItem
                   key={idx}
-                  className="flex-row justify-between items-center"
-                >
-                  <Text
-                    className="text-xs font-semibold text-muted-fg dark:text-dark-muted-fg flex-1 mr-2"
-                    numberOfLines={1}
-                  >
-                    {demo.label}
-                  </Text>
-                  <View className="bg-primary/10 px-2 py-1 rounded-md">
-                    <Text className="text-xs font-black text-primary">
-                      {demo.value}
-                    </Text>
-                  </View>
-                </View>
+                  color={item.color}
+                  label={`${item.text} (${item.value})`}
+                />
               ))}
             </View>
-          ) : (
-            <Text className="text-xs text-muted-fg dark:text-dark-muted-fg text-center mt-4">
-              No data available.
+          </View>
+          <View className="w-[280px] bg-card dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border">
+            <Text className="text-sm font-bold text-foreground dark:text-dark-fg mb-4">
+              Demographics
             </Text>
-          )}
-        </View>
+            {insights?.demographics && insights.demographics.length > 0 ? (
+              <View className="gap-3">
+                {insights.demographics.map((demo, idx) => (
+                  <View
+                    key={idx}
+                    className="flex-row justify-between items-center"
+                  >
+                    <Text
+                      className="text-xs font-semibold text-muted-fg dark:text-dark-muted-fg flex-1 mr-2"
+                      numberOfLines={1}
+                    >
+                      {demo.label}
+                    </Text>
+                    <View className="bg-primary/10 px-2 py-1 rounded-md">
+                      <Text className="text-xs font-black text-primary">
+                        {demo.value}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text className="text-xs text-muted-fg dark:text-dark-muted-fg text-center mt-4">
+                No data available.
+              </Text>
+            )}
+          </View>
+        </ScrollView>
 
-        <View className="flex-1 bg-card dark:bg-dark-card rounded-3xl p-5 border border-border dark:border-dark-border shadow-sm items-center">
-          <Text className="text-sm font-bold text-foreground dark:text-dark-fg mb-4 w-full text-left">
-            Activity Status
-          </Text>
-          <PieChart
-            donut
-            innerRadius={20}
-            radius={35}
-            data={
-              activityPieData.length > 0
-                ? activityPieData
-                : [{ value: 1, color: isDark ? "#33394b" : "#e9eaec" }]
-            }
-          />
-          <View className="mt-4 w-full gap-2">
-            {activityPieData.map((item, idx) => (
-              <LegendItem
-                key={idx}
-                color={item.color}
-                label={`${item.text} (${item.value})`}
+        {/* Dynamic Bottom Scroll Indicator */}
+        <View className="flex-row items-center justify-center mt-3">
+          <Ionicons name="chevron-back" size={14} color="#9ca3af" />
+          <View className="flex-row gap-1 mx-2">
+            {[0, 1].map((i) => (
+              <View
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full ${
+                  bottomActiveIndex === i
+                    ? "bg-primary dark:bg-dark-primary"
+                    : "bg-primary/40 dark:bg-dark-primary/40"
+                }`}
               />
             ))}
           </View>
+          <Ionicons name="chevron-forward" size={14} color="#9ca3af" />
         </View>
       </View>
 
       <View className="px-6">
-        <View className="bg-card dark:bg-dark-card rounded-3xl p-6 border border-border dark:border-dark-border shadow-sm">
+        <View className="bg-card dark:bg-dark-card rounded-3xl p-6 border border-border dark:border-dark-border">
           <Text className="text-lg font-bold text-foreground dark:text-dark-fg mb-6">
             Attendance Trend
           </Text>

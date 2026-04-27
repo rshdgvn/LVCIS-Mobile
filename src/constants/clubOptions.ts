@@ -18,23 +18,16 @@ export const CATEGORY_VALUE_MAP: Record<string, ClubCategory> = {
   "Socio Politics": "socio_politics",
 };
 
-export const VIEW_FILTER_OPTIONS = [
-  "All clubs",
-  "My clubs",
-  "Pending",
-  "Other",
-];
+export const VIEW_FILTER_OPTIONS = ["All clubs", "My clubs", "Pending"];
 
 export const VIEW_FILTER_VALUE_MAP: Record<string, ClubViewFilter> = {
   "All clubs": "all",
   "My clubs": "my",
   Pending: "pending",
-  Other: "other",
 };
 
 export const VIEW_FILTER_LABEL_MAP: Record<ClubViewFilter, string> = {
   all: "All clubs",
   my: "My clubs",
   pending: "Pending",
-  other: "Other",
 };
