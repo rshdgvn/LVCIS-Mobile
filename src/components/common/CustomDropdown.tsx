@@ -1,7 +1,7 @@
 import { useTheme } from "@/src/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { ChevronDown } from "lucide-react-native";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react"; // CHANGED: Added useEffect
 import {
   Animated,
   FlatList,
@@ -11,7 +11,10 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions, 
 } from "react-native";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export const CustomDropdown = ({
   label,
@@ -33,9 +36,47 @@ export const CustomDropdown = ({
   showLabelOnly?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false); 
   const { mutedFgColor } = useTheme();
 
+
+  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const panY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowModal(true);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          bounciness: 0,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: SCREEN_HEIGHT,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShowModal(false);
+        panY.setValue(0);
+      });
+    }
+  }, [isOpen]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -48,7 +89,7 @@ export const CustomDropdown = ({
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dy > 100) {
-          closeModal();
+          setIsOpen(false); 
         } else {
           Animated.spring(panY, {
             toValue: 0,
@@ -61,12 +102,99 @@ export const CustomDropdown = ({
 
   const closeModal = () => {
     setIsOpen(false);
-    setTimeout(() => panY.setValue(0), 300);
   };
 
   const borderClass = error
     ? "border-red-500 dark:border-red-500"
     : "border-input dark:border-dark-input";
+
+  const DropdownModal = () => (
+    <Modal
+      visible={showModal}
+      transparent
+      animationType="none" 
+      onRequestClose={closeModal}
+    >
+      <Animated.View
+        style={{ opacity: fadeAnim }}
+        className="absolute inset-0 bg-black/40"
+      />
+
+      <Pressable className="flex-1 justify-end" onPress={closeModal}>
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={{ 
+            transform: [
+              { translateY: slideAnim }, 
+              { translateY: panY }  
+            ] 
+          }}
+          className="bg-background dark:bg-dark-bg rounded-t-3xl pt-3 pb-10 px-6 max-h-[100%]"
+        >
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <View className="w-12 h-1.5 bg-border dark:bg-dark-border rounded-full self-center mb-6" />
+
+            <Text className="text-xl font-bold mb-4 text-foreground dark:text-dark-fg">
+              Choose {label}
+            </Text>
+
+            <FlatList
+              data={options}
+              keyExtractor={(item) => item}
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
+                <View className="py-6 items-center justify-center">
+                  <Text className="text-muted-fg dark:text-dark-muted-fg text-base text-center">
+                    {emptyMessage}
+                  </Text>
+                </View>
+              }
+              renderItem={({ item }) => {
+                const isSelected = value === item;
+                return (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      onSelect(item);
+                      closeModal();
+                    }}
+                    className={`flex-row items-center justify-between p-4 mb-2 rounded-2xl ${
+                      isSelected
+                        ? "bg-primary/10 dark:bg-dark-primary/10"
+                        : "bg-transparent"
+                    }`}
+                  >
+                    <Text
+                      className={`text-base ${
+                        isSelected
+                          ? "font-bold text-foreground dark:text-dark-fg"
+                          : "font-medium text-foreground dark:text-dark-fg"
+                      }`}
+                    >
+                      {item}
+                    </Text>
+                    {isSelected ? (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={24}
+                        color="#3b82f6"
+                      />
+                    ) : (
+                      <Ionicons
+                        name="ellipse-outline"
+                        size={24}
+                        color={mutedFgColor}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </Pressable>
+        </Animated.View>
+      </Pressable>
+    </Modal>
+  );
 
   if (showLabelOnly) {
     return (
@@ -81,83 +209,7 @@ export const CustomDropdown = ({
           </Text>
           <ChevronDown size={16} color={mutedFgColor} />
         </TouchableOpacity>
-
-        <Modal
-          visible={isOpen}
-          transparent
-          animationType="slide"
-          onRequestClose={closeModal}
-        >
-          <Pressable
-            className="flex-1 bg-black/40 justify-end"
-            onPress={closeModal}
-          >
-            <Animated.View
-              {...panResponder.panHandlers}
-              style={{ transform: [{ translateY: panY }] }}
-              className="bg-background dark:bg-dark-bg rounded-t-3xl pt-3 pb-10 px-6 max-h-[80%]"
-            >
-              <View className="w-12 h-1.5 bg-border dark:bg-dark-border rounded-full self-center mb-6" />
-
-              <Text className="text-xl font-bold mb-4 text-foreground dark:text-dark-fg">
-                Choose {label}
-              </Text>
-
-              <FlatList
-                data={options}
-                keyExtractor={(item) => item}
-                showsVerticalScrollIndicator={false}
-                ListEmptyComponent={
-                  <View className="py-6 items-center justify-center">
-                    <Text className="text-muted-fg dark:text-dark-muted-fg text-base text-center">
-                      {emptyMessage}
-                    </Text>
-                  </View>
-                }
-                renderItem={({ item }) => {
-                  const isSelected = value === item;
-                  return (
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => {
-                        onSelect(item);
-                        closeModal();
-                      }}
-                      className={`flex-row items-center justify-between p-4 mb-2 rounded-2xl ${
-                        isSelected
-                          ? "bg-primary/10 dark:bg-dark-primary/10"
-                          : "bg-transparent"
-                      }`}
-                    >
-                      <Text
-                        className={`text-base ${
-                          isSelected
-                            ? "font-bold text-foreground dark:text-dark-fg"
-                            : "font-medium text-foreground dark:text-dark-fg"
-                        }`}
-                      >
-                        {item}
-                      </Text>
-                      {isSelected ? (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color="#3b82f6"
-                        />
-                      ) : (
-                        <Ionicons
-                          name="ellipse-outline"
-                          size={24}
-                          color={mutedFgColor}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  );
-                }}
-              />
-            </Animated.View>
-          </Pressable>
-        </Modal>
+        <DropdownModal />
       </>
     );
   }
@@ -195,82 +247,7 @@ export const CustomDropdown = ({
         </Text>
       )}
 
-      <Modal
-        visible={isOpen}
-        transparent
-        animationType="slide"
-        onRequestClose={closeModal}
-      >
-        <Pressable
-          className="flex-1 bg-black/40 justify-end"
-          onPress={closeModal}
-        >
-          <Animated.View
-            {...panResponder.panHandlers}
-            style={{ transform: [{ translateY: panY }] }}
-            className="bg-background dark:bg-dark-bg rounded-t-3xl pt-3 pb-10 px-6 max-h-[80%]"
-          >
-            <View className="w-12 h-1.5 bg-border dark:bg-dark-border rounded-full self-center mb-6" />
-
-            <Text className="text-xl font-bold mb-4 text-foreground dark:text-dark-fg">
-              Choose {label}
-            </Text>
-
-            <FlatList
-              data={options}
-              keyExtractor={(item) => item}
-              showsVerticalScrollIndicator={false}
-              ListEmptyComponent={
-                <View className="py-6 items-center justify-center">
-                  <Text className="text-muted-fg dark:text-dark-muted-fg text-base text-center">
-                    {emptyMessage}
-                  </Text>
-                </View>
-              }
-              renderItem={({ item }) => {
-                const isSelected = value === item;
-                return (
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      onSelect(item);
-                      closeModal();
-                    }}
-                    className={`flex-row items-center justify-between p-4 mb-2 rounded-2xl ${
-                      isSelected
-                        ? "bg-primary/10 dark:bg-dark-primary/10"
-                        : "bg-transparent"
-                    }`}
-                  >
-                    <Text
-                      className={`text-base font-medium ${
-                        isSelected
-                          ? "text-foreground dark:text-dark-fg font-bold"
-                          : "text-foreground dark:text-dark-fg"
-                      }`}
-                    >
-                      {item}
-                    </Text>
-                    {isSelected ? (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={24}
-                        color="#3b82f6"
-                      />
-                    ) : (
-                      <Ionicons
-                        name="ellipse-outline"
-                        size={24}
-                        color={mutedFgColor}
-                      />
-                    )}
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          </Animated.View>
-        </Pressable>
-      </Modal>
+      <DropdownModal />
     </View>
   );
 };

@@ -2,12 +2,15 @@ import { useAttendanceMutations } from "@/src/hooks/useAttendance";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react"; 
 import {
   ActivityIndicator,
+  Animated, 
+  Dimensions, 
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -22,14 +25,53 @@ interface Props {
   clubId: number | null;
 }
 
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
 export const CreateSessionModal = ({ isVisible, onClose, clubId }: Props) => {
   const [title, setTitle] = useState("");
   const [venue, setVenue] = useState("");
   const [dateObj, setDateObj] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
 
+  const [showModal, setShowModal] = useState(isVisible);
+  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
   const queryClient = useQueryClient();
   const { createSession } = useAttendanceMutations();
+
+  useEffect(() => {
+    if (isVisible) {
+      setShowModal(true);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          bounciness: 0,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: SCREEN_HEIGHT,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShowModal(false);
+      });
+    }
+  }, [isVisible]);
 
   const onChangeDate = (event: any, selectedDate?: Date) => {
     if (Platform.OS === "android") {
@@ -86,125 +128,134 @@ export const CreateSessionModal = ({ isVisible, onClose, clubId }: Props) => {
 
   const isFormValid = title.trim() && venue.trim();
 
+  if (!showModal) return null; 
+
   return (
     <Modal
       transparent
-      visible={isVisible}
-      animationType="slide"
+      visible={showModal} 
+      animationType="none" 
       onRequestClose={onClose}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 justify-end bg-black/40"
-      >
-        <TouchableOpacity
-          className="flex-1"
-          onPress={onClose}
-          activeOpacity={1}
-        />
+      {/* Independent Animated Backdrop */}
+      <Animated.View
+        style={{ opacity: fadeAnim }}
+        className="absolute inset-0 bg-black/40"
+      />
+      <Pressable className="flex-1 justify-end" onPress={onClose}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          // REMOVED bg-black/40 from here since it's now handled by the backdrop
+        >
+          <Animated.View
+            style={{ transform: [{ translateY: slideAnim }] }}
+            className="bg-background dark:bg-dark-bg rounded-t-[32px] p-6 max-h-[100%]"
+          >
+            {/* ADDED: Prevent touches inside the sheet from closing the modal */}
+            <Pressable onPress={(e) => e.stopPropagation()}>
+              <View className="w-12 h-1.5 bg-muted dark:bg-dark-muted rounded-full self-center mb-6" />
 
-        <View className="bg-background dark:bg-dark-bg rounded-t-[32px] p-6 max-h-[90%]">
-          <View className="w-12 h-1.5 bg-muted dark:bg-dark-muted rounded-full self-center mb-6" />
-
-          <Text className="text-xl font-bold text-card-fg dark:text-dark-card-fg mb-6">
-            Create Session
-          </Text>
-
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
-                Session Title
+              <Text className="text-xl font-bold text-card-fg dark:text-dark-card-fg mb-6">
+                Create Session
               </Text>
-              <TextInput
-                placeholder="e.g., General Assembly"
-                placeholderTextColor="#9ca3af"
-                value={title}
-                onChangeText={setTitle}
-                className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg"
-              />
-            </View>
 
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
-                Venue
-              </Text>
-              <TextInput
-                placeholder="e.g., Main Hall"
-                placeholderTextColor="#9ca3af"
-                value={venue}
-                onChangeText={setVenue}
-                className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg"
-              />
-            </View>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View className="mb-4">
+                  <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
+                    Session Title
+                  </Text>
+                  <TextInput
+                    placeholder="e.g., General Assembly"
+                    placeholderTextColor="#9ca3af"
+                    value={title}
+                    onChangeText={setTitle}
+                    className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg"
+                  />
+                </View>
 
-            <View className="mb-8">
-              <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
-                Date
-              </Text>
-              <TouchableOpacity
-                onPress={() => setShowPicker(true)}
-                className="border border-border dark:border-dark-border rounded-xl px-4 py-3 bg-background dark:bg-dark-bg flex-row justify-between items-center"
-              >
-                <Text className="text-card-fg dark:text-dark-card-fg">
-                  {dateObj.toLocaleDateString("en-US", {
-                    weekday: "short",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </Text>
-                <Ionicons name="calendar-outline" size={20} color="#6b7280" />
-              </TouchableOpacity>
-            </View>
+                <View className="mb-4">
+                  <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
+                    Venue
+                  </Text>
+                  <TextInput
+                    placeholder="e.g., Main Hall"
+                    placeholderTextColor="#9ca3af"
+                    value={venue}
+                    onChangeText={setVenue}
+                    className="border border-border dark:border-dark-border rounded-xl px-4 py-3 text-card-fg dark:text-dark-card-fg bg-background dark:bg-dark-bg"
+                  />
+                </View>
 
-            {showPicker && (
-              <View
-                className={
-                  Platform.OS === "ios" ? "mb-6 bg-muted/20 rounded-xl p-2" : ""
-                }
-              >
-                {Platform.OS === "ios" && (
-                  <View className="flex-row justify-end mb-2">
-                    <TouchableOpacity onPress={() => setShowPicker(false)}>
-                      <Text className="text-primary font-bold">Done</Text>
-                    </TouchableOpacity>
+                <View className="mb-8">
+                  <Text className="text-sm font-medium text-card-fg dark:text-dark-card-fg mb-2">
+                    Date
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setShowPicker(true)}
+                    className="border border-border dark:border-dark-border rounded-xl px-4 py-3 bg-background dark:bg-dark-bg flex-row justify-between items-center"
+                  >
+                    <Text className="text-card-fg dark:text-dark-card-fg">
+                      {dateObj.toLocaleDateString("en-US", {
+                        weekday: "short",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </Text>
+                    <Ionicons name="calendar-outline" size={20} color="#6b7280" />
+                  </TouchableOpacity>
+                </View>
+
+                {showPicker && (
+                  <View
+                    className={
+                      Platform.OS === "ios" ? "mb-6 bg-muted/20 rounded-xl p-2" : ""
+                    }
+                  >
+                    {Platform.OS === "ios" && (
+                      <View className="flex-row justify-end mb-2">
+                        <TouchableOpacity onPress={() => setShowPicker(false)}>
+                          <Text className="text-primary font-bold">Done</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    <DateTimePicker
+                      value={dateObj}
+                      mode="date"
+                      display={Platform.OS === "ios" ? "inline" : "calendar"}
+                      onChange={onChangeDate}
+                    />
                   </View>
                 )}
-                <DateTimePicker
-                  value={dateObj}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "inline" : "calendar"}
-                  onChange={onChangeDate}
-                />
-              </View>
-            )}
 
-            <TouchableOpacity
-              disabled={!isFormValid || createSession.isPending}
-              onPress={handleCreate}
-              className={`py-4 rounded-xl items-center ${
-                !isFormValid || createSession.isPending
-                  ? "bg-primary/50 dark:bg-dark-primary/50"
-                  : "bg-primary dark:bg-dark-primary"
-              }`}
-            >
-              {createSession.isPending ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <Text className="text-white font-bold text-base">
-                  Create Session
+                <TouchableOpacity
+                  disabled={!isFormValid || createSession.isPending}
+                  onPress={handleCreate}
+                  className={`py-4 rounded-xl items-center ${
+                    !isFormValid || createSession.isPending
+                      ? "bg-primary/50 dark:bg-dark-primary/50"
+                      : "bg-primary dark:bg-dark-primary"
+                  }`}
+                >
+                  {createSession.isPending ? (
+                    <ActivityIndicator color="#ffffff" />
+                  ) : (
+                    <Text className="text-white font-bold text-base">
+                      Create Session
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <Text className="text-center text-[10px] text-muted-fg dark:text-dark-muted-fg uppercase mt-3 tracking-widest">
+                  This action will notify club members
                 </Text>
-              )}
-            </TouchableOpacity>
 
-            <Text className="text-center text-[10px] text-muted-fg dark:text-dark-muted-fg uppercase mt-3 tracking-widest">
-              This action will notify club members
-            </Text>
-
-            <View className="h-8" />
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
+                <View className="h-8" />
+              </ScrollView>
+            </Pressable>
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </Pressable>
     </Modal>
   );
 };

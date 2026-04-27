@@ -106,7 +106,7 @@ export function ClubCard({
           <View className="flex-row items-center">
             {previewMembers.map((member, index) => (
               <View
-                key={member.user_id}
+                key={member.id}
                 className="w-8 h-8 rounded-full border-2 border-card dark:border-dark-card overflow-hidden bg-muted dark:bg-dark-muted"
                 style={{
                   marginLeft: index === 0 ? 0 : -10,
