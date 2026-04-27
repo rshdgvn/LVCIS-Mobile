@@ -94,6 +94,9 @@ export default function AttendanceDetailsScreen({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // State for modern scroll indicator
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+
   const hasChanges = Object.keys(pendingChanges).length > 0;
 
   const getStatus = (member: MemberData): AttendanceStatus | null =>
@@ -282,70 +285,92 @@ export default function AttendanceDetailsScreen({
         </View>
       </View>
 
-      {/* --- MOVED OUTSIDE OF FLATLIST TO FIX KEYBOARD BUG --- */}
       <View className="mb-2">
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="mb-5"
-          contentContainerStyle={{ paddingRight: 20, gap: 12 }}
-        >
-          <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-            <View className="flex-row items-center mb-4">
-              <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center mr-3">
-                <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
+        <View className="mb-5">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            onScroll={(e) => {
+              const x = e.nativeEvent.contentOffset.x;
+              setActiveCardIndex(Math.round(x / 192));
+            }}
+            scrollEventThrottle={16}
+            snapToInterval={192}
+            decelerationRate="fast"
+            className="mb-3"
+            contentContainerStyle={{ paddingRight: 20, gap: 12 }}
+          >
+            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+              <View className="flex-row items-center mb-4">
+                <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center mr-3">
+                  <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
+                </View>
+                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                  Total Present
+                </Text>
               </View>
-              <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-                Total Present
+              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                {stats.present}
               </Text>
             </View>
-            <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-              {stats.present}
-            </Text>
-          </View>
 
-          <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-            <View className="flex-row items-center mb-4">
-              <View className="w-10 h-10 rounded-full bg-yellow-400/10 items-center justify-center mr-3">
-                <Ionicons name="time" size={24} color="#facc15" />
+            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+              <View className="flex-row items-center mb-4">
+                <View className="w-10 h-10 rounded-full bg-yellow-400/10 items-center justify-center mr-3">
+                  <Ionicons name="time" size={24} color="#facc15" />
+                </View>
+                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                  Total Late
+                </Text>
               </View>
-              <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-                Total Late
+              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                {stats.late}
               </Text>
             </View>
-            <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-              {stats.late}
-            </Text>
-          </View>
 
-          <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-            <View className="flex-row items-center mb-4">
-              <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center mr-3">
-                <Ionicons name="close-circle" size={24} color="#ef4444" />
+            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+              <View className="flex-row items-center mb-4">
+                <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center mr-3">
+                  <Ionicons name="close-circle" size={24} color="#ef4444" />
+                </View>
+                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                  Total Absent
+                </Text>
               </View>
-              <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-                Total Absent
+              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                {stats.absent}
               </Text>
             </View>
-            <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-              {stats.absent}
-            </Text>
-          </View>
 
-          <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
-            <View className="flex-row items-center mb-4">
-              <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center mr-3">
-                <Ionicons name="shield-checkmark" size={24} color="#3b82f6" />
+            <View className="bg-card dark:bg-dark-card p-5 rounded-2xl border border-border dark:border-dark-border items-start w-[180px]">
+              <View className="flex-row items-center mb-4">
+                <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center mr-3">
+                  <Ionicons name="shield-checkmark" size={24} color="#3b82f6" />
+                </View>
+                <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
+                  Total Excused
+                </Text>
               </View>
-              <Text className="text-xs text-muted-fg dark:text-dark-muted-fg font-medium flex-1">
-                Total Excused
+              <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
+                {stats.excuse}
               </Text>
             </View>
-            <Text className="text-4xl font-bold text-foreground dark:text-dark-fg">
-              {stats.excuse}
-            </Text>
+          </ScrollView>
+
+          {/* Modern Pagination Indicator */}
+          <View className="flex-row justify-center items-center gap-1.5">
+            {[0, 1, 2].map((index) => (
+              <View
+                key={index}
+                className={`h-1.5 rounded-full ${
+                  activeCardIndex === index
+                    ? "w-5 bg-primary dark:bg-dark-primary"
+                    : "w-1.5 bg-border dark:bg-dark-border"
+                }`}
+              />
+            ))}
           </View>
-        </ScrollView>
+        </View>
 
         <View className="flex-row items-center mb-5 gap-2">
           <View className="flex-1 flex-row items-center bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-xl px-4 h-12">
@@ -376,7 +401,6 @@ export default function AttendanceDetailsScreen({
           )}
         </View>
       </View>
-      {/* ---------------------------------------------------- */}
 
       {isLoading ? (
         <ActivityIndicator
