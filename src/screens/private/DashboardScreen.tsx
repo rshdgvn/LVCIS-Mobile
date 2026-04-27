@@ -6,11 +6,14 @@ import { useClub } from "@/src/contexts/ClubContext";
 import { useCanManageClub } from "@/src/hooks/useCanManageClub";
 import { useIsAdmin } from "@/src/hooks/useIsAdmin";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
+  Dimensions,
   FlatList,
   Image,
   Modal,
+  PanResponder,
   Pressable,
   ScrollView,
   Text,
@@ -26,6 +29,8 @@ interface Props {
   onProfile: () => void;
 }
 
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
 export const DashboardScreen = ({ onProfile }: Props) => {
   const { user } = useAuth();
   const isAdmin = useIsAdmin();
@@ -33,6 +38,11 @@ export const DashboardScreen = ({ onProfile }: Props) => {
   const insets = useSafeAreaInsets();
   const { clubs, activeClubId, setActiveClubId, getUserRole } = useClub();
   const [clubModalVisible, setClubModalVisible] = useState(false);
+
+  // Animation States
+  const [renderModal, setRenderModal] = useState(false);
+  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const activeClub = clubs.find((c) => c.id === activeClubId);
   const isGeneralView = activeClubId === null;
@@ -42,7 +52,11 @@ export const DashboardScreen = ({ onProfile }: Props) => {
     displayRole = "System Admin";
   } else if (activeClubId) {
     const rawRole = getUserRole(activeClubId) || "member";
-    displayRole = rawRole.charAt(0).toUpperCase() + rawRole.slice(1);
+    if (isAdmin && rawRole === "adviser") {
+      displayRole = "System Admin";
+    } else {
+      displayRole = rawRole.charAt(0).toUpperCase() + rawRole.slice(1);
+    }
   }
 
   const getHeaderTitle = () => {
@@ -51,6 +65,67 @@ export const DashboardScreen = ({ onProfile }: Props) => {
     }
     return activeClub?.name || "Select a Club";
   };
+
+  // --- Modal Animations ---
+  useEffect(() => {
+    if (clubModalVisible) {
+      setRenderModal(true);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          bounciness: 0,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: SCREEN_HEIGHT,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setRenderModal(false);
+      });
+    }
+  }, [clubModalVisible]);
+
+  // --- PanResponder for Draggable Modal ---
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return (
+          Math.abs(gestureState.dy) > 5 &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
+        );
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) slideAnim.setValue(gestureState.dy);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > SCREEN_HEIGHT * 0.25 || gestureState.vy > 0.5) {
+          setClubModalVisible(false);
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            bounciness: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    }),
+  ).current;
 
   const renderDashboardContent = () => {
     if (isGeneralView && isAdmin) {
@@ -177,138 +252,162 @@ export const DashboardScreen = ({ onProfile }: Props) => {
         {renderDashboardContent()}
       </ScrollView>
 
-      <Modal
-        visible={clubModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setClubModalVisible(false)}
-      >
-        <View className="flex-1 bg-black/50 justify-end">
-          <Pressable
-            className="flex-1"
-            onPress={() => setClubModalVisible(false)}
+      {/* Switch Club Modal */}
+      {renderModal && (
+        <Modal
+          visible={renderModal}
+          transparent
+          animationType="none"
+          onRequestClose={() => setClubModalVisible(false)}
+        >
+          {/* Animated Dimming Backdrop */}
+          <Animated.View
+            style={{ opacity: fadeAnim }}
+            className="absolute inset-0 bg-black/40"
           />
-          <View
-            className="bg-white dark:bg-dark-bg rounded-t-[32px] pt-4 shadow-xl"
-            style={{
-              maxHeight: "85%",
-              paddingBottom: Math.max(insets.bottom, 24),
-            }}
+
+          <Pressable
+            className="flex-1 justify-end"
+            onPress={() => setClubModalVisible(false)}
           >
-            <View className="px-6">
-              <View className="w-14 h-1.5 bg-slate-200 dark:bg-dark-border rounded-full self-center mb-6" />
-              <View className="mb-6">
-                <Text className="text-2xl font-bold text-slate-800 dark:text-dark-fg mb-1">
-                  Switch Context
-                </Text>
-                <Text className="text-sm text-slate-500 dark:text-dark-muted-fg">
-                  Select which club workspace to view
-                </Text>
-              </View>
-            </View>
-
-            <FlatList
-              data={clubs}
-              keyExtractor={(item) => item.id.toString()}
-              showsVerticalScrollIndicator={false}
-              className="px-6"
-              contentContainerStyle={{ paddingBottom: 16 }}
-              ListHeaderComponent={
-                isAdmin ? (
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      setActiveClubId(null);
-                      setClubModalVisible(false);
-                    }}
-                    className={`flex-row items-center p-4 mb-3 rounded-2xl border ${isGeneralView ? "bg-blue-50 dark:bg-dark-primary/10 border-blue-200 dark:border-dark-primary/30" : "bg-slate-50 dark:bg-dark-card border-slate-100 dark:border-dark-border"}`}
-                  >
-                    <View
-                      className={`w-12 h-12 rounded-xl items-center justify-center mr-4 ${isGeneralView ? "bg-blue-100" : "bg-white border border-slate-200"}`}
-                    >
-                      <MaterialCommunityIcons
-                        name="grid"
-                        size={22}
-                        color={isGeneralView ? "#2563EB" : "#64748b"}
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <Text
-                        className={`text-base ${isGeneralView ? "font-bold text-blue-700" : "font-semibold text-slate-700"}`}
-                      >
-                        General Overview
-                      </Text>
-                      <Text className="text-xs text-slate-500 font-medium mt-0.5">
-                        Admin Level View
-                      </Text>
-                    </View>
-                    {isGeneralView && (
-                      <MaterialCommunityIcons
-                        name="check-circle"
-                        size={26}
-                        color="#3b82f6"
-                      />
-                    )}
-                  </TouchableOpacity>
-                ) : null
-              }
-              renderItem={({ item }) => {
-                const isSelected = item.id === activeClubId;
-                const itemRole = getUserRole(item.id);
-                const displayItemRole = itemRole
-                  ? itemRole.charAt(0).toUpperCase() + itemRole.slice(1)
-                  : "Member";
-
-                return (
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      setActiveClubId(item.id);
-                      setClubModalVisible(false);
-                    }}
-                    className={`flex-row items-center p-4 mb-3 rounded-2xl border ${isSelected ? "bg-blue-50 dark:bg-dark-primary/10 border-blue-200 dark:border-dark-primary/30" : "bg-slate-50 dark:bg-dark-card border-slate-100 dark:border-dark-border"}`}
-                  >
-                    <View
-                      className={`w-12 h-12 rounded-xl items-center justify-center mr-4 overflow-hidden ${!item.logo_url && "bg-white border border-slate-200"}`}
-                    >
-                      {item.logo_url ? (
-                        <Image
-                          source={{ uri: item.logo_url }}
-                          style={{ width: "100%", height: "100%" }}
-                        />
-                      ) : (
-                        <MaterialCommunityIcons
-                          name="account-group"
-                          size={22}
-                          color="#64748b"
-                        />
-                      )}
-                    </View>
-                    <View className="flex-1 pr-2">
-                      <Text
-                        className={`text-base mb-0.5 ${isSelected ? "font-bold text-blue-700 dark:text-primary" : "font-semibold text-slate-700 dark:text-dark-fg"}`}
-                        numberOfLines={1}
-                      >
-                        {item.name}
-                      </Text>
-                      <Text className="text-xs text-slate-500 dark:text-dark-muted-fg font-medium">
-                        {displayItemRole}
-                      </Text>
-                    </View>
-                    {isSelected && (
-                      <MaterialCommunityIcons
-                        name="check-circle"
-                        size={26}
-                        color="#3b82f6"
-                      />
-                    )}
-                  </TouchableOpacity>
-                );
+            <Animated.View
+              className="bg-white dark:bg-dark-bg rounded-t-[32px] pt-0 shadow-xl w-full flex-shrink"
+              style={{
+                transform: [{ translateY: slideAnim }],
+                maxHeight: "85%",
+                paddingBottom: Math.max(insets.bottom, 24),
               }}
-            />
-          </View>
-        </View>
-      </Modal>
+            >
+              <Pressable
+                onPress={(e) => e.stopPropagation()}
+                className="flex-shrink"
+              >
+                {/* Modal Drag Handle wrapped in PanResponder */}
+                <View
+                  {...panResponder.panHandlers}
+                  className="w-full pt-4 pb-2 items-center bg-transparent"
+                >
+                  <View className="w-14 h-1.5 bg-slate-200 dark:bg-dark-border rounded-full mb-2" />
+                </View>
+
+                <View className="px-6">
+                  <View className="mb-6">
+                    <Text className="text-2xl font-bold text-slate-800 dark:text-dark-fg mb-1">
+                      Switch Club
+                    </Text>
+                    <Text className="text-sm text-slate-500 dark:text-dark-muted-fg">
+                      Select which club workspace to view
+                    </Text>
+                  </View>
+                </View>
+
+                <FlatList
+                  data={clubs}
+                  keyExtractor={(item) => item.id.toString()}
+                  showsVerticalScrollIndicator={false}
+                  className="px-6 flex-shrink"
+                  contentContainerStyle={{ paddingBottom: 16 }}
+                  ListHeaderComponent={
+                    isAdmin ? (
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          setActiveClubId(null);
+                          setClubModalVisible(false);
+                        }}
+                        className={`flex-row items-center p-4 mb-3 rounded-2xl border ${isGeneralView ? "bg-blue-50 dark:bg-dark-primary/10 border-blue-200 dark:border-dark-primary/30" : "bg-slate-50 dark:bg-dark-card border-slate-100 dark:border-dark-border"}`}
+                      >
+                        <View
+                          className={`w-12 h-12 rounded-xl items-center justify-center mr-4 ${isGeneralView ? "bg-blue-100" : "bg-white border border-slate-200"}`}
+                        >
+                          <MaterialCommunityIcons
+                            name="grid"
+                            size={22}
+                            color={isGeneralView ? "#2563EB" : "#64748b"}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <Text
+                            className={`text-base ${isGeneralView ? "font-bold text-blue-700" : "font-semibold text-slate-700 dark:text-dark-fg"}`}
+                          >
+                            General Overview
+                          </Text>
+                          <Text className="text-xs text-slate-500 dark:text-dark-muted-fg font-medium mt-0.5">
+                            Admin Level View
+                          </Text>
+                        </View>
+                        {isGeneralView && (
+                          <MaterialCommunityIcons
+                            name="check-circle"
+                            size={26}
+                            color="#3b82f6"
+                          />
+                        )}
+                      </TouchableOpacity>
+                    ) : null
+                  }
+                  renderItem={({ item }) => {
+                    const isSelected = item.id === activeClubId;
+                    const itemRole = getUserRole(item.id) || "member";
+
+                    let displayItemRole =
+                      itemRole.charAt(0).toUpperCase() + itemRole.slice(1);
+                    if (isAdmin && itemRole === "adviser") {
+                      displayItemRole = "System Admin";
+                    }
+
+                    return (
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          setActiveClubId(item.id);
+                          setClubModalVisible(false);
+                        }}
+                        className={`flex-row items-center p-4 mb-3 rounded-2xl border ${isSelected ? "bg-blue-50 dark:bg-dark-primary/10 border-blue-200 dark:border-dark-primary/30" : "bg-slate-50 dark:bg-dark-card border-slate-100 dark:border-dark-border"}`}
+                      >
+                        <View
+                          className={`w-12 h-12 rounded-xl items-center justify-center mr-4 overflow-hidden ${!item.logo_url && "bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border"}`}
+                        >
+                          {item.logo_url ? (
+                            <Image
+                              source={{ uri: item.logo_url }}
+                              style={{ width: "100%", height: "100%" }}
+                            />
+                          ) : (
+                            <MaterialCommunityIcons
+                              name="account-group"
+                              size={22}
+                              color="#64748b"
+                            />
+                          )}
+                        </View>
+                        <View className="flex-1 pr-2">
+                          <Text
+                            className={`text-base mb-0.5 ${isSelected ? "font-bold text-blue-700 dark:text-primary" : "font-semibold text-slate-700 dark:text-dark-fg"}`}
+                            numberOfLines={1}
+                          >
+                            {item.name}
+                          </Text>
+                          <Text className="text-xs text-slate-500 dark:text-dark-muted-fg font-medium">
+                            {displayItemRole}
+                          </Text>
+                        </View>
+                        {isSelected && (
+                          <MaterialCommunityIcons
+                            name="check-circle"
+                            size={26}
+                            color="#3b82f6"
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+              </Pressable>
+            </Animated.View>
+          </Pressable>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 };

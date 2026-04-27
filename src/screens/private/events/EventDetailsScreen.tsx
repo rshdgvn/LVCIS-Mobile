@@ -3,6 +3,7 @@ import { CustomAlertDialog } from "@/src/components/common/CustomAlertDialog";
 import { EditEventModal } from "@/src/components/modals/EditEventModal";
 import { TaskModal } from "@/src/components/modals/TaskModal";
 import { useCanManageClub } from "@/src/hooks/useCanManageClub";
+import { useIsAdmin } from "@/src/hooks/useIsAdmin";
 import { useEventTasks, useTaskMutations } from "@/src/hooks/useTasks";
 import { useTheme } from "@/src/hooks/useTheme";
 import { EventTask } from "@/src/services/taskService";
@@ -55,7 +56,10 @@ export default function EventDetailsScreen({
   const { primaryColor } = useTheme();
   const insets = useSafeAreaInsets();
   const { canManageClub } = useCanManageClub();
-  const canManage = event?.club_id ? canManageClub(event.club_id) : false;
+  const isAdmin = useIsAdmin();
+
+  const canManage =
+    isAdmin || (event?.club_id ? canManageClub(event.club_id) : false);
   const isGeneralEvent = !event?.club_id;
 
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -197,7 +201,9 @@ export default function EventDetailsScreen({
             </Text>
           </TouchableOpacity>
         ) : (
-          <View style={{ width: 40 }} /> /* Placeholder to keep header centered */
+          <View
+            style={{ width: 40 }}
+          /> /* Placeholder to keep header centered */
         )}
       </View>
 
