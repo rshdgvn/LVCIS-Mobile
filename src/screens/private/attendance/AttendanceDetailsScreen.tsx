@@ -383,9 +383,6 @@ export default function AttendanceDetailsScreen({
               className="flex-1 ml-2 text-base text-foreground dark:text-dark-fg"
             />
           </View>
-          <TouchableOpacity className="w-12 h-12 bg-background dark:bg-dark-bg border border-border dark:border-dark-border rounded-xl items-center justify-center">
-            <Ionicons name="filter-outline" size={20} color="#6b7280" />
-          </TouchableOpacity>
         </View>
 
         <View className="flex-row items-center justify-between mb-4">
