@@ -554,7 +554,7 @@ export const EditEventModal = ({ isVisible, onClose, event }: Props) => {
               </ScrollView>
 
               {/* Footer */}
-              <View className="px-6 pb-10 pt-4 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border">
+              <View className="px-6 pb-10 pt-4 bg-background dark:bg-dark-bg ">
                 <TouchableOpacity
                   onPress={handleUpdate}
                   disabled={!isFormValid || isUpdating}

@@ -495,7 +495,7 @@ export const CreateEventModal = ({ isVisible, onClose, clubId }: Props) => {
                 </View>
               </ScrollView>
 
-              <View className="px-6 pb-10 pt-4 bg-background dark:bg-dark-bg border-t border-border dark:border-dark-border">
+              <View className="px-6 pb-10 pt-4 bg-background dark:bg-dark-bg">
                 <TouchableOpacity
                   onPress={handleCreate}
                   disabled={!isFormValid || isCreating}
